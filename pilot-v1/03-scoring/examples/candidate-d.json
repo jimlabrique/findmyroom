@@ -1,0 +1,21 @@
+{
+  "full_name": "Leo Bernard",
+  "whatsapp": "+32470000004",
+  "segment": "etudiant",
+  "budget_max_eur": null,
+  "preferred_districts": ["Ixelles"],
+  "move_in_date": "2026-05-15",
+  "target_stay_months": 9,
+  "lifestyle_cleanliness": 3,
+  "lifestyle_noise": 2,
+  "lifestyle_sociability": 3,
+  "lifestyle_guests": 2,
+  "lifestyle_schedule": 3,
+  "lifestyle_remote_work": 1,
+  "smoker": "no",
+  "has_pet": false,
+  "pet_type": "",
+  "non_negotiables": [],
+  "consent_rgpd": true,
+  "follow_up_count": 0
+}

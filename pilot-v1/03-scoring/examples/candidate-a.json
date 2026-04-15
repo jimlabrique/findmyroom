@@ -1,0 +1,21 @@
+{
+  "full_name": "Alex Martin",
+  "whatsapp": "+32470000001",
+  "segment": "jeune_actif",
+  "budget_max_eur": 900,
+  "preferred_districts": ["Ixelles", "Saint-Gilles"],
+  "move_in_date": "2026-05-10",
+  "target_stay_months": 12,
+  "lifestyle_cleanliness": 4,
+  "lifestyle_noise": 2,
+  "lifestyle_sociability": 3,
+  "lifestyle_guests": 2,
+  "lifestyle_schedule": 3,
+  "lifestyle_remote_work": 2,
+  "smoker": "no",
+  "has_pet": false,
+  "pet_type": "",
+  "non_negotiables": ["quiet_after_22"],
+  "consent_rgpd": true,
+  "follow_up_count": 0
+}

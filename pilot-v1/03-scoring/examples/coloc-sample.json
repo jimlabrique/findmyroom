@@ -1,0 +1,18 @@
+{
+  "contact_name": "Julie",
+  "monthly_rent_eur": 680,
+  "charges_eur": 80,
+  "district": "Ixelles",
+  "room_available_date": "2026-05-01",
+  "accepted_segment": "both",
+  "non_negotiables": ["no_smoking", "quiet_after_22", "cleaning_strict"],
+  "lifestyle_cleanliness": 5,
+  "lifestyle_noise": 2,
+  "lifestyle_sociability": 3,
+  "lifestyle_guests": 2,
+  "lifestyle_schedule": 3,
+  "lifestyle_remote_work": 2,
+  "smoking_allowed": "no",
+  "pets_allowed": "no",
+  "consent_rgpd": true
+}

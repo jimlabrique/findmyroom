@@ -1,0 +1,9 @@
+Bonjour {first_name},
+
+Merci pour ton interet pour la chambre a {district}.
+
+Pour eviter les mauvais matchs de coloc, on utilise un questionnaire rapide sur le mode de vie.
+
+Tu peux le remplir ici: {form_link}
+
+Des qu'on recoit une candidature complete, on revient vers toi en moins de 48h.

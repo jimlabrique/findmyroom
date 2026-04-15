@@ -1,0 +1,1005 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coloc Matching Deck</title>
+    <style>
+      :root {
+        --bg: #f6f0e7;
+        --bg-soft: #efe5d8;
+        --ink: #17222a;
+        --muted: #55636a;
+        --line: #d8cec2;
+        --panel: #fffaf3;
+        --night: #12212a;
+        --night-soft: #1a2d37;
+        --night-line: #30444f;
+        --white: #fffdf8;
+        --accent: #df6338;
+        --accent-2: #0f817d;
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      @page {
+        size: 320mm 180mm;
+        margin: 0;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #0f171d;
+        color: var(--ink);
+        font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+      }
+
+      .deck {
+        width: 320mm;
+        margin: 0 auto;
+      }
+
+      .slide {
+        width: 320mm;
+        height: 180mm;
+        padding: 12mm 15mm 9mm;
+        display: flex;
+        flex-direction: column;
+        gap: 6mm;
+        background: linear-gradient(135deg, var(--bg) 0%, var(--bg-soft) 100%);
+        page-break-after: always;
+        break-after: page;
+        overflow: hidden;
+      }
+
+      .slide.dark {
+        color: var(--white);
+        background: linear-gradient(140deg, #0f1b22 0%, #162731 60%, #102029 100%);
+      }
+
+      .topline,
+      .footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex: 0 0 auto;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: #e7ddd0;
+        color: #566167;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .dark .eyebrow {
+        background: #223640;
+        color: rgba(255, 253, 248, 0.78);
+      }
+
+      .page-no {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(23, 34, 42, 0.46);
+      }
+
+      .dark .page-no {
+        color: rgba(255, 253, 248, 0.5);
+      }
+
+      .content {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6mm;
+        min-height: 0;
+      }
+
+      .hero-grid,
+      .grid-2,
+      .grid-3 {
+        display: grid;
+        gap: 5mm;
+      }
+
+      .hero-grid,
+      .grid-2 {
+        grid-template-columns: 1.1fr 0.9fr;
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .display {
+        font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.04;
+      }
+
+      .display-xl {
+        font-size: 46px;
+      }
+
+      .display-lg {
+        font-size: 36px;
+      }
+
+      .display-md {
+        font-size: 28px;
+      }
+
+      .lead {
+        font-size: 15px;
+        line-height: 1.45;
+        color: var(--muted);
+        max-width: 150mm;
+      }
+
+      .dark .lead,
+      .dark .copy,
+      .dark .footer,
+      .dark .panel-copy,
+      .dark .bullet li,
+      .dark .timeline-copy,
+      .dark .mini-label {
+        color: rgba(255, 253, 248, 0.76);
+      }
+
+      .accent {
+        color: var(--accent);
+      }
+
+      .accent-2 {
+        color: var(--accent-2);
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chip {
+        padding: 7px 11px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+
+      .chip.light {
+        background: #ece2d6;
+        color: #3e4b52;
+      }
+
+      .chip.dark {
+        background: #243944;
+        color: var(--white);
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 14px 16px;
+      }
+
+      .dark .panel {
+        background: var(--night-soft);
+        border-color: var(--night-line);
+      }
+
+      .panel-tight {
+        padding: 12px 14px;
+      }
+
+      .mini-label {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: rgba(23, 34, 42, 0.44);
+      }
+
+      .panel-title {
+        font-size: 20px;
+        line-height: 1.16;
+        font-weight: 700;
+        color: inherit;
+      }
+
+      .panel-copy,
+      .copy {
+        font-size: 13px;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+
+      .quote {
+        border-left: 4px solid var(--accent);
+        padding-left: 16px;
+      }
+
+      .quote p {
+        font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+        font-size: 24px;
+        line-height: 1.18;
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4mm;
+      }
+
+      .metric-value {
+        display: block;
+        margin-bottom: 6px;
+        font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+        font-size: 30px;
+        line-height: 1;
+        letter-spacing: -0.04em;
+      }
+
+      .compare {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5mm;
+      }
+
+      .bullet {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .bullet li {
+        margin-bottom: 8px;
+        font-size: 13px;
+        line-height: 1.4;
+        color: var(--muted);
+      }
+
+      .module-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4mm;
+      }
+
+      .workflow {
+        display: grid;
+        grid-template-columns: 0.92fr 1.08fr;
+        gap: 5mm;
+        min-height: 0;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 3.2mm;
+      }
+
+      .timeline-step {
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .timeline-no {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        background: #e9dfd2;
+        color: var(--ink);
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .timeline-title {
+        font-size: 16px;
+        line-height: 1.2;
+        font-weight: 700;
+      }
+
+      .timeline-copy {
+        margin-top: 4px;
+        font-size: 12.5px;
+        line-height: 1.35;
+        color: var(--muted);
+      }
+
+      .app-shot {
+        display: grid;
+        gap: 4mm;
+        min-height: 0;
+      }
+
+      .mock {
+        border-radius: 18px;
+        background: #fffaf3;
+        border: 1px solid var(--line);
+        overflow: hidden;
+      }
+
+      .mock-top {
+        height: 26px;
+        background: #efe4d8;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .mock-body {
+        padding: 14px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .mock-card {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: #f8f1e7;
+        padding: 12px;
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .tag {
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #efe6dc;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .progress {
+        height: 8px;
+        border-radius: 999px;
+        background: #e7ddd1;
+        overflow: hidden;
+        margin: 8px 0 10px;
+      }
+
+      .progress > span {
+        display: block;
+        width: 86%;
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent-2), #61c6bd);
+      }
+
+      .signal {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12.5px;
+        line-height: 1.35;
+        color: var(--muted);
+      }
+
+      .signal-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        flex: 0 0 auto;
+      }
+
+      .map {
+        height: 64mm;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background:
+          linear-gradient(135deg, #f8f1e7 0%, #efe2d2 100%);
+        position: relative;
+      }
+
+      .map-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(23, 34, 42, 0.08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(23, 34, 42, 0.08) 1px, transparent 1px);
+        background-size: 16mm 16mm;
+      }
+
+      .pin {
+        position: absolute;
+        padding: 6px 11px;
+        border-radius: 999px;
+        background: var(--night);
+        color: var(--white);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .pin.main {
+        background: var(--accent);
+      }
+
+      .three-stack {
+        display: grid;
+        gap: 4mm;
+      }
+
+      .pricing {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4mm;
+      }
+
+      .price {
+        display: block;
+        margin: 4px 0 8px;
+        font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+        font-size: 34px;
+        line-height: 1;
+      }
+
+      .validate-grid {
+        display: grid;
+        grid-template-columns: 1fr 0.95fr;
+        gap: 5mm;
+      }
+
+      .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4mm;
+      }
+
+      .signal-stack {
+        display: grid;
+        gap: 4mm;
+      }
+
+      .close-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 5mm;
+        align-items: end;
+      }
+
+      .footer {
+        font-size: 11px;
+        color: rgba(23, 34, 42, 0.5);
+      }
+
+      .spacer-sm {
+        height: 2mm;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="deck">
+      <section class="slide dark" id="s01">
+        <div class="topline">
+          <div class="eyebrow">Deck de conviction</div>
+          <div class="page-no">01</div>
+        </div>
+        <div class="content hero-grid">
+          <div style="display: grid; align-content: end; gap: 5mm;">
+            <div class="chip-row">
+              <span class="chip dark">Bruxelles d'abord</span>
+              <span class="chip dark">Etudiants + jeunes actifs</span>
+              <span class="chip dark">Compatibilite avant visite</span>
+            </div>
+            <h1 class="display display-xl">
+              La couche de compatibilite manquante de la colocation.
+            </h1>
+            <p class="lead">
+              Pas une nouvelle marketplace immobiliere. Un produit qui aide une coloc a choisir
+              la bonne personne avant que le chaos commence.
+            </p>
+          </div>
+          <div style="display: grid; align-content: end; gap: 5mm;">
+            <div class="quote">
+              <p>
+                Le vrai probleme n'est pas de trouver une chambre.
+                <span class="accent">C'est de savoir avec qui on va vivre.</span>
+              </p>
+            </div>
+            <div class="metric-grid">
+              <div class="panel panel-tight">
+                <span class="mini-label">Wedge</span>
+                <span class="metric-value">V1</span>
+                <p class="panel-copy">Colocs existantes avec une chambre libre.</p>
+              </div>
+              <div class="panel panel-tight">
+                <span class="mini-label">Promesse</span>
+                <span class="metric-value">- bad fits</span>
+                <p class="panel-copy">Eviter les mauvais matchs avant la visite.</p>
+              </div>
+              <div class="panel panel-tight">
+                <span class="mini-label">Validation</span>
+                <span class="metric-value">Manual</span>
+                <p class="panel-copy">Concierge test avant de coder lourd.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer">
+          <span>Coloc Matching</span>
+          <span>These produit + wedge de lancement</span>
+        </div>
+      </section>
+
+      <section class="slide" id="s02">
+        <div class="topline">
+          <div class="eyebrow">Le probleme</div>
+          <div class="page-no">02</div>
+        </div>
+        <div class="content">
+          <h2 class="display display-lg" style="max-width: 225mm;">
+            Une coloc publie une chambre, recoit des messages,
+            <span class="accent">et n'a presque aucun signal utile</span> pour juger la vie
+            commune.
+          </h2>
+          <div class="grid-2" style="align-items: start;">
+            <div style="display: grid; gap: 4mm;">
+              <p class="lead">
+                Le tri se fait au feeling, aux biais et a quelques messages mal fichus. Le vrai
+                risque apparait trop tard.
+              </p>
+              <div class="panel">
+                <span class="mini-label">Scene observee</span>
+                <p class="panel-title">Beaucoup de volume. Presque aucun moyen fiable d'anticiper la cohabitation.</p>
+              </div>
+            </div>
+            <div class="three-stack">
+              <div class="panel">
+                <span class="mini-label">1</span>
+                <p class="panel-title">Inbox surchargee</p>
+                <p class="panel-copy">Des dizaines de messages, peu comparables, souvent vides.</p>
+              </div>
+              <div class="panel">
+                <span class="mini-label">2</span>
+                <p class="panel-title">Compatibilite invisible</p>
+                <p class="panel-copy">Bruit, menage, invites, rythme, teletravail: rien n'est structure.</p>
+              </div>
+              <div class="panel">
+                <span class="mini-label">3</span>
+                <p class="panel-title">Erreur decouverte trop tard</p>
+                <p class="panel-copy">La mauvaise surprise arrive apres la visite, parfois apres l'emmenagement.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer">
+          <span>Douleur centrale</span>
+          <span>Le risque de la coloc est humain, pas seulement immobilier</span>
+        </div>
+      </section>
+
+      <section class="slide" id="s03">
+        <div class="topline">
+          <div class="eyebrow">Pourquoi l'existant rate le sujet</div>
+          <div class="page-no">03</div>
+        </div>
+        <div class="content">
+          <h2 class="display display-lg" style="max-width: 230mm;">
+            Les plateformes actuelles matchent une chambre avec un budget.
+            <span class="accent-2">Elles ne matchent pas une vie commune.</span>
+          </h2>
+          <div class="compare">
+            <div class="panel">
+              <span class="mini-label">Ce qu'elles font deja</span>
+              <ul class="bullet">
+                <li>Prix, quartier, date de disponibilite</li>
+                <li>Photos, texte libre, messagerie</li>
+                <li>Beaucoup de volume, tres peu de hierarchie</li>
+                <li>Une annonce de chambre, pas un portrait de cohabitation</li>
+              </ul>
+            </div>
+            <div class="panel">
+              <span class="mini-label">Ce qu'il manque</span>
+              <ul class="bullet">
+                <li>Habitudes de vie comparables entre candidats</li>
+                <li>Red flags visibles avant la visite</li>
+                <li>Un score utile avec explications claires</li>
+                <li>Un vrai pre-tri, pas une inbox supplementaire</li>
+              </ul>
+            </div>
+          </div>
+          <div class="panel">
+            <span class="mini-label">These</span>
+            <p class="panel-title">Le produit n'est pas une annonce plus sexy.</p>
+            <p class="panel-copy">Le produit est une couche de compatibilite qui aide a prendre une meilleure decision plus tot.</p>
+          </div>
+        </div>
+        <div class="footer">
+          <span>Positionnement</span>
+          <span>Compatibility layer, not another listing site</span>
+        </div>
+      </section>
+
+      <section class="slide dark" id="s04">
+        <div class="topline">
+          <div class="eyebrow">La solution</div>
+          <div class="page-no">04</div>
+        </div>
+        <div class="content">
+          <h2 class="display display-lg" style="max-width: 225mm;">
+            Une app de matching pour la colocation qui mesure la compatibilite
+            <span class="accent">avant</span> la visite.
+          </h2>
+          <div class="module-row">
+            <div class="panel">
+              <span class="mini-label">1</span>
+              <p class="panel-title">Annonce utile</p>
+              <p class="panel-copy">Une chambre, mais aussi une ambiance, des regles et une coloc.</p>
+            </div>
+            <div class="panel">
+              <span class="mini-label">2</span>
+              <p class="panel-title">Questionnaire de vie</p>
+              <p class="panel-copy">Des signaux structures sur le quotidien, pas des bios en vrac.</p>
+            </div>
+            <div class="panel">
+              <span class="mini-label">3</span>
+              <p class="panel-title">Score explique</p>
+              <p class="panel-copy">Alignements, frictions et incompatibilites clairement visibles.</p>
+            </div>
+            <div class="panel">
+              <span class="mini-label">4</span>
+              <p class="panel-title">Shortlist avant chat</p>
+              <p class="panel-copy">On parle apres le tri, pas avant.</p>
+            </div>
+          </div>
+          <div class="quote">
+            <p>
+              Le swipe, c'est du maquillage.
+              <span class="accent-2">Le vrai produit, c'est le tri intelligent.</span>
+            </p>
+          </div>
+        </div>
+        <div class="footer">
+          <span>Promesse produit</span>
+          <span>Reduire les mauvais matchs de cohabitation</span>
+        </div>
+      </section>
+
+      <section class="slide" id="s05">
+        <div class="topline">
+          <div class="eyebrow">Experience produit</div>
+          <div class="page-no">05</div>
+        </div>
+        <div class="content">
+          <h2 class="display display-lg" style="max-width: 225mm;">
+            Un flow simple.
+            <span class="accent">La valeur est dans la qualite du pre-tri.</span>
+          </h2>
+          <div class="workflow">
+            <div class="panel timeline">
+              <div class="timeline-step">
+                <div class="timeline-no">1</div>
+                <div>
+                  <div class="timeline-title">La coloc publie une chambre</div>
+                  <div class="timeline-copy">Loyer, quartier, date, ambiance et regles de base.</div>
+                </div>
+              </div>
+              <div class="timeline-step">
+                <div class="timeline-no">2</div>
+                <div>
+                  <div class="timeline-title">Le candidat remplit son profil</div>
+                  <div class="timeline-copy">Budget, date d'entree, habitudes de vie, red flags.</div>
+                </div>
+              </div>
+              <div class="timeline-step">
+                <div class="timeline-no">3</div>
+                <div>
+                  <div class="timeline-title">Le matching score</div>
+                  <div class="timeline-copy">Alignements, frictions et incompatibilites visibles.</div>
+                </div>
+              </div>
+              <div class="timeline-step">
+                <div class="timeline-no">4</div>
+                <div>
+                  <div class="timeline-title">Shortlist puis conversation</div>
+                  <div class="timeline-copy">Chat et visite seulement avec les profils solides.</div>
+                </div>
+              </div>
+            </div>
+            <div class="app-shot">
+              <div class="mock">
+                <div class="mock-top"></div>
+                <div class="mock-body">
+                  <div class="mock-card">
+                    <span class="mini-label">Annonce coloc</span>
+                    <div class="panel-title">Ixelles, 680€, dispo au 1er juin</div>
+                    <div class="tag-row">
+                      <span class="tag">Calme</span>
+                      <span class="tag">2 jours de teletravail</span>
+                      <span class="tag">No smoking</span>
+                    </div>
+                  </div>
+                  <div class="mock-card">
+                    <span class="mini-label">Candidat shortlisté</span>
+                    <div class="panel-title">Compatibilite: 86%</div>
+                    <div class="progress"><span></span></div>
+                    <div class="signal"><span class="signal-dot" style="background: var(--accent-2);"></span>Rythme compatible</div>
+                    <div class="signal"><span class="signal-dot" style="background: var(--accent-2);"></span>Budget aligne</div>
+                    <div class="signal"><span class="signal-dot" style="background: var(--accent);"></span>Invite souvent des amis</div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel">
+                <span class="mini-label">Point critique</span>
+                <p class="panel-title">Le chat ne doit pas etre le debut du produit.</p>
+                <p class="panel-copy">Sinon on recree une messagerie de plus. L'app doit d'abord aider a decider, puis a parler.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer">
+          <span>Produit v1</span>
+          <span>Annonce + questionnaire + score + shortlist + chat</span>
+        </div>
+      </section>
+
+      <section class="slide" id="s06">
+        <div class="topline">
+          <div class="eyebrow">Entree de marche</div>
+          <div class="page-no">06</div>
+        </div>
+        <div class="content">
+          <h2 class="display display-lg" style="max-width: 220mm;">
+            Partir petit. Prouver le wedge.
+            <span class="accent-2">Bruxelles d'abord.</span>
+          </h2>
+          <div class="grid-2" style="align-items: start;">
+            <div style="display: grid; gap: 4mm;">
+              <p class="lead">
+                Assez dense pour avoir de l'offre. Assez mixte pour toucher etudiants et jeunes
+                actifs. Assez douloureux pour que le probleme soit reel.
+              </p>
+              <div class="panel">
+                <span class="mini-label">Regle produit</span>
+                <p class="panel-title">Etudiants et jeunes actifs, separes par defaut.</p>
+                <p class="panel-copy">On peut les melanger si la coloc l'autorise. Le filtre doit etre souple, pas dogmatique.</p>
+              </div>
+              <div class="chip-row">
+                <span class="chip light">Une ville</span>
+                <span class="chip light">Un usage</span>
+                <span class="chip light">Une preuve</span>
+              </div>
+            </div>
+            <div class="panel">
+              <span class="mini-label">Zone de lancement</span>
+              <div class="map" style="margin-top: 8px;">
+                <div class="map-grid"></div>
+                <div class="pin main" style="left: 43%; top: 41%;">Bruxelles</div>
+                <div class="pin" style="left: 15%; top: 18%;">Louvain</div>
+                <div class="pin" style="left: 67%; top: 61%;">Gand</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer">
+          <span>Scope</span>
+          <span>Liquidite plus vite, narratif plus credible</span>
+        </div>
+      </section>
+
+      <section class="slide dark" id="s07">
+        <div class="topline">
+          <div class="eyebrow">Pourquoi ce wedge peut gagner</div>
+          <div class="page-no">07</div>
+        </div>
+        <div class="content">
+          <h2 class="display display-lg" style="max-width: 220mm;">
+            La valeur n'est pas d'apporter plus de volume.
+            <span class="accent">La valeur est de reduire le risque humain.</span>
+          </h2>
+          <div class="grid-3">
+            <div class="panel">
+              <span class="mini-label">Douleur</span>
+              <p class="panel-title">Decision recurrente et stressante</p>
+              <p class="panel-copy">Choisir un colocataire, c'est choisir une routine, des frictions et des compromis.</p>
+            </div>
+            <div class="panel">
+              <span class="mini-label">Timing</span>
+              <p class="panel-title">Le marche existe deja</p>
+              <p class="panel-copy">L'offre vit dans des groupes Facebook et des plateformes generiques. La couche de compatibilite manque.</p>
+            </div>
+            <div class="panel">
+              <span class="mini-label">Angle d'attaque</span>
+              <p class="panel-title">Un vrai wedge produit</p>
+              <p class="panel-copy">Pas besoin de refaire toute la location. Il suffit d'etre meilleur sur un moment tres douloureux.</p>
+            </div>
+          </div>
+          <div class="quote">
+            <p>
+              Une meilleure annonce, c'est utile.
+              <span class="accent-2">Une meilleure decision de vie commune, c'est memorable.</span>
+            </p>
+          </div>
+        </div>
+        <div class="footer">
+          <span>These de marche</span>
+          <span>Le marche n'a pas besoin d'une nouvelle inbox</span>
+        </div>
+      </section>
+
+      <section class="slide" id="s08">
+        <div class="topline">
+          <div class="eyebrow">Modele economique</div>
+          <div class="page-no">08</div>
+        </div>
+        <div class="content">
+          <h2 class="display display-lg" style="max-width: 220mm;">
+            Freemium cote coloc.
+            <span class="accent">Pas de taxe a l'entree.</span>
+          </h2>
+          <div class="pricing">
+            <div class="panel">
+              <span class="mini-label">Gratuit</span>
+              <span class="price">0€</span>
+              <ul class="bullet">
+                <li>Publier une chambre</li>
+                <li>Recevoir des candidatures</li>
+                <li>Voir un matching basique</li>
+              </ul>
+            </div>
+            <div class="panel">
+              <span class="mini-label">Premium coloc</span>
+              <span class="price">Payant</span>
+              <ul class="bullet">
+                <li>Tri avance</li>
+                <li>Shortlist enrichie</li>
+                <li>Signaux prioritaires</li>
+                <li>Contact plus rapide</li>
+              </ul>
+            </div>
+            <div class="panel">
+              <span class="mini-label">Pourquoi ce choix</span>
+              <p class="panel-title">Ne pas tuer l'offre</p>
+              <p class="panel-copy">Faire payer la publication trop tot freine les annonces. Faire payer le candidat trop tot freine l'adoption.</p>
+            </div>
+          </div>
+          <div class="panel">
+            <span class="mini-label">Logique</span>
+            <p class="panel-title">On monetise la douleur du tri, pas l'existence de l'annonce.</p>
+            <p class="panel-copy">Si le produit fait gagner du temps et evite des visites inutiles, la volonte de payer devient credible.</p>
+          </div>
+        </div>
+        <div class="footer">
+          <span>Business model</span>
+          <span>Freemium d'abord, sophistication ensuite</span>
+        </div>
+      </section>
+
+      <section class="slide" id="s09">
+        <div class="topline">
+          <div class="eyebrow">Plan de validation</div>
+          <div class="page-no">09</div>
+        </div>
+        <div class="content">
+          <h2 class="display display-lg" style="max-width: 230mm;">
+            Ne pas construire trop tot.
+            <span class="accent">Prouver d'abord que le filtre change le tri.</span>
+          </h2>
+          <div class="validate-grid">
+            <div class="steps-grid">
+              <div class="panel">
+                <span class="mini-label">1</span>
+                <p class="panel-title">Sourcer des chambres</p>
+                <p class="panel-copy">Via groupes Facebook et communautes logement a Bruxelles.</p>
+              </div>
+              <div class="panel">
+                <span class="mini-label">2</span>
+                <p class="panel-title">Faire remplir un questionnaire</p>
+                <p class="panel-copy">Colocs et candidats renseignent leurs habitudes de vie.</p>
+              </div>
+              <div class="panel">
+                <span class="mini-label">3</span>
+                <p class="panel-title">Livrer une shortlist a la main</p>
+                <p class="panel-copy">Matching manuel, sans produit complexe, pour tester la valeur.</p>
+              </div>
+              <div class="panel">
+                <span class="mini-label">4</span>
+                <p class="panel-title">Mesurer la difference</p>
+                <p class="panel-copy">Est-ce que les colocs jugent ce tri meilleur que leur methode actuelle ?</p>
+              </div>
+            </div>
+            <div class="signal-stack">
+              <div class="panel">
+                <span class="mini-label">Signal a obtenir</span>
+                <p class="panel-title">Les colocs testent</p>
+                <p class="panel-copy">Elles acceptent de poster ou de comparer le service.</p>
+              </div>
+              <div class="panel">
+                <span class="mini-label">Signal a obtenir</span>
+                <p class="panel-title">Le tri change vraiment</p>
+                <p class="panel-copy">Le filtre est juge utile, pas juste joli.</p>
+              </div>
+              <div class="panel">
+                <span class="mini-label">Signal a obtenir</span>
+                <p class="panel-title">Les candidats jouent le jeu</p>
+                <p class="panel-copy">Ils completent un profil suffisamment riche sans abandonner.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer">
+          <span>Validation</span>
+          <span>Concierge test manuel avant app complete</span>
+        </div>
+      </section>
+
+      <section class="slide dark" id="s10">
+        <div class="topline">
+          <div class="eyebrow">Conclusion</div>
+          <div class="page-no">10</div>
+        </div>
+        <div class="content close-grid">
+          <div style="display: grid; align-content: end; gap: 5mm;">
+            <h2 class="display display-xl">
+              Pas une nouvelle plateforme d'annonces.
+              <span class="accent">Une couche de compatibilite pour la vie en coloc.</span>
+            </h2>
+            <p class="lead">
+              Si on prouve que ce filtre change vraiment la facon dont une coloc trie ses
+              candidats, alors l'idee merite d'etre creusee serieusement.
+            </p>
+            <div class="chip-row">
+              <span class="chip dark">Wedge credible</span>
+              <span class="chip dark">Douleur reelle</span>
+              <span class="chip dark">Test rapide</span>
+            </div>
+          </div>
+          <div class="three-stack">
+            <div class="panel">
+              <span class="mini-label">Ce qu'on demande</span>
+              <p class="panel-title">Accord pour creuser le test, pas pour construire un monstre.</p>
+              <p class="panel-copy">L'objectif maintenant est de valider proprement le noyau de valeur.</p>
+            </div>
+            <div class="panel">
+              <span class="mini-label">Prochaine etape</span>
+              <p class="panel-title">Designer le questionnaire puis lancer un concierge test a Bruxelles.</p>
+              <p class="panel-copy">Si les signaux sont bons, on construit. S'ils sont tides, on evite de perdre du temps.</p>
+            </div>
+            <div class="panel">
+              <span class="mini-label">Close</span>
+              <p class="panel-title">Worth digging now.</p>
+              <p class="panel-copy">Le sujet merite d'etre creuse parce qu'il attaque un vrai angle mort du marche.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer">
+          <span>Close</span>
+          <span>Compatibility layer for shared living</span>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

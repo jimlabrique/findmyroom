@@ -1,0 +1,28 @@
+{
+  "weights": {
+    "lifestyle_cleanliness": 15,
+    "lifestyle_noise": 12,
+    "lifestyle_sociability": 12,
+    "lifestyle_guests": 12,
+    "lifestyle_schedule": 14,
+    "lifestyle_remote_work": 10,
+    "smoking_fit": 12,
+    "pets_fit": 13
+  },
+  "hardFilters": {
+    "maxMoveInDelayDays": 45,
+    "requireDistrictOverlap": true
+  },
+  "majorFrictionThresholdByDimension": {
+    "lifestyle_cleanliness": 3,
+    "lifestyle_noise": 3,
+    "lifestyle_sociability": 3,
+    "lifestyle_guests": 3,
+    "lifestyle_schedule": 3,
+    "lifestyle_remote_work": 3
+  },
+  "scoreBands": {
+    "shortlistMin": 70,
+    "conditionalShortlistMin": 60
+  }
+}

@@ -1,0 +1,9 @@
+Bonjour {first_name},
+
+Il nous manque encore {missing_fields} pour finaliser ta candidature.
+
+Sans ces infos, on ne peut pas faire un matching propre avec la coloc.
+
+Tu peux completer ici: {form_link}
+
+Si on n'a pas de retour apres ce rappel, on cloture la candidature pour ce pilote.

@@ -1,0 +1,204 @@
+import { createListingAction } from "@/app/deposer/actions";
+import { requireUser } from "@/lib/auth";
+import { PhotoFields } from "@/components/photo-fields";
+import { humanizeAppError } from "@/lib/errors";
+import { CreateListingBasics } from "@/components/create-listing-basics";
+import {
+  AREA_CONTEXT_OPTIONS,
+  TRANSPORT_MODE_OPTIONS,
+  VIBE_TAG_OPTIONS,
+} from "@/lib/listing-form-options";
+
+type DeposerPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function DeposerPage({ searchParams }: DeposerPageProps) {
+  await requireUser("/deposer");
+  const query = await searchParams;
+  const errorCode = typeof query.error === "string" ? query.error : null;
+  const error = humanizeAppError(errorCode);
+
+  return (
+    <div className="container-page max-w-3xl space-y-6">
+      <header className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Depot d&apos;annonce</p>
+        <h1 className="font-serif text-4xl text-stone-900">Publier une chambre en quelques minutes</h1>
+        <p className="text-stone-700">Renseigne l&apos;essentiel d&apos;abord, puis ajoute les options si tu veux.</p>
+      </header>
+
+      {error ? (
+        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Erreur: {error}
+        </p>
+      ) : null}
+
+      <form action={createListingAction} className="panel space-y-6 p-6">
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-stone-900">Infos principales</h2>
+          <CreateListingBasics />
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-stone-900">Prix</h2>
+          <div className="grid gap-4 sm:grid-cols-1">
+            <div>
+              <label className="label" htmlFor="rent_eur">
+                Loyer (EUR)
+              </label>
+              <input id="rent_eur" name="rent_eur" type="number" min={1} required className="input" />
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-stone-900">Conditions (optionnel)</h2>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label className="label" htmlFor="charges_eur">
+                Charges
+              </label>
+              <input id="charges_eur" name="charges_eur" type="number" min={0} className="input" />
+            </div>
+            <div>
+              <label className="label" htmlFor="lease_type">
+                Type de bail
+              </label>
+              <input id="lease_type" name="lease_type" className="input" placeholder="Bail 1 an" />
+            </div>
+            <div>
+              <label className="label" htmlFor="min_duration_months">
+                Duree min (mois)
+              </label>
+              <input id="min_duration_months" name="min_duration_months" type="number" min={0} className="input" />
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-stone-900">Description du logement</h2>
+          <div className="space-y-4">
+            <div>
+              <p className="label m-0">Proche des transports en commun</p>
+              <div className="mt-2 flex flex-wrap gap-4 text-sm text-stone-700">
+                {TRANSPORT_MODE_OPTIONS.map((option) => (
+                  <label key={option.value} className="inline-flex items-center gap-2">
+                    <input type="checkbox" name="transport_modes" value={option.value} />
+                    {option.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="label" htmlFor="transport_lines">
+                Lignes (bus, tram, metro)
+              </label>
+              <input id="transport_lines" name="transport_lines" className="input" placeholder="Ex: 2, 6, 81, 95" />
+            </div>
+
+            <div>
+              <p className="label m-0">Environnement</p>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2 text-sm text-stone-700">
+                {AREA_CONTEXT_OPTIONS.map((option) => (
+                  <label key={option.value} className="inline-flex items-center gap-2">
+                    <input type="checkbox" name="area_contexts" value={option.value} />
+                    {option.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="label" htmlFor="housing_description_extra">
+                Infos complementaires
+              </label>
+              <textarea
+                id="housing_description_extra"
+                name="housing_description_extra"
+                rows={4}
+                className="input"
+                placeholder="Ce que les candidats doivent savoir sur le bien"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-stone-900">Ambiance de la coloc</h2>
+          <div className="space-y-4">
+            <div className="grid gap-2 sm:grid-cols-2 text-sm text-stone-700">
+              {VIBE_TAG_OPTIONS.map((option) => (
+                <label key={option.value} className="inline-flex items-center gap-2">
+                  <input type="checkbox" name="vibe_tags" value={option.value} />
+                  {option.label}
+                </label>
+              ))}
+            </div>
+            <div>
+              <label className="label" htmlFor="flatshare_vibe_other">
+                Autre
+              </label>
+              <textarea
+                id="flatshare_vibe_other"
+                name="flatshare_vibe_other"
+                rows={3}
+                className="input"
+                placeholder="Ajoute des details libres si besoin"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-stone-900">Photos et contact</h2>
+          <div className="space-y-4">
+            <PhotoFields mode="create" />
+            <div className="space-y-2">
+              <p className="label m-0">Moyens de contact</p>
+              <div className="flex flex-wrap gap-4 text-sm text-stone-700">
+                <label className="inline-flex items-center gap-2">
+                  <input type="checkbox" name="contact_methods" value="email" defaultChecked />
+                  Email
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input type="checkbox" name="contact_methods" value="phone" />
+                  Telephone (WhatsApp)
+                </label>
+              </div>
+              <p className="text-xs text-stone-500">Choisis au moins un moyen de contact.</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="label" htmlFor="contact_whatsapp">
+                  Numero WhatsApp (si coche)
+                </label>
+                <input id="contact_whatsapp" name="contact_whatsapp" className="input" placeholder="+324..." />
+              </div>
+              <div>
+                <label className="label" htmlFor="contact_email">
+                  Email (si coche)
+                </label>
+                <input
+                  id="contact_email"
+                  name="contact_email"
+                  type="email"
+                  className="input"
+                  placeholder="toi@email.com"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="flex items-center justify-end gap-3">
+          <button type="submit" className="btn btn-primary">
+            Publier l&apos;annonce
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}

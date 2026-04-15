@@ -1,0 +1,21 @@
+{
+  "full_name": "Sam Dupont",
+  "whatsapp": "+32470000002",
+  "segment": "etudiant",
+  "budget_max_eur": 820,
+  "preferred_districts": ["Ixelles"],
+  "move_in_date": "2026-05-08",
+  "target_stay_months": 10,
+  "lifestyle_cleanliness": 4,
+  "lifestyle_noise": 3,
+  "lifestyle_sociability": 4,
+  "lifestyle_guests": 3,
+  "lifestyle_schedule": 4,
+  "lifestyle_remote_work": 1,
+  "smoker": "yes",
+  "has_pet": false,
+  "pet_type": "",
+  "non_negotiables": [],
+  "consent_rgpd": true,
+  "follow_up_count": 0
+}

@@ -1,0 +1,21 @@
+{
+  "full_name": "Nora Janssens",
+  "whatsapp": "+32470000003",
+  "segment": "jeune_actif",
+  "budget_max_eur": 950,
+  "preferred_districts": ["Ixelles", "Etterbeek"],
+  "move_in_date": "2026-05-20",
+  "target_stay_months": 12,
+  "lifestyle_cleanliness": 4,
+  "lifestyle_noise": 2,
+  "lifestyle_sociability": 3,
+  "lifestyle_guests": 2,
+  "lifestyle_schedule": 3,
+  "lifestyle_remote_work": 5,
+  "smoker": "no",
+  "has_pet": false,
+  "pet_type": "",
+  "non_negotiables": [],
+  "consent_rgpd": true,
+  "follow_up_count": 0
+}
