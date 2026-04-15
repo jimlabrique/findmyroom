@@ -21,6 +21,13 @@ function issueFromMessage(message: string) {
     return "Base non migree: colonne `expires_at` manquante.";
   }
   if (
+    includesAll(message, ["room_details", "column"]) ||
+    includesAll(message, ["total_rooms", "column"]) ||
+    includesAll(message, ["animals_policy", "column"])
+  ) {
+    return "Base non migree: nouveaux champs annonce manquants (room_details/total_rooms/animals_policy).";
+  }
+  if (
     includesAll(message, ["listing_events", "relation"]) ||
     includesAll(message, ["listing_events", "table"])
   ) {
@@ -42,7 +49,10 @@ async function computeSystemReadiness(): Promise<SystemReadiness> {
   try {
     const supabase = await createServerSupabaseClient();
 
-    const { error: listingsError } = await supabase.from("listings").select("id, photo_captions, expires_at").limit(1);
+    const { error: listingsError } = await supabase
+      .from("listings")
+      .select("id, photo_captions, expires_at, room_details, total_rooms, animals_policy")
+      .limit(1);
     if (listingsError) {
       const issue = issueFromMessage(listingsError.message);
       if (issue) {

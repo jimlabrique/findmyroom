@@ -12,6 +12,12 @@ export function humanizeAppError(errorCode: string | null) {
       return "Indique une taille pour chaque chambre disponible.";
     case "room_sizes_invalid":
       return "Les tailles de chambre doivent etre des nombres positifs.";
+    case "room_details_invalid":
+      return "Chaque chambre doit avoir taille, prix, meublee, SDB, exterieur et vue.";
+    case "total_rooms_invalid":
+      return "Le total de chambres doit etre superieur ou egal aux chambres disponibles.";
+    case "schema_missing_listing_fields":
+      return "La base doit etre migree pour les nouveaux champs annonce (room_details, animaux, total_rooms...).";
     case "vibe_required":
       return "Choisis au moins une option d'ambiance ou complete le champ Autre.";
     case "contact_method_required":

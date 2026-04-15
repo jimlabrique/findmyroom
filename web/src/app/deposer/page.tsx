@@ -4,7 +4,9 @@ import { PhotoFields } from "@/components/photo-fields";
 import { humanizeAppError } from "@/lib/errors";
 import { CreateListingBasics } from "@/components/create-listing-basics";
 import {
+  ANIMALS_POLICY_OPTIONS,
   AREA_CONTEXT_OPTIONS,
+  CURRENT_FLATMATES_OPTIONS,
   TRANSPORT_MODE_OPTIONS,
   VIBE_TAG_OPTIONS,
 } from "@/lib/listing-form-options";
@@ -42,19 +44,7 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-stone-900">Prix</h2>
-          <div className="grid gap-4 sm:grid-cols-1">
-            <div>
-              <label className="label" htmlFor="rent_eur">
-                Loyer (EUR)
-              </label>
-              <input id="rent_eur" name="rent_eur" type="number" min={1} required className="input" />
-            </div>
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-stone-900">Conditions (optionnel)</h2>
+          <h2 className="text-lg font-semibold text-stone-900">Conditions</h2>
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label className="label" htmlFor="charges_eur">
@@ -129,6 +119,42 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-stone-900">Ambiance de la coloc</h2>
           <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label className="label" htmlFor="animals_policy">
+                  Animaux autorises
+                </label>
+                <select id="animals_policy" name="animals_policy" required className="input" defaultValue="negotiable">
+                  {ANIMALS_POLICY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="label" htmlFor="current_flatmates">
+                  Coloc actuelle
+                </label>
+                <select id="current_flatmates" name="current_flatmates" className="input" defaultValue="mixte">
+                  {CURRENT_FLATMATES_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="label" htmlFor="lgbtq_friendly">
+                  LGBTQIA+ friendly
+                </label>
+                <select id="lgbtq_friendly" name="lgbtq_friendly" className="input" defaultValue="yes">
+                  <option value="yes">Oui</option>
+                  <option value="no">Non</option>
+                </select>
+              </div>
+            </div>
+
             <div className="grid gap-2 sm:grid-cols-2 text-sm text-stone-700">
               {VIBE_TAG_OPTIONS.map((option) => (
                 <label key={option.value} className="inline-flex items-center gap-2">

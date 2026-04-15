@@ -2,7 +2,21 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getListingBySlug, searchListings } from "@/lib/data/listings";
 import { trackListingEvent } from "@/lib/data/listing-events";
-import { getListingContactOptions, listingPhotosFromRow } from "@/lib/listing";
+import {
+  getListingContactOptions,
+  listingAnimalsPolicyLabel,
+  listingPhotosFromRow,
+  listingPriceRangeLabel,
+  listingRoomDetailsFromRow,
+  listingRoomsSummary,
+} from "@/lib/listing";
+import {
+  CURRENT_FLATMATES_OPTIONS,
+  ROOM_BATHROOM_OPTIONS,
+  ROOM_FURNISHING_OPTIONS,
+  ROOM_OUTDOOR_OPTIONS,
+  ROOM_VIEW_OPTIONS,
+} from "@/lib/listing-form-options";
 import { ListingCard } from "@/components/listing-card";
 
 type ListingDetailPageProps = {
@@ -50,6 +64,15 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
   const phoneContactOption = contactOptions.find((option) => option.method === "phone");
   const hasEmailContact = contactOptions.some((option) => option.method === "email");
   const photos = listingPhotosFromRow(listing);
+  const roomDetails = listingRoomDetailsFromRow(listing);
+  const animalsPolicy = listingAnimalsPolicyLabel(listing.animals_policy);
+  const flatmatesLabel = listing.current_flatmates
+    ? CURRENT_FLATMATES_OPTIONS.find((option) => option.value === listing.current_flatmates)?.label
+    : undefined;
+  const furnishingLabels = new Map(ROOM_FURNISHING_OPTIONS.map((option) => [option.value, option.label]));
+  const bathroomLabels = new Map(ROOM_BATHROOM_OPTIONS.map((option) => [option.value, option.label]));
+  const outdoorLabels = new Map(ROOM_OUTDOOR_OPTIONS.map((option) => [option.value, option.label]));
+  const viewLabels = new Map(ROOM_VIEW_OPTIONS.map((option) => [option.value, option.label]));
   const similarListings = (await searchListings({ city: listing.city, sort: "latest" }))
     .filter((item) => item.id !== listing.id)
     .slice(0, 3);
@@ -105,14 +128,29 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
                 <span className="font-semibold">Commune:</span> {listing.city}
               </p>
               <p>
-                <span className="font-semibold">Loyer:</span> {listing.rent_eur} EUR / mois
+                <span className="font-semibold">Loyer:</span> {listingPriceRangeLabel(listing)}
               </p>
               <p>
-                <span className="font-semibold">Chambres dispo:</span> {listing.available_rooms}
+                <span className="font-semibold">Chambres:</span> {listingRoomsSummary(listing)}
               </p>
               <p>
                 <span className="font-semibold">Disponibilite:</span> {listing.available_from}
               </p>
+              {animalsPolicy ? (
+                <p>
+                  <span className="font-semibold">Animaux:</span> {animalsPolicy}
+                </p>
+              ) : null}
+              {flatmatesLabel ? (
+                <p>
+                  <span className="font-semibold">Coloc actuelle:</span> {flatmatesLabel}
+                </p>
+              ) : null}
+              {listing.lgbtq_friendly !== null ? (
+                <p>
+                  <span className="font-semibold">LGBTQIA+ friendly:</span> {listing.lgbtq_friendly ? "Oui" : "Non"}
+                </p>
+              ) : null}
               {listing.charges_eur !== null ? (
                 <p>
                   <span className="font-semibold">Charges:</span> {listing.charges_eur} EUR
@@ -124,6 +162,40 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
                 </p>
               ) : null}
             </div>
+
+            {roomDetails.length ? (
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-stone-900">Details des chambres disponibles</h2>
+                <div className="overflow-x-auto rounded-xl border border-stone-200">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-stone-50 text-left text-stone-600">
+                      <tr>
+                        <th className="px-3 py-2 font-medium">Chambre</th>
+                        <th className="px-3 py-2 font-medium">Taille</th>
+                        <th className="px-3 py-2 font-medium">Prix</th>
+                        <th className="px-3 py-2 font-medium">Meublee</th>
+                        <th className="px-3 py-2 font-medium">SDB</th>
+                        <th className="px-3 py-2 font-medium">Exterieur</th>
+                        <th className="px-3 py-2 font-medium">Vue</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-stone-800">
+                      {roomDetails.map((room) => (
+                        <tr key={`room-${room.index}`} className="border-t border-stone-100">
+                          <td className="px-3 py-2">Chambre {room.index}</td>
+                          <td className="px-3 py-2">{room.size_sqm}m2</td>
+                          <td className="px-3 py-2">{room.price_eur} EUR/mois</td>
+                          <td className="px-3 py-2">{furnishingLabels.get(room.furnishing) ?? room.furnishing}</td>
+                          <td className="px-3 py-2">{bathroomLabels.get(room.bathroom) ?? room.bathroom}</td>
+                          <td className="px-3 py-2">{outdoorLabels.get(room.outdoor) ?? room.outdoor}</td>
+                          <td className="px-3 py-2">{viewLabels.get(room.view) ?? room.view}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : null}
 
             <div className="space-y-2">
               <h2 className="text-lg font-semibold text-stone-900">Description du logement</h2>

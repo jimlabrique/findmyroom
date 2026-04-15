@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
-import { Fraunces, Manrope } from "next/font/google";
+import { Lato } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
 import { getSystemReadiness } from "@/lib/system-readiness";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
-  subsets: ["latin"],
-});
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const lato = Lato({
+  variable: "--font-lato",
+  weight: ["400", "700", "900"],
   subsets: ["latin"],
 });
 
@@ -29,7 +25,7 @@ export default async function RootLayout({
   const readiness = await getSystemReadiness();
 
   return (
-    <html lang="fr" className={`${manrope.variable} ${fraunces.variable} h-full antialiased`}>
+    <html lang="fr" className={`${lato.variable} h-full antialiased`}>
       <body className="min-h-full bg-background text-foreground">
         <div className="flex min-h-full flex-col">
           <SiteHeader />

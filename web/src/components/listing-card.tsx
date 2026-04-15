@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Listing } from "@/lib/listing";
+import { listingPriceRangeLabel, listingRoomsSummary, type Listing } from "@/lib/listing";
 import { ListingCardCarousel } from "@/components/listing-card-carousel";
 
 type ListingCardProps = {
@@ -10,8 +10,10 @@ type ListingCardProps = {
     | "city"
     | "rent_eur"
     | "available_rooms"
+    | "total_rooms"
     | "available_from"
     | "photo_urls"
+    | "room_details"
     | "created_at"
   >;
 };
@@ -35,8 +37,8 @@ export function ListingCard({ listing }: ListingCardProps) {
 
         <div className="grid gap-2 text-sm text-stone-700 sm:grid-cols-2">
           <p className="font-medium">{listing.city}</p>
-          <p className="sm:text-right">{listing.rent_eur} EUR/mois</p>
-          <p>{listing.available_rooms} chambre(s)</p>
+          <p className="sm:text-right">{listingPriceRangeLabel(listing)}</p>
+          <p>{listingRoomsSummary(listing)}</p>
           <p className="sm:text-right">Dispo {listing.available_from}</p>
         </div>
 

@@ -12,6 +12,11 @@ export interface Database {
           rent_eur: number;
           city: string;
           available_rooms: number;
+          total_rooms: number;
+          room_details: Json;
+          animals_policy: "yes" | "no" | "negotiable";
+          current_flatmates: string | null;
+          lgbtq_friendly: boolean | null;
           available_from: string;
           housing_description: string;
           flatshare_vibe: string;
@@ -35,6 +40,11 @@ export interface Database {
           rent_eur: number;
           city: string;
           available_rooms: number;
+          total_rooms: number;
+          room_details?: Json;
+          animals_policy?: "yes" | "no" | "negotiable";
+          current_flatmates?: string | null;
+          lgbtq_friendly?: boolean | null;
           available_from: string;
           housing_description: string;
           flatshare_vibe: string;
@@ -55,6 +65,11 @@ export interface Database {
           rent_eur?: number;
           city?: string;
           available_rooms?: number;
+          total_rooms?: number;
+          room_details?: Json;
+          animals_policy?: "yes" | "no" | "negotiable";
+          current_flatmates?: string | null;
+          lgbtq_friendly?: boolean | null;
           available_from?: string;
           housing_description?: string;
           flatshare_vibe?: string;

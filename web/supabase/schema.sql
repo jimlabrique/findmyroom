@@ -8,6 +8,11 @@ create table if not exists public.listings (
   rent_eur integer not null check (rent_eur > 0),
   city text not null,
   available_rooms smallint not null check (available_rooms > 0),
+  total_rooms smallint not null check (total_rooms > 0 and total_rooms >= available_rooms),
+  room_details jsonb not null default '[]'::jsonb,
+  animals_policy text not null default 'negotiable' check (animals_policy in ('yes', 'no', 'negotiable')),
+  current_flatmates text,
+  lgbtq_friendly boolean,
   available_from date not null,
   housing_description text not null,
   flatshare_vibe text not null,
@@ -34,6 +39,21 @@ add column if not exists photo_captions text[] not null default '{}'::text[];
 alter table public.listings
 add column if not exists expires_at date not null default ((current_date + interval '30 day')::date);
 
+alter table public.listings
+add column if not exists total_rooms smallint;
+
+alter table public.listings
+add column if not exists room_details jsonb not null default '[]'::jsonb;
+
+alter table public.listings
+add column if not exists animals_policy text;
+
+alter table public.listings
+add column if not exists current_flatmates text;
+
+alter table public.listings
+add column if not exists lgbtq_friendly boolean;
+
 update public.listings
 set photo_captions = array(
   select coalesce(photo_captions[idx], '')
@@ -44,12 +64,57 @@ update public.listings
 set expires_at = coalesce(expires_at, (created_at::date + interval '30 day')::date)
 where expires_at is null;
 
+update public.listings
+set total_rooms = coalesce(total_rooms, available_rooms)
+where total_rooms is null;
+
+update public.listings
+set room_details = coalesce(room_details, '[]'::jsonb)
+where room_details is null;
+
+update public.listings
+set animals_policy = coalesce(animals_policy, 'negotiable')
+where animals_policy is null;
+
+alter table public.listings
+alter column total_rooms set default 1;
+
+alter table public.listings
+alter column total_rooms set not null;
+
+alter table public.listings
+alter column animals_policy set default 'negotiable';
+
+alter table public.listings
+alter column animals_policy set not null;
+
 alter table public.listings
 drop constraint if exists photo_arrays_same_length;
 
 alter table public.listings
 add constraint photo_arrays_same_length
 check (coalesce(array_length(photo_urls, 1), 0) = coalesce(array_length(photo_captions, 1), 0));
+
+alter table public.listings
+drop constraint if exists listings_total_rooms_valid;
+
+alter table public.listings
+add constraint listings_total_rooms_valid
+check (total_rooms > 0 and total_rooms >= available_rooms);
+
+alter table public.listings
+drop constraint if exists listings_room_details_is_array;
+
+alter table public.listings
+add constraint listings_room_details_is_array
+check (jsonb_typeof(room_details) = 'array');
+
+alter table public.listings
+drop constraint if exists listings_animals_policy_valid;
+
+alter table public.listings
+add constraint listings_animals_policy_valid
+check (animals_policy in ('yes', 'no', 'negotiable'));
 
 create index if not exists listings_status_created_idx on public.listings (status, created_at desc);
 create index if not exists listings_status_expires_idx on public.listings (status, expires_at);

@@ -46,3 +46,40 @@ export const VIBE_TAG_OPTIONS = [
   { value: "no_smoking", label: "No smoking" },
   { value: "soirees_moderees", label: "Soirees moderees" },
 ] as const;
+
+export const ANIMALS_POLICY_OPTIONS = [
+  { value: "yes", label: "Oui" },
+  { value: "no", label: "Non" },
+  { value: "negotiable", label: "A discuter" },
+] as const;
+
+export const CURRENT_FLATMATES_OPTIONS = [
+  { value: "mixte", label: "Mixte" },
+  { value: "majorite_filles", label: "Majorite filles" },
+  { value: "majorite_garcons", label: "Majorite garcons" },
+  { value: "non_precise", label: "Non precise" },
+] as const;
+
+export const ROOM_FURNISHING_OPTIONS = [
+  { value: "furnished", label: "Meublee" },
+  { value: "unfurnished", label: "Non meublee" },
+  { value: "partially_furnished", label: "Partiellement meublee" },
+] as const;
+
+export const ROOM_BATHROOM_OPTIONS = [
+  { value: "private", label: "SDB privative" },
+  { value: "shared", label: "SDB partagee" },
+] as const;
+
+export const ROOM_OUTDOOR_OPTIONS = [
+  { value: "balcony", label: "Balcon" },
+  { value: "terrace", label: "Terrasse" },
+  { value: "none", label: "Aucun" },
+] as const;
+
+export const ROOM_VIEW_OPTIONS = [
+  { value: "garden", label: "Vue jardin" },
+  { value: "courtyard", label: "Vue cour" },
+  { value: "street", label: "Vue rue" },
+  { value: "other", label: "Autre" },
+] as const;

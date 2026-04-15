@@ -31,6 +31,18 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const maxMinDuration = readPositiveNumber(query.max_min_duration_months);
   const contactRaw = readString(query.contact);
   const contact = contactRaw === "email" || contactRaw === "phone" ? contactRaw : undefined;
+  const animalsPolicyRaw = readString(query.animals_policy);
+  const animalsPolicy =
+    animalsPolicyRaw === "yes" || animalsPolicyRaw === "no" || animalsPolicyRaw === "negotiable"
+      ? animalsPolicyRaw
+      : undefined;
+  const roomFurnishingRaw = readString(query.room_furnishing);
+  const roomFurnishing =
+    roomFurnishingRaw === "furnished" || roomFurnishingRaw === "unfurnished" || roomFurnishingRaw === "partially_furnished"
+      ? roomFurnishingRaw
+      : undefined;
+  const roomBathroomRaw = readString(query.room_bathroom);
+  const roomBathroom = roomBathroomRaw === "private" || roomBathroomRaw === "shared" ? roomBathroomRaw : undefined;
   const sortRaw = readString(query.sort);
   const sort = sortRaw === "price_asc" || sortRaw === "price_desc" || sortRaw === "available_asc" ? sortRaw : "latest";
 
@@ -44,6 +56,9 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     leaseType: leaseType || undefined,
     maxMinDuration,
     contactMethod: contact,
+    animalsPolicy,
+    roomFurnishing,
+    roomBathroom,
     sort,
   });
 
@@ -108,6 +123,23 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
             <option value="">Contact: tous</option>
             <option value="phone">WhatsApp</option>
             <option value="email">Email</option>
+          </select>
+          <select name="animals_policy" className="input lg:col-span-2" defaultValue={animalsPolicy ?? ""}>
+            <option value="">Animaux: tous</option>
+            <option value="yes">Animaux oui</option>
+            <option value="no">Animaux non</option>
+            <option value="negotiable">Animaux a discuter</option>
+          </select>
+          <select name="room_furnishing" className="input lg:col-span-2" defaultValue={roomFurnishing ?? ""}>
+            <option value="">Meublee: toutes</option>
+            <option value="furnished">Meublee</option>
+            <option value="unfurnished">Non meublee</option>
+            <option value="partially_furnished">Partiellement meublee</option>
+          </select>
+          <select name="room_bathroom" className="input lg:col-span-2" defaultValue={roomBathroom ?? ""}>
+            <option value="">SDB: toutes</option>
+            <option value="private">SDB privative</option>
+            <option value="shared">SDB partagee</option>
           </select>
           <select name="sort" className="input lg:col-span-2" defaultValue={sort}>
             <option value="latest">Plus recentes</option>

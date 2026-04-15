@@ -1,8 +1,15 @@
 import {
+  ANIMALS_POLICY_OPTIONS,
   AREA_CONTEXT_OPTIONS,
+  CURRENT_FLATMATES_OPTIONS,
+  ROOM_BATHROOM_OPTIONS,
+  ROOM_FURNISHING_OPTIONS,
+  ROOM_OUTDOOR_OPTIONS,
+  ROOM_VIEW_OPTIONS,
   TRANSPORT_MODE_OPTIONS,
   VIBE_TAG_OPTIONS,
 } from "@/lib/listing-form-options";
+import type { AnimalsPolicy, ListingRoomDetail } from "@/lib/listing";
 
 function cleanText(value: string | null | undefined) {
   return `${value ?? ""}`.trim();
@@ -64,14 +71,14 @@ export function buildAutoListingTitle({
 
 export function buildStructuredHousingDescription({
   neighborhood,
-  roomSizesSqm,
+  roomDetails,
   transportModes,
   transportLines,
   areaContexts,
   extraDetails,
 }: {
   neighborhood: string;
-  roomSizesSqm: number[];
+  roomDetails: ListingRoomDetail[];
   transportModes: string[];
   transportLines: string | null;
   areaContexts: string[];
@@ -79,9 +86,12 @@ export function buildStructuredHousingDescription({
 }) {
   const transportLabels = optionLabelMap(TRANSPORT_MODE_OPTIONS);
   const areaLabels = optionLabelMap(AREA_CONTEXT_OPTIONS);
+  const furnishingLabels = optionLabelMap(ROOM_FURNISHING_OPTIONS);
+  const bathroomLabels = optionLabelMap(ROOM_BATHROOM_OPTIONS);
+  const outdoorLabels = optionLabelMap(ROOM_OUTDOOR_OPTIONS);
+  const viewLabels = optionLabelMap(ROOM_VIEW_OPTIONS);
 
   const safeNeighborhood = cleanText(neighborhood);
-  const roomSizesLabel = formatRoomSizesLabel(roomSizesSqm);
   const selectedTransport = transportModes
     .map((mode) => transportLabels.get(mode))
     .filter((label): label is string => Boolean(label));
@@ -91,9 +101,23 @@ export function buildStructuredHousingDescription({
 
   const lines = [
     `Quartier: ${safeNeighborhood || "Non precise"}`,
-    `Tailles des chambres: ${roomSizesLabel}`,
+    `Chambres disponibles: ${roomDetails.length}`,
     `Proche des transports en commun: ${selectedTransport.length ? selectedTransport.join(", ") : "Non precise"}`,
   ];
+
+  if (roomDetails.length) {
+    lines.push("");
+    lines.push("Details par chambre:");
+    for (const room of roomDetails) {
+      const furnishing = furnishingLabels.get(room.furnishing) ?? room.furnishing;
+      const bathroom = bathroomLabels.get(room.bathroom) ?? room.bathroom;
+      const outdoor = outdoorLabels.get(room.outdoor) ?? room.outdoor;
+      const view = viewLabels.get(room.view) ?? room.view;
+      lines.push(
+        `- Chambre ${room.index}: ${room.size_sqm}m2, ${room.price_eur} EUR/mois, ${furnishing}, ${bathroom}, ${outdoor}, ${view}`,
+      );
+    }
+  }
 
   const safeTransportLines = cleanText(transportLines);
   if (safeTransportLines) {
@@ -115,16 +139,32 @@ export function buildStructuredHousingDescription({
 export function buildStructuredFlatshareVibe({
   vibeTags,
   vibeOther,
+  currentFlatmates,
+  lgbtqFriendly,
+  animalsPolicy,
 }: {
   vibeTags: string[];
   vibeOther: string | null;
+  currentFlatmates: string | null;
+  lgbtqFriendly: boolean;
+  animalsPolicy: AnimalsPolicy;
 }) {
   const vibeLabels = optionLabelMap(VIBE_TAG_OPTIONS);
+  const flatmatesLabels = optionLabelMap(CURRENT_FLATMATES_OPTIONS);
+  const animalsLabels = optionLabelMap(ANIMALS_POLICY_OPTIONS);
   const selectedVibes = vibeTags
     .map((tag) => vibeLabels.get(tag))
     .filter((label): label is string => Boolean(label));
 
   const lines: string[] = [];
+  lines.push(`Animaux autorises: ${animalsLabels.get(animalsPolicy) ?? animalsPolicy}`);
+  lines.push(`LGBTQIA+ friendly: ${lgbtqFriendly ? "Oui" : "Non"}`);
+
+  const safeFlatmates = cleanText(currentFlatmates);
+  if (safeFlatmates) {
+    lines.push(`Coloc actuelle: ${flatmatesLabels.get(safeFlatmates) ?? safeFlatmates}`);
+  }
+
   if (selectedVibes.length) {
     lines.push(`Ambiance: ${selectedVibes.join(", ")}`);
   }

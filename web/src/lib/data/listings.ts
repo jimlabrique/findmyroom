@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { Listing } from "@/lib/listing";
+import { listingRoomDetailsFromRow, type Listing } from "@/lib/listing";
 import { BRUSSELS_COMMUNES } from "@/lib/listing-form-options";
 
 type ListingFilters = {
@@ -14,6 +14,9 @@ type ListingFilters = {
   leaseType?: string;
   maxMinDuration?: number;
   contactMethod?: "phone" | "email";
+  animalsPolicy?: "yes" | "no" | "negotiable";
+  roomFurnishing?: "furnished" | "unfurnished" | "partially_furnished";
+  roomBathroom?: "private" | "shared";
   sort?: "latest" | "price_asc" | "price_desc" | "available_asc";
 };
 
@@ -90,6 +93,22 @@ function applyPostFilters(rows: Listing[], filters: ListingFilters) {
     filtered = filtered.filter((listing) => hasText(listing.contact_email));
   } else if (filters.contactMethod === "phone") {
     filtered = filtered.filter((listing) => hasText(listing.contact_whatsapp));
+  }
+
+  if (filters.animalsPolicy) {
+    filtered = filtered.filter((listing) => listing.animals_policy === filters.animalsPolicy);
+  }
+
+  if (filters.roomFurnishing) {
+    filtered = filtered.filter((listing) =>
+      listingRoomDetailsFromRow(listing).some((room) => room.furnishing === filters.roomFurnishing),
+    );
+  }
+
+  if (filters.roomBathroom) {
+    filtered = filtered.filter((listing) =>
+      listingRoomDetailsFromRow(listing).some((room) => room.bathroom === filters.roomBathroom),
+    );
   }
 
   return filtered;
