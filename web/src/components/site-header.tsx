@@ -26,7 +26,14 @@ export async function SiteHeader() {
     <header className="border-b border-stone-200 bg-white/90">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Link href="/" className="inline-flex items-center">
-          <Image src="/findmyrooom-logo.png" alt="findmyroom.be" width={190} height={37} priority />
+          <Image
+            src="/findmyrooom-logo.png"
+            alt="FindMyRoom"
+            width={220}
+            height={42}
+            className="h-10 w-auto sm:h-12"
+            priority
+          />
         </Link>
 
         <nav className="flex items-center gap-2 text-sm sm:gap-3">
@@ -34,7 +41,7 @@ export async function SiteHeader() {
             Annonces
           </Link>
           <Link href="/deposer" className="rounded-md px-3 py-2 text-stone-700 hover:bg-[#fee9e6] hover:text-[#ba4d40]">
-            Deposer
+            Déposer
           </Link>
 
           {user ? (
@@ -63,7 +70,7 @@ export async function SiteHeader() {
                   type="submit"
                   className="cursor-pointer rounded-md border border-[#efc6c1] px-3 py-2 text-stone-700 hover:bg-[#fee9e6] hover:text-[#ba4d40]"
                 >
-                  Se deconnecter
+                  Se déconnecter
                 </button>
               </form>
             </>

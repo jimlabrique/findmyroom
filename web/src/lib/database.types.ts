@@ -39,6 +39,7 @@ export interface Database {
           user_id: string;
           slug: string;
           title: string;
+          listing_type: "colocation" | "studio";
           rent_eur: number;
           city: string;
           available_rooms: number;
@@ -67,6 +68,7 @@ export interface Database {
           user_id: string;
           slug: string;
           title: string;
+          listing_type?: "colocation" | "studio";
           rent_eur: number;
           city: string;
           available_rooms: number;
@@ -92,6 +94,7 @@ export interface Database {
         };
         Update: {
           title?: string;
+          listing_type?: "colocation" | "studio";
           rent_eur?: number;
           city?: string;
           available_rooms?: number;

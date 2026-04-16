@@ -12,6 +12,7 @@ export type Listing = Database["public"]["Tables"]["listings"]["Row"];
 export type ListingInsert = Database["public"]["Tables"]["listings"]["Insert"];
 export type ListingUpdate = Database["public"]["Tables"]["listings"]["Update"];
 export type ListingPhoto = { url: string; caption: string };
+export type ListingType = "colocation" | "studio";
 export type RoomFurnishing = "furnished" | "unfurnished" | "partially_furnished";
 export type RoomBathroom = "private" | "shared";
 export type RoomOutdoor = "balcony" | "terrace" | "garden" | "none";
@@ -128,7 +129,10 @@ export function listingPriceRangeLabel(listing: Pick<Listing, "rent_eur" | "room
   return `${minPrice}-${maxPrice} EUR/mois`;
 }
 
-export function listingRoomsSummary(listing: Pick<Listing, "available_rooms" | "total_rooms">) {
+export function listingRoomsSummary(listing: Pick<Listing, "available_rooms" | "total_rooms" | "listing_type">) {
+  if (listing.listing_type === "studio") {
+    return "Studio 1 personne";
+  }
   if (listing.total_rooms > listing.available_rooms) {
     return `${listing.available_rooms} dispo / ${listing.total_rooms} chambres`;
   }
@@ -193,12 +197,12 @@ export function getListingContactOptions(
     const digitsOnly = listing.contact_whatsapp.replace(/[^\d]/g, "");
     if (digitsOnly) {
       const text = encodeURIComponent(
-        `Bonjour, je suis interesse par votre annonce "${listing.title}" a ${listing.city}.`,
+        `Bonjour, je suis intéressé par votre annonce "${listing.title}" à ${listing.city}.`,
       );
       options.push({
         method: "phone",
         href: `https://wa.me/${digitsOnly}?text=${text}`,
-        label: "Ecrire sur WhatsApp",
+        label: "Écrire sur WhatsApp",
         channelLabel: "WhatsApp",
       });
     }
@@ -206,7 +210,7 @@ export function getListingContactOptions(
 
   if (listing.contact_email) {
     const subject = encodeURIComponent(`Annonce coloc: ${listing.title}`);
-    const body = encodeURIComponent(`Bonjour,\n\nJe suis interesse par votre annonce a ${listing.city}.\n`);
+    const body = encodeURIComponent(`Bonjour,\n\nJe suis intéressé par votre annonce à ${listing.city}.\n`);
     options.push({
       method: "email",
       href: `mailto:${listing.contact_email}?subject=${subject}&body=${body}`,
@@ -231,4 +235,20 @@ export function listingStatusLabel(listing: Pick<Listing, "status" | "expires_at
     return "expired";
   }
   return listing.status;
+}
+
+export function listingTypeLabel(type: string | null | undefined) {
+  if (type === "studio") return "Studio";
+  return "Colocation";
+}
+
+export function listingNeighborhoodFromHousingDescription(housingDescription: string | null | undefined) {
+  const source = `${housingDescription ?? ""}`.trim();
+  if (!source) return null;
+  const lines = source.split(/\r?\n/);
+  const neighborhoodLine = lines.find((line) => /^\s*quartier\s*:/i.test(line));
+  if (!neighborhoodLine) return null;
+  const rawNeighborhood = neighborhoodLine.replace(/^\s*quartier\s*:\s*/i, "").trim();
+  if (!rawNeighborhood || /^non pr[ée]cis[ée]$/i.test(rawNeighborhood)) return null;
+  return rawNeighborhood;
 }

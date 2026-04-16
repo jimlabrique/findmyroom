@@ -4,6 +4,12 @@ import { useMemo, useState } from "react";
 import { buildAutoListingTitle } from "@/lib/listing-composer";
 import {
   BRUSSELS_COMMUNES,
+  COMMON_SPACES_COLOCATION_OPTIONS,
+  COMMON_SPACES_STUDIO_OPTIONS,
+  getNeighborhoodsForCommune,
+  LISTING_TYPE_OPTIONS,
+  OTHER_NEIGHBORHOOD_LABEL,
+  OTHER_NEIGHBORHOOD_VALUE,
   ROOM_BATHROOM_OPTIONS,
   ROOM_FURNISHING_OPTIONS,
   ROOM_OUTDOOR_OPTIONS,
@@ -39,23 +45,29 @@ function normalizeRoomCount(value: string) {
 }
 
 export function CreateListingBasics() {
-  const [commune, setCommune] = useState("Bruxelles");
-  const [neighborhood, setNeighborhood] = useState("");
+  const [listingType, setListingType] = useState<"colocation" | "studio">("colocation");
+  const [commune, setCommune] = useState("Bruxelles-Ville");
+  const [neighborhood, setNeighborhood] = useState(getNeighborhoodsForCommune("Bruxelles-Ville")[0] ?? "");
+  const [customNeighborhood, setCustomNeighborhood] = useState("");
   const [availableRooms, setAvailableRooms] = useState(1);
   const [totalRooms, setTotalRooms] = useState(1);
   const [roomDrafts, setRoomDrafts] = useState<RoomDraft[]>([{ ...ROOM_DRAFT_DEFAULT }]);
   const [customTitle, setCustomTitle] = useState("");
   const [isTitleCustomized, setIsTitleCustomized] = useState(false);
+  const neighborhoodOptions = useMemo(() => getNeighborhoodsForCommune(commune), [commune]);
+  const commonSpacesOptions = listingType === "studio" ? COMMON_SPACES_STUDIO_OPTIONS : COMMON_SPACES_COLOCATION_OPTIONS;
+  const effectiveNeighborhood = neighborhood === OTHER_NEIGHBORHOOD_VALUE ? customNeighborhood : neighborhood;
 
   const autoTitle = useMemo(
     () =>
       buildAutoListingTitle({
+        listingType,
         commune,
         roomCount: availableRooms,
         roomSizesSqm: roomDrafts.map((room) => room.size_sqm),
-        neighborhood,
+        neighborhood: effectiveNeighborhood,
       }),
-    [commune, availableRooms, roomDrafts, neighborhood],
+    [listingType, commune, availableRooms, roomDrafts, effectiveNeighborhood],
   );
 
   const titleValue = isTitleCustomized ? customTitle : autoTitle;
@@ -87,6 +99,29 @@ export function CreateListingBasics() {
     setIsTitleCustomized(value.trim() !== autoTitle.trim());
   }
 
+  function handleCommuneChange(nextCommune: string) {
+    setCommune(nextCommune);
+    const nextNeighborhoods = getNeighborhoodsForCommune(nextCommune);
+    setNeighborhood(nextNeighborhoods[0] ?? "");
+    setCustomNeighborhood("");
+  }
+
+  function handleListingTypeChange(nextType: "colocation" | "studio") {
+    setListingType(nextType);
+    if (nextType === "studio") {
+      setAvailableRooms(1);
+      setTotalRooms(1);
+      setRoomDrafts((prev) => [prev[0] ?? { ...ROOM_DRAFT_DEFAULT }]);
+    }
+  }
+
+  function handleNeighborhoodChange(nextNeighborhood: string) {
+    setNeighborhood(nextNeighborhood);
+    if (nextNeighborhood !== OTHER_NEIGHBORHOOD_VALUE) {
+      setCustomNeighborhood("");
+    }
+  }
+
   function regenerateTitle() {
     setCustomTitle(autoTitle);
     setIsTitleCustomized(false);
@@ -94,6 +129,26 @@ export function CreateListingBasics() {
 
   return (
     <div className="space-y-4">
+      <div>
+        <label className="label" htmlFor="listing_type">
+          Type d&apos;annonce
+        </label>
+        <select
+          id="listing_type"
+          name="listing_type"
+          required
+          className="input"
+          value={listingType}
+          onChange={(event) => handleListingTypeChange(event.currentTarget.value as "colocation" | "studio")}
+        >
+          {LISTING_TYPE_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="space-y-2">
         <label className="label" htmlFor="title">
           Titre (auto, modifiable)
@@ -108,15 +163,17 @@ export function CreateListingBasics() {
             onChange={(event) => handleTitleChange(event.currentTarget.value)}
           />
           <button type="button" className="btn btn-ghost" onClick={regenerateTitle}>
-            Regenerer
+            Régénérer
           </button>
         </div>
-        <p className="text-xs text-stone-500">Format: Commune - chambres - tailles - quartier.</p>
+        <p className="text-xs text-stone-500">
+          Format: Commune - {listingType === "studio" ? "studio" : "chambres"} - tailles - quartier.
+        </p>
       </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="label" htmlFor="city">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="label" htmlFor="city">
             Commune
           </label>
           <select
@@ -125,7 +182,7 @@ export function CreateListingBasics() {
             required
             className="input"
             value={commune}
-            onChange={(event) => setCommune(event.currentTarget.value)}
+            onChange={(event) => handleCommuneChange(event.currentTarget.value)}
           >
             {BRUSSELS_COMMUNES.map((option) => (
               <option key={option} value={option}>
@@ -139,65 +196,109 @@ export function CreateListingBasics() {
           <label className="label" htmlFor="neighborhood">
             Quartier
           </label>
-          <input
+          <select
             id="neighborhood"
             name="neighborhood"
             required
             className="input"
-            placeholder="Flagey, Chatelain, ... "
             value={neighborhood}
-            onChange={(event) => setNeighborhood(event.currentTarget.value)}
-          />
+            onChange={(event) => handleNeighborhoodChange(event.currentTarget.value)}
+          >
+            {!neighborhoodOptions.length ? <option value="">Aucun quartier configuré</option> : null}
+            {neighborhoodOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+            {neighborhoodOptions.length ? (
+              <option value={OTHER_NEIGHBORHOOD_VALUE}>{OTHER_NEIGHBORHOOD_LABEL}</option>
+            ) : null}
+          </select>
         </div>
 
-        <div>
-          <label className="label" htmlFor="available_rooms">
-            Chambres disponibles
-          </label>
-          <input
-            id="available_rooms"
-            name="available_rooms"
-            type="number"
-            min={MIN_ROOMS}
-            max={MAX_ROOMS}
-            required
-            className="input"
-            value={availableRooms}
-            onChange={(event) => handleRoomCountChange(event.currentTarget.value)}
-          />
-        </div>
+        {neighborhood === OTHER_NEIGHBORHOOD_VALUE ? (
+          <div className="sm:col-span-2">
+            <label className="label" htmlFor="neighborhood_custom">
+              Précise le quartier
+            </label>
+            <input
+              id="neighborhood_custom"
+              name="neighborhood_custom"
+              required
+              className="input"
+              placeholder="Nom du quartier"
+              value={customNeighborhood}
+              onChange={(event) => setCustomNeighborhood(event.currentTarget.value)}
+            />
+          </div>
+        ) : null}
 
-        <div>
-          <label className="label" htmlFor="total_rooms">
-            Total chambres dans la coloc
-          </label>
-          <input
-            id="total_rooms"
-            name="total_rooms"
-            type="number"
-            min={MIN_ROOMS}
-            max={MAX_ROOMS}
-            required
-            className="input"
-            value={totalRooms}
-            onChange={(event) => handleTotalRoomsChange(event.currentTarget.value)}
-          />
-        </div>
+        {listingType === "colocation" ? (
+          <>
+            <div>
+              <label className="label" htmlFor="available_rooms">
+                Chambres disponibles
+              </label>
+              <input
+                id="available_rooms"
+                name="available_rooms"
+                type="number"
+                min={MIN_ROOMS}
+                max={MAX_ROOMS}
+                required
+                className="input"
+                value={availableRooms}
+                onChange={(event) => handleRoomCountChange(event.currentTarget.value)}
+              />
+            </div>
+
+            <div>
+              <label className="label" htmlFor="total_rooms">
+                Total chambres dans la coloc
+              </label>
+              <input
+                id="total_rooms"
+                name="total_rooms"
+                type="number"
+                min={MIN_ROOMS}
+                max={MAX_ROOMS}
+                required
+                className="input"
+                value={totalRooms}
+                onChange={(event) => handleTotalRoomsChange(event.currentTarget.value)}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <input type="hidden" name="available_rooms" value={1} />
+            <input type="hidden" name="total_rooms" value={1} />
+            <div className="sm:col-span-2">
+              <p className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-700">
+                Studio: 1 pièce principale, pour 1 personne.
+              </p>
+            </div>
+          </>
+        )}
 
         <div>
           <label className="label" htmlFor="available_from">
-            Disponibilite
+            Disponibilité
           </label>
           <input id="available_from" name="available_from" type="date" required className="input" />
         </div>
       </div>
 
       <div className="space-y-3">
-        <p className="label m-0">Details par chambre disponible</p>
+        <p className="label m-0">
+          {listingType === "studio" ? "Détails du studio" : "Détails par chambre disponible"}
+        </p>
         <div className="space-y-3">
           {roomDrafts.map((room, index) => (
             <div key={`room-${index}`} className="rounded-xl border border-stone-200 bg-stone-50 p-3">
-              <p className="mb-3 text-sm font-semibold text-stone-800">Chambre {index + 1}</p>
+              <p className="mb-3 text-sm font-semibold text-stone-800">
+                {listingType === "studio" ? "Studio" : `Chambre ${index + 1}`}
+              </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <label className="label" htmlFor={`room-size-${index}`}>
@@ -231,7 +332,7 @@ export function CreateListingBasics() {
                 </div>
                 <div>
                   <label className="label" htmlFor={`room-furnishing-${index}`}>
-                    Meublee
+                    Meublée
                   </label>
                   <select
                     id={`room-furnishing-${index}`}
@@ -269,7 +370,7 @@ export function CreateListingBasics() {
                 </div>
                 <div>
                   <label className="label" htmlFor={`room-outdoor-${index}`}>
-                    Exterieur
+                    Extérieur
                   </label>
                   <select
                     id={`room-outdoor-${index}`}
@@ -308,6 +409,29 @@ export function CreateListingBasics() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <p className="label m-0">{listingType === "studio" ? "Équipements du studio" : "Parties communes"}</p>
+        <div className="grid gap-2 sm:grid-cols-2 text-sm text-stone-700">
+          {commonSpacesOptions.map((option) => (
+            <label key={option.value} className="inline-flex items-center gap-2">
+              <input type="checkbox" name="common_spaces" value={option.value} />
+              {option.label}
+            </label>
+          ))}
+        </div>
+        <div>
+          <label className="label" htmlFor="common_spaces_other">
+            Autre
+          </label>
+          <input
+            id="common_spaces_other"
+            name="common_spaces_other"
+            className="input"
+            placeholder="Précise un équipement ou espace supplémentaire"
+          />
         </div>
       </div>
     </div>

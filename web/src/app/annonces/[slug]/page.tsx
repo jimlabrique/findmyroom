@@ -10,6 +10,7 @@ import {
   listingPriceRangeLabel,
   listingRoomDetailsFromRow,
   listingRoomsSummary,
+  listingTypeLabel,
 } from "@/lib/listing";
 import { ROOM_BATHROOM_OPTIONS, ROOM_FURNISHING_OPTIONS, ROOM_OUTDOOR_OPTIONS, ROOM_VIEW_OPTIONS } from "@/lib/listing-form-options";
 import { ListingCard } from "@/components/listing-card";
@@ -37,7 +38,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
   const retryAfterSeconds = Number.isFinite(retryAfterRaw) ? Math.max(1, retryAfterRaw) : 30;
   const errorMessage =
     errorCode === "contact_missing"
-      ? "Ce logement n'a pas encore de contact configure."
+      ? "Ce logement n'a pas encore de contact configuré."
       : errorCode === "contact_method_invalid"
         ? "Ce moyen de contact n'est pas disponible pour cette annonce."
         : errorCode === "email_form_missing"
@@ -45,11 +46,11 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
         : errorCode === "email_form_invalid"
           ? "Adresse email invalide."
           : errorCode === "email_form_invalid_method"
-            ? "Le formulaire email doit etre envoye depuis le bouton."
+            ? "Le formulaire email doit être envoyé depuis le bouton."
             : errorCode === "email_service_unavailable"
-              ? "Envoi email non configure cote serveur. Ajoute les variables SMTP."
+              ? "Envoi email non configuré côté serveur. Ajoute les variables SMTP."
               : errorCode === "email_auth_failed"
-                ? "Connexion SMTP refusee. Verifie SMTP_USER/SMTP_PASS (mot de passe d'application)."
+                ? "Connexion SMTP refusée. Vérifie SMTP_USER/SMTP_PASS (mot de passe d'application)."
                 : errorCode === "email_rate_limited"
                   ? `Attends ${retryAfterSeconds}s avant de renvoyer un email.`
               : errorCode === "email_send_failed"
@@ -80,12 +81,12 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
     <div className="container-page space-y-6">
       {created ? (
         <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          Annonce publiee. Elle est maintenant visible dans la recherche.
+          Annonce publiée. Elle est maintenant visible dans la recherche.
         </p>
       ) : null}
       {emailSent ? (
         <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          Demande envoyee a l&apos;annonceur.
+          Demande envoyée à l&apos;annonceur.
         </p>
       ) : null}
       {errorMessage ? (
@@ -121,13 +122,16 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
                 <span className="font-semibold">Commune:</span> {listing.city}
               </p>
               <p>
+                <span className="font-semibold">Type:</span> {listingTypeLabel(listing.listing_type)}
+              </p>
+              <p>
                 <span className="font-semibold">Loyer:</span> {listingPriceRangeLabel(listing)}
               </p>
               <p>
                 <span className="font-semibold">Chambres:</span> {listingRoomsSummary(listing)}
               </p>
               <p>
-                <span className="font-semibold">Disponibilite:</span> {listing.available_from}
+                <span className="font-semibold">Disponibilité:</span> {listing.available_from}
               </p>
               {animalsPolicy ? (
                 <p>
@@ -146,14 +150,14 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
               ) : null}
               {listing.min_duration_months !== null ? (
                 <p>
-                  <span className="font-semibold">Duree min:</span> {listing.min_duration_months} mois
+                  <span className="font-semibold">Durée min:</span> {listing.min_duration_months} mois
                 </p>
               ) : null}
             </div>
 
             {roomDetails.length ? (
               <div className="space-y-2">
-                <h2 className="text-lg font-semibold text-stone-900">Details des chambres disponibles</h2>
+                <h2 className="text-lg font-semibold text-stone-900">Détails des chambres disponibles</h2>
                 <div className="overflow-x-auto rounded-xl border border-stone-200">
                   <table className="min-w-full text-sm">
                     <thead className="bg-stone-50 text-left text-stone-600">
@@ -161,9 +165,9 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
                         <th className="px-3 py-2 font-medium">Chambre</th>
                         <th className="px-3 py-2 font-medium">Taille</th>
                         <th className="px-3 py-2 font-medium">Prix</th>
-                        <th className="px-3 py-2 font-medium">Meublee</th>
+                        <th className="px-3 py-2 font-medium">Meublée</th>
                         <th className="px-3 py-2 font-medium">SDB</th>
-                        <th className="px-3 py-2 font-medium">Exterieur</th>
+                        <th className="px-3 py-2 font-medium">Extérieur</th>
                         <th className="px-3 py-2 font-medium">Vue</th>
                       </tr>
                     </thead>
@@ -191,7 +195,9 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-stone-900">Ambiance de la coloc</h2>
+              <h2 className="text-lg font-semibold text-stone-900">
+                {listing.listing_type === "studio" ? "Infos complémentaires" : "Ambiance de la coloc"}
+              </h2>
               <p className="whitespace-pre-line text-stone-700">{listing.flatshare_vibe}</p>
             </div>
           </article>
@@ -200,7 +206,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
         <aside className="panel h-fit space-y-4 p-5 lg:sticky lg:top-8">
           <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Contact</p>
           <p className="text-sm text-stone-700">
-            Contacte directement l&apos;annonceur pour organiser un echange ou une visite.
+            Contacte directement l&apos;annonceur pour organiser un échange ou une visite.
           </p>
           <div className="space-y-3">
             {phoneContactOption ? (
@@ -225,7 +231,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
                   <input
                     name="first_name"
                     className="input"
-                    placeholder="Prenom"
+                    placeholder="Prénom"
                     required
                     maxLength={80}
                   />
@@ -283,14 +289,14 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
             Moyens disponibles: {contactOptions.map((option) => option.channelLabel).join(", ") || "Aucun"}
           </p>
           <Link href="/annonces" className="btn btn-ghost w-full">
-            Retour a la recherche
+            Retour à la recherche
           </Link>
         </aside>
       </section>
 
       {similarListings.length ? (
         <section className="space-y-4">
-          <h2 className="font-serif text-2xl text-stone-900">Annonces similaires a {listing.city}</h2>
+          <h2 className="font-serif text-2xl text-stone-900">Annonces similaires à {listing.city}</h2>
           <div className="grid-listings">
             {similarListings.map((item) => (
               <ListingCard key={item.id} listing={item} />

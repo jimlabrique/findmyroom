@@ -27,7 +27,13 @@ import {
   ANIMALS_POLICY_OPTIONS,
   AREA_CONTEXT_OPTIONS,
   BRUSSELS_COMMUNES,
+  COMMON_SPACES_COLOCATION_OPTIONS,
+  COMMON_SPACES_STUDIO_OPTIONS,
   CURRENT_FLATMATES_OPTIONS,
+  isValidNeighborhoodForCommune,
+  LISTING_TYPE_OPTIONS,
+  isOtherNeighborhoodValue,
+  OTHER_NEIGHBORHOOD_VALUE,
   ROOM_BATHROOM_OPTIONS,
   ROOM_FURNISHING_OPTIONS,
   ROOM_OUTDOOR_OPTIONS,
@@ -47,7 +53,8 @@ function isMissingStructuredListingColumns(message: string) {
     (lower.includes("room_details") && lower.includes("column")) ||
     (lower.includes("animals_policy") && lower.includes("column")) ||
     (lower.includes("current_flatmates") && lower.includes("column")) ||
-    (lower.includes("lgbtq_friendly") && lower.includes("column"))
+    (lower.includes("lgbtq_friendly") && lower.includes("column")) ||
+    (lower.includes("listing_type") && lower.includes("column"))
   );
 }
 
@@ -167,12 +174,23 @@ function parseRoomDetails(formData: FormData, availableRooms: number): ListingRo
 export async function createListingAction(formData: FormData) {
   const { supabase, user } = await requireUser("/deposer");
 
+  const listingTypeRaw = `${formData.get("listing_type") ?? ""}`.trim();
+  const listingType = parseOptionalEnumValue(
+    listingTypeRaw,
+    LISTING_TYPE_OPTIONS.map((option) => option.value),
+  );
   const titleInput = `${formData.get("title") ?? ""}`.trim();
   const city = `${formData.get("city") ?? ""}`.trim();
-  const neighborhood = `${formData.get("neighborhood") ?? ""}`.trim();
+  const neighborhoodSelection = `${formData.get("neighborhood") ?? ""}`.trim();
+  const neighborhoodCustom = `${formData.get("neighborhood_custom") ?? ""}`.trim();
+  const isOtherNeighborhood = isOtherNeighborhoodValue(neighborhoodSelection);
+  const neighborhood = isOtherNeighborhood ? neighborhoodCustom : neighborhoodSelection;
   const availableFrom = `${formData.get("available_from") ?? ""}`.trim();
-  const availableRooms = Number.parseInt(`${formData.get("available_rooms") ?? ""}`.trim(), 10);
-  const totalRooms = Number.parseInt(`${formData.get("total_rooms") ?? ""}`.trim(), 10);
+  const availableRoomsRaw = Number.parseInt(`${formData.get("available_rooms") ?? ""}`.trim(), 10);
+  const totalRoomsRaw = Number.parseInt(`${formData.get("total_rooms") ?? ""}`.trim(), 10);
+  const isStudio = listingType === "studio";
+  const availableRooms = isStudio ? 1 : availableRoomsRaw;
+  const totalRooms = isStudio ? 1 : totalRoomsRaw;
   const currentFlatmatesRaw = cleanOptionalText(formData.get("current_flatmates"));
   const currentFlatmates = currentFlatmatesRaw
     ? parseOptionalEnumValue(
@@ -215,43 +233,68 @@ export async function createListingAction(formData: FormData) {
     formData.getAll("vibe_tags").map((value) => `${value ?? ""}`),
     VIBE_TAG_OPTIONS.map((option) => option.value),
   );
+  const selectedCommonSpaces = sanitizeOptionValues(
+    formData.getAll("common_spaces").map((value) => `${value ?? ""}`),
+    (isStudio ? COMMON_SPACES_STUDIO_OPTIONS : COMMON_SPACES_COLOCATION_OPTIONS).map((option) => option.value),
+  );
   const transportLines = cleanOptionalText(formData.get("transport_lines"));
+  const commonSpacesOther = cleanOptionalText(formData.get("common_spaces_other"));
   const housingDescriptionExtra = cleanOptionalText(formData.get("housing_description_extra"));
   const flatshareVibeOther = cleanOptionalText(formData.get("flatshare_vibe_other"));
-  const title = titleInput || buildAutoListingTitle({
-    commune: city,
-    roomCount: availableRooms,
-    roomSizesSqm: roomDetails.map((room) => room.size_sqm),
-    neighborhood,
-  });
+  const title =
+    titleInput ||
+    buildAutoListingTitle({
+      listingType: isStudio ? "studio" : "colocation",
+      commune: city,
+      roomCount: availableRooms,
+      roomSizesSqm: roomDetails.map((room) => room.size_sqm),
+      neighborhood,
+    });
   const housingDescription = buildStructuredHousingDescription({
+    listingType: isStudio ? "studio" : "colocation",
     neighborhood,
     roomDetails,
     transportModes: selectedTransportModes,
     transportLines,
     areaContexts: selectedAreaContexts,
+    commonSpaces: selectedCommonSpaces,
+    commonSpacesOther,
     extraDetails: housingDescriptionExtra,
   });
-  const flatshareVibe = buildStructuredFlatshareVibe({
-    vibeTags: selectedVibeTags,
-    vibeOther: flatshareVibeOther,
-    currentFlatmates,
-    animalsPolicy,
-  });
+  const flatshareVibe = isStudio
+    ? ["Type: Studio", flatshareVibeOther ? `Autre: ${flatshareVibeOther}` : ""].filter(Boolean).join("\n")
+    : buildStructuredFlatshareVibe({
+        vibeTags: selectedVibeTags,
+        vibeOther: flatshareVibeOther,
+        currentFlatmates,
+        animalsPolicy,
+      });
   const contactSelection = readContactMethodSelection(formData);
   const contactPhone = contactSelection.phoneValue;
   const contactEmail = contactSelection.emailValue;
   let uploadedPhotos: ListingPhoto[] = [];
 
+  if (!listingType) {
+    redirect("/deposer?error=listing_type_required");
+  }
   if (!BRUSSELS_COMMUNES.includes(city as (typeof BRUSSELS_COMMUNES)[number])) {
     redirect("/deposer?error=commune_required");
+  }
+  if (
+    isOtherNeighborhood &&
+    (!neighborhoodCustom || isOtherNeighborhoodValue(neighborhoodCustom) || neighborhoodCustom === OTHER_NEIGHBORHOOD_VALUE)
+  ) {
+    redirect("/deposer?error=neighborhood_custom_required");
+  }
+  if (!isOtherNeighborhood && !isValidNeighborhoodForCommune(city, neighborhood)) {
+    redirect("/deposer?error=neighborhood_required");
   }
 
   if (!neighborhood || !availableFrom || !title) {
     redirect("/deposer?error=missing_required_fields");
   }
 
-  if (!flatshareVibe) {
+  if (!isStudio && !flatshareVibe) {
     redirect("/deposer?error=vibe_required");
   }
 
@@ -295,6 +338,7 @@ export async function createListingAction(formData: FormData) {
     user_id: user.id,
     slug,
     title,
+    listing_type: listingType,
     rent_eur: Math.min(...roomDetails.map((room) => room.price_eur)),
     city,
     available_rooms: availableRooms,

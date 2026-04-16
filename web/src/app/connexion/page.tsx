@@ -14,9 +14,9 @@ export default async function ConnexionPage({ searchParams }: ConnexionPageProps
     <div className="container-page max-w-xl">
       <div className="panel space-y-5 p-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Connexion</p>
-        <h1 className="font-serif text-3xl text-stone-900">Accede a ton espace annonceur</h1>
+        <h1 className="font-serif text-3xl text-stone-900">Accède à ton espace annonceur</h1>
         <p className="text-sm text-stone-700">
-          Connexion Google uniquement en V1. Pas de mot de passe a gerer, onboarding plus rapide.
+          Connexion Google uniquement en V1. Pas de mot de passe à gérer, onboarding plus rapide.
         </p>
 
         {error ? (
@@ -33,7 +33,7 @@ export default async function ConnexionPage({ searchParams }: ConnexionPageProps
         </form>
 
         <p className="text-sm text-stone-600">
-          Retour a la recherche:{" "}
+          Retour à la recherche:{" "}
           <Link href="/annonces" className="font-medium link-brand">
             voir les annonces
           </Link>

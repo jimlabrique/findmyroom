@@ -2,8 +2,9 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { getOwnerListings } from "@/lib/data/listings";
 import { getOwnerListingMetrics } from "@/lib/data/listing-events";
-import { updateListingStatusAction } from "@/app/mes-annonces/actions";
-import { listingStatusLabel } from "@/lib/listing";
+import { deleteListingAction, updateListingStatusAction } from "@/app/mes-annonces/actions";
+import { listingStatusLabel, listingTypeLabel } from "@/lib/listing";
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 
 type MyListingsPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -21,6 +22,7 @@ export default async function MyListingsPage({ searchParams }: MyListingsPagePro
   const { user } = await requireUser("/mes-annonces");
   const query = await searchParams;
   const updated = query.updated === "1";
+  const deleted = query.deleted === "1";
   const error = typeof query.error === "string" ? query.error : null;
 
   const listings = await getOwnerListings(user.id);
@@ -40,7 +42,12 @@ export default async function MyListingsPage({ searchParams }: MyListingsPagePro
 
       {updated ? (
         <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          Mise a jour enregistree.
+          Mise à jour enregistrée.
+        </p>
+      ) : null}
+      {deleted ? (
+        <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          Annonce supprimée.
         </p>
       ) : null}
       {error ? (
@@ -53,14 +60,15 @@ export default async function MyListingsPage({ searchParams }: MyListingsPagePro
             const statusToggle = nextStatus(listing.status as "active" | "paused" | "archived");
             const metrics = metricsByListingId.get(listing.id) ?? { views: 0, contacts: 0 };
             const statusLabel = listingStatusLabel(listing);
-            const expiresAtLabel = typeof listing.expires_at === "string" ? listing.expires_at : "non defini";
+            const expiresAtLabel = typeof listing.expires_at === "string" ? listing.expires_at : "non défini";
             return (
               <article key={listing.id} className="panel space-y-4 p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <h2 className="text-xl font-semibold text-stone-900">{listing.title}</h2>
                     <p className="text-sm text-stone-600">
-                      {listing.city} • {listing.rent_eur} EUR • {listing.available_rooms} chambre(s)
+                      {listing.city} • {listingTypeLabel(listing.listing_type)} • {listing.rent_eur} EUR •{" "}
+                      {listing.available_rooms} chambre(s)
                     </p>
                     <p className="mt-1 text-xs text-stone-500">
                       Expire le {expiresAtLabel} • {metrics.views} vue(s) • {metrics.contacts} clic(s) contact
@@ -76,7 +84,7 @@ export default async function MyListingsPage({ searchParams }: MyListingsPagePro
                     Voir
                   </Link>
                   <Link href={`/mes-annonces/${listing.id}/editer`} className="btn btn-ghost">
-                    Editer
+                    Éditer
                   </Link>
                   <form action={updateListingStatusAction}>
                     <input type="hidden" name="listing_id" value={listing.id} />
@@ -94,13 +102,21 @@ export default async function MyListingsPage({ searchParams }: MyListingsPagePro
                       </button>
                     </form>
                   ) : null}
+                  <form action={deleteListingAction}>
+                    <input type="hidden" name="listing_id" value={listing.id} />
+                    <ConfirmSubmitButton
+                      label="Supprimer définitivement"
+                      confirmMessage="Supprimer cette annonce définitivement ? Cette action est irréversible."
+                      className="btn btn-ghost border-red-300 text-red-700 hover:border-red-400 hover:bg-red-50 hover:text-red-700"
+                    />
+                  </form>
                 </div>
               </article>
             );
           })}
         </div>
       ) : (
-        <div className="panel p-6 text-stone-700">Tu n&apos;as pas encore publie d&apos;annonce.</div>
+        <div className="panel p-6 text-stone-700">Tu n&apos;as pas encore publié d&apos;annonce.</div>
       )}
     </div>
   );

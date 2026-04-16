@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listingPriceRangeLabel, listingRoomsSummary, type Listing } from "@/lib/listing";
+import { listingPriceRangeLabel, listingRoomsSummary, listingTypeLabel, type Listing } from "@/lib/listing";
 import { ListingCardCarousel } from "@/components/listing-card-carousel";
 
 type ListingCardProps = {
@@ -7,6 +7,7 @@ type ListingCardProps = {
     Listing,
     | "slug"
     | "title"
+    | "listing_type"
     | "city"
     | "rent_eur"
     | "available_rooms"
@@ -32,7 +33,12 @@ export function ListingCard({ listing }: ListingCardProps) {
       <div className="flex h-full flex-col justify-between gap-4 p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
           <h3 className="line-clamp-2 text-base font-semibold text-stone-900">{listing.title}</h3>
-          <span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-medium text-stone-700">{createdAtLabel}</span>
+          <div className="flex flex-col items-end gap-1">
+            <span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-medium text-stone-700">{createdAtLabel}</span>
+            <span className="rounded-full bg-[#fff1ee] px-2 py-1 text-xs font-medium text-[#ba4d40]">
+              {listingTypeLabel(listing.listing_type)}
+            </span>
+          </div>
         </div>
 
         <div className="grid gap-2 text-sm text-stone-700 sm:grid-cols-2">

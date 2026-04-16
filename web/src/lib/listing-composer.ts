@@ -1,6 +1,8 @@
 import {
   ANIMALS_POLICY_OPTIONS,
   AREA_CONTEXT_OPTIONS,
+  COMMON_SPACES_COLOCATION_OPTIONS,
+  COMMON_SPACES_STUDIO_OPTIONS,
   CURRENT_FLATMATES_OPTIONS,
   ROOM_BATHROOM_OPTIONS,
   ROOM_FURNISHING_OPTIONS,
@@ -46,46 +48,57 @@ function normalizeRoomSizes(values: Array<number | string>) {
 export function formatRoomSizesLabel(values: Array<number | string>) {
   const sizes = normalizeRoomSizes(values);
   if (!sizes.length) {
-    return "taille a preciser";
+    return "taille à préciser";
   }
   return sizes.map((size) => `${size}m2`).join(", ");
 }
 
 export function buildAutoListingTitle({
+  listingType,
   commune,
   roomCount,
   roomSizesSqm,
   neighborhood,
 }: {
+  listingType: "colocation" | "studio";
   commune: string;
   roomCount: number;
   roomSizesSqm: Array<number | string>;
   neighborhood: string;
 }) {
   const cleanCommune = cleanText(commune) || "Commune";
-  const cleanNeighborhood = cleanText(neighborhood) || "Quartier a preciser";
-  const roomCountLabel = formatRoomCountLabel(Math.max(1, roomCount));
+  const cleanNeighborhood = cleanText(neighborhood) || "Quartier à préciser";
+  const roomCountLabel = listingType === "studio" ? "Studio" : formatRoomCountLabel(Math.max(1, roomCount));
   const roomSizesLabel = formatRoomSizesLabel(roomSizesSqm);
   return `${cleanCommune} - ${roomCountLabel} - ${roomSizesLabel} - ${cleanNeighborhood}`;
 }
 
 export function buildStructuredHousingDescription({
+  listingType,
   neighborhood,
   roomDetails,
   transportModes,
   transportLines,
   areaContexts,
+  commonSpaces,
+  commonSpacesOther,
   extraDetails,
 }: {
+  listingType: "colocation" | "studio";
   neighborhood: string;
   roomDetails: ListingRoomDetail[];
   transportModes: string[];
   transportLines: string | null;
   areaContexts: string[];
+  commonSpaces: string[];
+  commonSpacesOther: string | null;
   extraDetails: string | null;
 }) {
   const transportLabels = optionLabelMap(TRANSPORT_MODE_OPTIONS);
   const areaLabels = optionLabelMap(AREA_CONTEXT_OPTIONS);
+  const commonSpacesLabels = optionLabelMap(
+    listingType === "studio" ? COMMON_SPACES_STUDIO_OPTIONS : COMMON_SPACES_COLOCATION_OPTIONS,
+  );
   const furnishingLabels = optionLabelMap(ROOM_FURNISHING_OPTIONS);
   const bathroomLabels = optionLabelMap(ROOM_BATHROOM_OPTIONS);
   const outdoorLabels = optionLabelMap(ROOM_OUTDOOR_OPTIONS);
@@ -98,16 +111,20 @@ export function buildStructuredHousingDescription({
   const selectedAreaContexts = areaContexts
     .map((context) => areaLabels.get(context))
     .filter((label): label is string => Boolean(label));
+  const selectedCommonSpaces = commonSpaces
+    .map((space) => commonSpacesLabels.get(space))
+    .filter((label): label is string => Boolean(label));
 
   const lines = [
-    `Quartier: ${safeNeighborhood || "Non precise"}`,
+    `Type: ${listingType === "studio" ? "Studio" : "Colocation"}`,
+    `Quartier: ${safeNeighborhood || "Non précisé"}`,
     `Chambres disponibles: ${roomDetails.length}`,
-    `Proche des transports en commun: ${selectedTransport.length ? selectedTransport.join(", ") : "Non precise"}`,
+    `Proche des transports en commun: ${selectedTransport.length ? selectedTransport.join(", ") : "Non précisé"}`,
   ];
 
   if (roomDetails.length) {
     lines.push("");
-    lines.push("Details par chambre:");
+    lines.push("Détails par chambre:");
     for (const room of roomDetails) {
       const furnishing = furnishingLabels.get(room.furnishing) ?? room.furnishing;
       const bathroom = bathroomLabels.get(room.bathroom) ?? room.bathroom;
@@ -124,12 +141,22 @@ export function buildStructuredHousingDescription({
     lines.push(`Lignes: ${safeTransportLines}`);
   }
 
-  lines.push(`Environnement: ${selectedAreaContexts.length ? selectedAreaContexts.join(", ") : "Non precise"}`);
+  lines.push(`Environnement: ${selectedAreaContexts.length ? selectedAreaContexts.join(", ") : "Non précisé"}`);
+  lines.push(
+    `${listingType === "studio" ? "Équipements / parties communes" : "Parties communes"}: ${
+      selectedCommonSpaces.length ? selectedCommonSpaces.join(", ") : "Non précisé"
+    }`,
+  );
+
+  const safeCommonSpacesOther = cleanText(commonSpacesOther);
+  if (safeCommonSpacesOther) {
+    lines.push(`Autre (parties communes): ${safeCommonSpacesOther}`);
+  }
 
   const safeExtraDetails = cleanText(extraDetails);
   if (safeExtraDetails) {
     lines.push("");
-    lines.push("Infos complementaires:");
+    lines.push("Infos complémentaires:");
     lines.push(safeExtraDetails);
   }
 
@@ -155,7 +182,7 @@ export function buildStructuredFlatshareVibe({
     .filter((label): label is string => Boolean(label));
 
   const lines: string[] = [];
-  lines.push(`Animaux autorises: ${animalsLabels.get(animalsPolicy) ?? animalsPolicy}`);
+  lines.push(`Animaux autorisés: ${animalsLabels.get(animalsPolicy) ?? animalsPolicy}`);
 
   const safeFlatmates = cleanText(currentFlatmates);
   if (safeFlatmates) {

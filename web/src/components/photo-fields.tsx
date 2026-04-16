@@ -223,7 +223,7 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
         <div className="space-y-1">
           <p className="label m-0">{mode === "create" ? "Ajouter les photos" : "Ajouter de nouvelles photos"}</p>
           <p className="text-xs text-stone-500">
-            Clique sur un cadre pour ajouter des images. Tu peux aussi en selectionner plusieurs d&apos;un coup.
+            Clique sur un cadre pour ajouter des images. Tu peux aussi en sélectionner plusieurs d&apos;un coup.
           </p>
         </div>
 
@@ -252,7 +252,7 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
                   className="flex min-h-28 cursor-pointer items-center justify-center rounded-lg border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-center text-sm font-medium text-stone-700 hover:bg-stone-100"
                 >
                   {hasSelection
-                    ? `${slot.photos.length} photo(s) selectionnee(s) - cliquer pour remplacer`
+                    ? `${slot.photos.length} photo(s) sélectionnée(s) - cliquer pour remplacer`
                     : "+ Ajouter une ou plusieurs photos"}
                 </label>
 
@@ -265,7 +265,7 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
                           <img src={photo.previewUrl} alt={photo.fileName} className="aspect-[4/3] w-full rounded-md object-cover" />
                           <p className="mt-2 truncate text-xs text-stone-600">{photo.fileName}</p>
                           <label className="label mt-2" htmlFor={`photo-caption-${slot.id}-${photo.id}`}>
-                            Legende
+                            Légende
                           </label>
                           <input
                             id={`photo-caption-${slot.id}-${photo.id}`}
@@ -290,7 +290,7 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
           })}
         </div>
 
-        <p className="text-xs text-stone-500">Formats acceptes: JPG, PNG, WEBP, GIF. 10 photos max.</p>
+        <p className="text-xs text-stone-500">Formats acceptés: JPG, PNG, WEBP, GIF. 10 photos max.</p>
       </div>
     </div>
   );

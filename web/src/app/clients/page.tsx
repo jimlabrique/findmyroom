@@ -19,12 +19,12 @@ function formatDate(value: string) {
 function humanizeError(errorCode: string | null) {
   if (!errorCode) return null;
 
-  if (errorCode === "cannot_update_own_role") return "Tu ne peux pas modifier ton propre role.";
+  if (errorCode === "cannot_update_own_role") return "Tu ne peux pas modifier ton propre rôle.";
   if (errorCode === "cannot_update_super_admin") return "Impossible de modifier un super admin.";
   if (errorCode === "target_user_not_found") return "Compte introuvable.";
-  if (errorCode === "invalid_role_update_request") return "Demande de role invalide.";
-  if (errorCode === "invalid_moderation_request") return "Action de moderation invalide.";
-  if (errorCode === "app_users_table_missing") return "Table admin manquante: execute le schema SQL a jour.";
+  if (errorCode === "invalid_role_update_request") return "Demande de rôle invalide.";
+  if (errorCode === "invalid_moderation_request") return "Action de modération invalide.";
+  if (errorCode === "app_users_table_missing") return "Table admin manquante: exécute le schéma SQL à jour.";
 
   return errorCode;
 }
@@ -68,7 +68,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
 
       {updated ? (
         <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          Mise a jour enregistree.
+          Mise à jour enregistrée.
         </p>
       ) : null}
       {error ? (
@@ -81,17 +81,26 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
       ) : null}
 
       {!loadingError && clients.length ? (
-        <div className="space-y-4">
+        <div className="panel overflow-hidden">
           {clients.map((client) => (
-            <article key={client.user.id} className="panel space-y-4 p-5">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="space-y-1">
-                  <p className="text-base font-semibold text-stone-900">{client.user.email ?? "email non renseigne"}</p>
-                  <p className="text-xs text-stone-500">
-                    Cree le {formatDate(client.user.created_at)} • {client.listings.length} annonce(s)
-                  </p>
+            <details key={client.user.id} className="group border-b border-stone-200 last:border-b-0">
+              <summary className="list-none cursor-pointer px-4 py-4 transition hover:bg-[#fff7f6] sm:px-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0 space-y-1">
+                    <p className="truncate text-base font-semibold text-stone-900">{client.user.email ?? "email non renseigné"}</p>
+                    <p className="text-xs text-stone-500">
+                      Créé le {formatDate(client.user.created_at)} • {client.listings.length} annonce(s)
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RoleBadge role={client.user.role} />
+                    <span className="text-sm text-stone-400 transition group-open:rotate-180">⌄</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+              </summary>
+
+              <div className="space-y-4 border-t border-stone-200 bg-[#fffdfb] px-4 py-4 sm:px-5">
+                <div className="flex flex-wrap items-center gap-2">
                   <RoleBadge role={client.user.role} />
                   {isSuperAdmin && client.user.id !== user.id && client.user.role !== "super_admin" ? (
                     <form action={adminSetUserRoleAction}>
@@ -103,90 +112,70 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                     </form>
                   ) : null}
                 </div>
-              </div>
 
-              {client.listings.length ? (
-                <div className="overflow-x-auto rounded-xl border border-stone-200">
-                  <table className="min-w-full text-sm">
-                    <thead className="bg-stone-50 text-left text-stone-600">
-                      <tr>
-                        <th className="px-3 py-2 font-medium">Annonce</th>
-                        <th className="px-3 py-2 font-medium">Ville</th>
-                        <th className="px-3 py-2 font-medium">Statut</th>
-                        <th className="px-3 py-2 font-medium">Contact</th>
-                        <th className="px-3 py-2 font-medium">Moderation</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-stone-800">
-                      {client.listings.map((listing) => (
-                        <tr key={listing.id} className="border-t border-stone-100 align-top">
-                          <td className="px-3 py-2">
+                {client.listings.length ? (
+                  <div className="space-y-3">
+                    {client.listings.map((listing) => (
+                      <article key={listing.id} className="rounded-xl border border-stone-200 bg-white p-3 text-sm">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="space-y-1">
                             <Link href={`/annonces/${listing.slug}`} className="font-medium link-brand">
                               {listing.title}
                             </Link>
-                            <p className="text-xs text-stone-500">Publiee le {formatDate(listing.created_at)}</p>
-                          </td>
-                          <td className="px-3 py-2">{listing.city}</td>
-                          <td className="px-3 py-2">{listingStatusLabel(listing)}</td>
-                          <td className="px-3 py-2">
-                            {listing.contact_email || listing.contact_whatsapp ? (
-                              <details>
-                                <summary className="cursor-pointer text-xs font-medium text-stone-700">Voir</summary>
-                                <div className="mt-2 space-y-1 text-xs text-stone-700">
-                                  {listing.contact_email ? <p>Email: {listing.contact_email}</p> : null}
-                                  {listing.contact_whatsapp ? <p>WhatsApp: {listing.contact_whatsapp}</p> : null}
-                                </div>
-                              </details>
-                            ) : (
-                              <span className="text-xs text-stone-500">Non renseigne</span>
-                            )}
-                          </td>
-                          <td className="px-3 py-2">
-                            <div className="flex flex-wrap gap-2">
-                              {listing.status !== "paused" ? (
-                                <form action={adminModerateListingStatusAction}>
-                                  <input type="hidden" name="listing_id" value={listing.id} />
-                                  <input type="hidden" name="status" value="paused" />
-                                  <button type="submit" className="btn btn-ghost">
-                                    Pause
-                                  </button>
-                                </form>
-                              ) : null}
-                              {listing.status !== "active" ? (
-                                <form action={adminModerateListingStatusAction}>
-                                  <input type="hidden" name="listing_id" value={listing.id} />
-                                  <input type="hidden" name="status" value="active" />
-                                  <button type="submit" className="btn btn-ghost">
-                                    Reactiver
-                                  </button>
-                                </form>
-                              ) : null}
-                              {listing.status !== "archived" ? (
-                                <form action={adminModerateListingStatusAction}>
-                                  <input type="hidden" name="listing_id" value={listing.id} />
-                                  <input type="hidden" name="status" value="archived" />
-                                  <button type="submit" className="btn btn-ghost">
-                                    Supprimer
-                                  </button>
-                                </form>
-                              ) : null}
+                            <p className="text-xs text-stone-500">
+                              {listing.city} • {listingStatusLabel(listing)} • Publiée le {formatDate(listing.created_at)}
+                            </p>
+                            <div className="space-y-1 text-xs text-stone-700">
+                              {listing.contact_email ? <p>Email: {listing.contact_email}</p> : null}
+                              {listing.contact_whatsapp ? <p>WhatsApp: {listing.contact_whatsapp}</p> : null}
+                              {!listing.contact_email && !listing.contact_whatsapp ? <p>Contact non renseigné.</p> : null}
                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="rounded-xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
-                  Aucune annonce.
-                </div>
-              )}
-            </article>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            {listing.status !== "paused" ? (
+                              <form action={adminModerateListingStatusAction}>
+                                <input type="hidden" name="listing_id" value={listing.id} />
+                                <input type="hidden" name="status" value="paused" />
+                                <button type="submit" className="btn btn-ghost">
+                                  Pause
+                                </button>
+                              </form>
+                            ) : null}
+                            {listing.status !== "active" ? (
+                              <form action={adminModerateListingStatusAction}>
+                                <input type="hidden" name="listing_id" value={listing.id} />
+                                <input type="hidden" name="status" value="active" />
+                                <button type="submit" className="btn btn-ghost">
+                                  Réactiver
+                                </button>
+                              </form>
+                            ) : null}
+                            {listing.status !== "archived" ? (
+                              <form action={adminModerateListingStatusAction}>
+                                <input type="hidden" name="listing_id" value={listing.id} />
+                                <input type="hidden" name="status" value="archived" />
+                                <button type="submit" className="btn btn-ghost">
+                                  Supprimer
+                                </button>
+                              </form>
+                            ) : null}
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
+                    Aucune annonce.
+                  </div>
+                )}
+              </div>
+            </details>
           ))}
         </div>
       ) : !loadingError ? (
-        <div className="panel p-6 text-stone-700">Aucun compte trouve.</div>
+        <div className="panel p-6 text-stone-700">Aucun compte trouvé.</div>
       ) : null}
     </div>
   );

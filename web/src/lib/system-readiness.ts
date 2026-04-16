@@ -15,32 +15,33 @@ function includesAll(message: string, parts: string[]) {
 
 function issueFromMessage(message: string) {
   if (includesAll(message, ["photo_captions", "column"])) {
-    return "Base non migree: colonne `photo_captions` manquante.";
+    return "Base non migrée: colonne `photo_captions` manquante.";
   }
   if (includesAll(message, ["expires_at", "column"])) {
-    return "Base non migree: colonne `expires_at` manquante.";
+    return "Base non migrée: colonne `expires_at` manquante.";
   }
   if (
     includesAll(message, ["room_details", "column"]) ||
     includesAll(message, ["total_rooms", "column"]) ||
-    includesAll(message, ["animals_policy", "column"])
+    includesAll(message, ["animals_policy", "column"]) ||
+    includesAll(message, ["listing_type", "column"])
   ) {
-    return "Base non migree: nouveaux champs annonce manquants (room_details/total_rooms/animals_policy).";
+    return "Base non migrée: nouveaux champs annonce manquants (room_details/total_rooms/animals_policy/listing_type).";
   }
   if (
     includesAll(message, ["listing_events", "relation"]) ||
     includesAll(message, ["listing_events", "table"])
   ) {
-    return "Base non migree: table `listing_events` manquante.";
+    return "Base non migrée: table `listing_events` manquante.";
   }
   if (
     includesAll(message, ["app_users", "relation"]) ||
     includesAll(message, ["app_users", "table"])
   ) {
-    return "Base non migree: table `app_users` manquante.";
+    return "Base non migrée: table `app_users` manquante.";
   }
   if (includesAll(message, ["bucket", "not found"])) {
-    return "Storage non configure: bucket `listing-photos` introuvable.";
+    return "Storage non configuré: bucket `listing-photos` introuvable.";
   }
   return null;
 }
@@ -57,7 +58,7 @@ async function computeSystemReadiness(): Promise<SystemReadiness> {
 
     const { error: listingsError } = await supabase
       .from("listings")
-      .select("id, photo_captions, expires_at, room_details, total_rooms, animals_policy")
+      .select("id, photo_captions, expires_at, room_details, total_rooms, animals_policy, listing_type")
       .limit(1);
     if (listingsError) {
       const issue = issueFromMessage(listingsError.message);

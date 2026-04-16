@@ -49,7 +49,7 @@ export default async function StatistiquesPage() {
       );
     }
     const metricsByListingId = await getListingMetricsByListingIds(listings.map((listing) => listing.id));
-    const emailByUserId = new Map(appUsers.map((appUser) => [appUser.id, appUser.email ?? "email non renseigne"]));
+    const emailByUserId = new Map(appUsers.map((appUser) => [appUser.id, appUser.email ?? "email non renseigné"]));
 
     const activeListings = listings.filter((listing) => listing.status === "active").length;
     const totalViews = listings.reduce((sum, listing) => sum + (metricsByListingId.get(listing.id)?.views ?? 0), 0);
@@ -65,7 +65,7 @@ export default async function StatistiquesPage() {
           slug: listing.slug,
           title: listing.title,
           city: listing.city,
-          ownerEmail: emailByUserId.get(listing.user_id) ?? "email non renseigne",
+          ownerEmail: emailByUserId.get(listing.user_id) ?? "email non renseigné",
           statusLabel: listingStatusLabel(listing),
           views: metrics.views,
           contacts: metrics.contacts,
@@ -89,8 +89,8 @@ export default async function StatistiquesPage() {
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <KpiCard label="Comptes" value={`${appUsers.length}`} hint="Total clients + admins" />
           <KpiCard label="Annonces actives" value={`${activeListings}`} hint="Stock live" />
-          <KpiCard label="Annonces total" value={`${listings.length}`} hint="Toutes statuts confondus" />
-          <KpiCard label="Vues annonces" value={`${totalViews}`} hint="Volume interesse" />
+          <KpiCard label="Annonces total" value={`${listings.length}`} hint="Tous statuts confondus" />
+          <KpiCard label="Vues annonces" value={`${totalViews}`} hint="Volume intéressé" />
           <KpiCard label="Clics contact" value={`${totalContacts}`} hint="Intentions fortes" />
         </section>
 
@@ -184,16 +184,16 @@ export default async function StatistiquesPage() {
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Annonces actives" value={`${activeListings}`} hint="Stock live" />
-        <KpiCard label="Vues annonces" value={`${totalViews}`} hint="Volume interesse" />
+        <KpiCard label="Vues annonces" value={`${totalViews}`} hint="Volume intéressé" />
         <KpiCard label="Clics contact" value={`${totalContacts}`} hint="Intentions fortes" />
-        <KpiCard label="Taux clic/vue" value={formatPercent(clickThroughRate)} hint="Signal qualite" />
+        <KpiCard label="Taux clic/vue" value={formatPercent(clickThroughRate)} hint="Signal qualité" />
       </section>
 
       <section className="panel space-y-4 p-5">
         <div className="flex items-end justify-between gap-3">
           <h2 className="font-serif text-2xl text-stone-900">Top annonces</h2>
           <Link href="/mes-annonces" className="text-sm font-medium link-brand">
-            Gerer mes annonces
+            Gérer mes annonces
           </Link>
         </div>
 
@@ -230,7 +230,7 @@ export default async function StatistiquesPage() {
           <div className="space-y-3 rounded-xl border border-stone-200 bg-stone-50 p-4">
             <p className="text-sm text-stone-700">Aucune annonce pour le moment.</p>
             <Link href="/deposer" className="btn btn-primary">
-              Deposer une annonce
+              Déposer une annonce
             </Link>
           </div>
         )}

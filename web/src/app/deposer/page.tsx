@@ -26,7 +26,7 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
   return (
     <div className="container-page max-w-3xl space-y-6">
       <header className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Depot d&apos;annonce</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Dépôt d&apos;annonce</p>
         <h1 className="font-serif text-4xl text-stone-900">Publier une chambre en quelques minutes</h1>
         <p className="text-stone-700">Renseigne l&apos;essentiel d&apos;abord, puis ajoute les options si tu veux.</p>
       </header>
@@ -60,7 +60,7 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
             </div>
             <div>
               <label className="label" htmlFor="min_duration_months">
-                Duree min (mois)
+                Durée min (mois)
               </label>
               <input id="min_duration_months" name="min_duration_months" type="number" min={0} className="input" />
             </div>
@@ -84,7 +84,7 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
 
             <div>
               <label className="label" htmlFor="transport_lines">
-                Lignes (bus, tram, metro)
+                Lignes (bus, tram, métro)
               </label>
               <input id="transport_lines" name="transport_lines" className="input" placeholder="Ex: 2, 6, 81, 95" />
             </div>
@@ -103,7 +103,7 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
 
             <div>
               <label className="label" htmlFor="housing_description_extra">
-                Infos complementaires
+                Infos complémentaires
               </label>
               <textarea
                 id="housing_description_extra"
@@ -117,12 +117,12 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-stone-900">Ambiance de la coloc</h2>
+          <h2 className="text-lg font-semibold text-stone-900">Ambiance et profil du bien</h2>
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="animals_policy">
-                  Animaux autorises
+                  Animaux autorisés
                 </label>
                 <select id="animals_policy" name="animals_policy" required className="input" defaultValue="negotiable">
                   {ANIMALS_POLICY_OPTIONS.map((option) => (
@@ -163,7 +163,7 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
                 name="flatshare_vibe_other"
                 rows={3}
                 className="input"
-                placeholder="Ajoute des details libres si besoin"
+                placeholder="Ajoute des détails libres si besoin"
               />
             </div>
           </div>
@@ -182,7 +182,7 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
                 </label>
                 <label className="inline-flex items-center gap-2">
                   <input type="checkbox" name="contact_methods" value="phone" />
-                  Telephone (WhatsApp)
+                  Téléphone (WhatsApp)
                 </label>
               </div>
               <p className="text-xs text-stone-500">Choisis au moins un moyen de contact.</p>
@@ -190,13 +190,13 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="contact_whatsapp">
-                  Numero WhatsApp (si coche)
+                  Numéro WhatsApp (si coché)
                 </label>
                 <input id="contact_whatsapp" name="contact_whatsapp" className="input" placeholder="+324..." />
               </div>
               <div>
                 <label className="label" htmlFor="contact_email">
-                  Email (si coche)
+                  Email (si coché)
                 </label>
                 <input
                   id="contact_email"

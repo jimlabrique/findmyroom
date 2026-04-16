@@ -32,7 +32,7 @@ export default async function EditListingPage({ params, searchParams }: EditList
   return (
     <div className="container-page max-w-3xl space-y-6">
       <header className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Edition</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Édition</p>
         <h1 className="font-serif text-4xl text-stone-900">Modifier l&apos;annonce</h1>
       </header>
 
@@ -62,7 +62,7 @@ export default async function EditListingPage({ params, searchParams }: EditList
             </div>
             <div>
               <label className="label" htmlFor="available_from">
-                Disponibilite
+                Disponibilité
               </label>
               <input
                 id="available_from"
@@ -77,7 +77,7 @@ export default async function EditListingPage({ params, searchParams }: EditList
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-stone-900">Prix et capacite</h2>
+          <h2 className="text-lg font-semibold text-stone-900">Prix et capacité</h2>
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label className="label" htmlFor="rent_eur">
@@ -178,7 +178,7 @@ export default async function EditListingPage({ params, searchParams }: EditList
                 </label>
                 <label className="inline-flex items-center gap-2">
                   <input type="checkbox" name="contact_methods" value="phone" defaultChecked={hasPhoneContact} />
-                  Telephone (WhatsApp)
+                  Téléphone (WhatsApp)
                 </label>
               </div>
               <p className="text-xs text-stone-500">Choisis au moins un moyen de contact.</p>
@@ -186,7 +186,7 @@ export default async function EditListingPage({ params, searchParams }: EditList
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="contact_whatsapp">
-                  Numero WhatsApp (si coche)
+                  Numéro WhatsApp (si coché)
                 </label>
                 <input
                   id="contact_whatsapp"
@@ -197,7 +197,7 @@ export default async function EditListingPage({ params, searchParams }: EditList
               </div>
               <div>
                 <label className="label" htmlFor="contact_email">
-                  Email (si coche)
+                  Email (si coché)
                 </label>
                 <input
                   id="contact_email"
@@ -217,7 +217,7 @@ export default async function EditListingPage({ params, searchParams }: EditList
               </div>
               <div>
                 <label className="label" htmlFor="min_duration_months">
-                  Duree min (mois, optionnel)
+                  Durée min (mois, optionnel)
                 </label>
                 <input
                   id="min_duration_months"

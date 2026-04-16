@@ -32,6 +32,7 @@ create table if not exists public.listings (
   user_id uuid not null references auth.users(id) on delete cascade,
   slug text not null unique,
   title text not null,
+  listing_type text not null default 'colocation' check (listing_type in ('colocation', 'studio')),
   rent_eur integer not null check (rent_eur > 0),
   city text not null,
   available_rooms smallint not null check (available_rooms > 0),
@@ -81,6 +82,9 @@ add column if not exists current_flatmates text;
 alter table public.listings
 add column if not exists lgbtq_friendly boolean;
 
+alter table public.listings
+add column if not exists listing_type text;
+
 update public.listings
 set photo_captions = array(
   select coalesce(photo_captions[idx], '')
@@ -103,6 +107,10 @@ update public.listings
 set animals_policy = coalesce(animals_policy, 'negotiable')
 where animals_policy is null;
 
+update public.listings
+set listing_type = coalesce(listing_type, 'colocation')
+where listing_type is null;
+
 alter table public.listings
 alter column total_rooms set default 1;
 
@@ -114,6 +122,12 @@ alter column animals_policy set default 'negotiable';
 
 alter table public.listings
 alter column animals_policy set not null;
+
+alter table public.listings
+alter column listing_type set default 'colocation';
+
+alter table public.listings
+alter column listing_type set not null;
 
 alter table public.listings
 drop constraint if exists photo_arrays_same_length;
@@ -142,6 +156,13 @@ drop constraint if exists listings_animals_policy_valid;
 alter table public.listings
 add constraint listings_animals_policy_valid
 check (animals_policy in ('yes', 'no', 'negotiable'));
+
+alter table public.listings
+drop constraint if exists listings_listing_type_valid;
+
+alter table public.listings
+add constraint listings_listing_type_valid
+check (listing_type in ('colocation', 'studio'));
 
 create index if not exists listings_status_created_idx on public.listings (status, created_at desc);
 create index if not exists listings_status_expires_idx on public.listings (status, expires_at);

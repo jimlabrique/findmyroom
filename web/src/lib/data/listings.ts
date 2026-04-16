@@ -1,12 +1,18 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import { createServerSupabaseClient, createServerSupabasePublicClient } from "@/lib/supabase/server";
-import { listingRoomDetailsFromRow, type Listing } from "@/lib/listing";
-import { BRUSSELS_COMMUNES } from "@/lib/listing-form-options";
+import { listingNeighborhoodFromHousingDescription, listingRoomDetailsFromRow, type Listing } from "@/lib/listing";
+import {
+  BRUSSELS_COMMUNES,
+  isValidNeighborhoodForCommune,
+  OTHER_NEIGHBORHOOD_VALUE,
+} from "@/lib/listing-form-options";
 
 type ListingFilters = {
   query?: string;
   city?: string;
+  neighborhood?: string;
+  listingType?: "colocation" | "studio";
   minRent?: number;
   maxRent?: number;
   availableFrom?: string;
@@ -28,6 +34,10 @@ function todayIsoDate() {
 
 function isMissingExpiresAtColumn(message: string) {
   return /expires_at/i.test(message) && /column/i.test(message);
+}
+
+function isMissingListingTypeColumn(message: string) {
+  return /listing_type/i.test(message) && /column/i.test(message);
 }
 
 function isJwtExpired(message: string) {
@@ -57,7 +67,8 @@ function escapeIlikeInput(value: string) {
 }
 
 function isBrusselsCommune(city: string) {
-  return BRUSSELS_COMMUNES_NORMALIZED.has(normalizeText(city));
+  const normalized = normalizeText(city);
+  return BRUSSELS_COMMUNES_NORMALIZED.has(normalized) || normalized === "bruxelles";
 }
 
 function hasText(value: string | null | undefined) {
@@ -84,6 +95,10 @@ function buildSearchListingsQuery(
 
   if (filters.city && !isBrusselsRegionQuery(filters.city)) {
     query = query.ilike("city", `%${escapeIlikeInput(filters.city)}%`);
+  }
+
+  if (filters.listingType) {
+    query = query.eq("listing_type", filters.listingType);
   }
 
   if (filters.minRent) {
@@ -130,6 +145,22 @@ function applyPostFilters(rows: Listing[], filters: ListingFilters) {
       );
       return haystack.includes(needle);
     });
+  }
+
+  if (filters.neighborhood) {
+    if (filters.neighborhood === OTHER_NEIGHBORHOOD_VALUE) {
+      filtered = filtered.filter((listing) => {
+        const listingNeighborhood = listingNeighborhoodFromHousingDescription(listing.housing_description);
+        if (!listingNeighborhood) return false;
+        return !isValidNeighborhoodForCommune(listing.city, listingNeighborhood);
+      });
+    } else {
+      const normalizedNeighborhood = normalizeText(filters.neighborhood);
+      filtered = filtered.filter((listing) => {
+        const listingNeighborhood = listingNeighborhoodFromHousingDescription(listing.housing_description);
+        return listingNeighborhood ? normalizeText(listingNeighborhood) === normalizedNeighborhood : false;
+      });
+    }
   }
 
   if (filters.leaseType) {
@@ -209,6 +240,18 @@ export async function searchListings(filters: ListingFilters) {
     error = retry.error;
   }
 
+  if (error && isMissingListingTypeColumn(error.message)) {
+    const retry = await buildSearchListingsQuery(supabase, { ...filters, listingType: undefined }, true);
+    data = retry.data;
+    error = retry.error;
+
+    if (error && isMissingExpiresAtColumn(error.message)) {
+      const legacyRetry = await buildSearchListingsQuery(supabase, { ...filters, listingType: undefined }, false);
+      data = legacyRetry.data;
+      error = legacyRetry.error;
+    }
+  }
+
   if (error && isJwtExpired(error.message)) {
     const publicSupabase = createServerSupabasePublicClient();
     const retryPublic = await buildSearchListingsQuery(publicSupabase, filters, true);
@@ -219,6 +262,22 @@ export async function searchListings(filters: ListingFilters) {
       const retryLegacyPublic = await buildSearchListingsQuery(publicSupabase, filters, false);
       data = retryLegacyPublic.data;
       error = retryLegacyPublic.error;
+    }
+
+    if (error && isMissingListingTypeColumn(error.message)) {
+      const retryLegacyTypePublic = await buildSearchListingsQuery(publicSupabase, { ...filters, listingType: undefined }, true);
+      data = retryLegacyTypePublic.data;
+      error = retryLegacyTypePublic.error;
+
+      if (error && isMissingExpiresAtColumn(error.message)) {
+        const retryLegacyTypeAndDatePublic = await buildSearchListingsQuery(
+          publicSupabase,
+          { ...filters, listingType: undefined },
+          false,
+        );
+        data = retryLegacyTypeAndDatePublic.data;
+        error = retryLegacyTypeAndDatePublic.error;
+      }
     }
   }
 
