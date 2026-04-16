@@ -32,6 +32,8 @@ export function humanizeAppError(errorCode: string | null) {
       return "Tu as choisi telephone, mais aucun numero valide n'a ete fourni.";
     case "contact_email_required":
       return "Tu as choisi email, mais aucune adresse email n'a ete fournie.";
+    case "account_email_required":
+      return "Ton compte n'a pas d'adresse email utilisable pour le contact annonce.";
     case "contact_missing":
       return "Aucun moyen de contact configuré pour cette annonce.";
     case "contact_method_invalid":

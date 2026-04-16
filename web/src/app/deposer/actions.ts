@@ -59,31 +59,6 @@ function isMissingStructuredListingColumns(message: string) {
   );
 }
 
-function readContactMethodSelection(formData: FormData) {
-  const rawSelectedMethods = formData
-    .getAll("contact_methods")
-    .map((value) => `${value}`.trim())
-    .filter(Boolean);
-
-  const rawPhone = normalizeWhatsapp(formData.get("contact_whatsapp"));
-  const rawEmail = cleanOptionalText(formData.get("contact_email"));
-  let hasPhone = rawSelectedMethods.includes("phone");
-  let hasEmail = rawSelectedMethods.includes("email");
-
-  // Backward compatibility if the form is submitted without contact_methods.
-  if (!hasPhone && !hasEmail) {
-    hasPhone = Boolean(rawPhone);
-    hasEmail = Boolean(rawEmail);
-  }
-
-  return {
-    hasPhone,
-    hasEmail,
-    phoneValue: hasPhone ? rawPhone : null,
-    emailValue: hasEmail ? rawEmail : null,
-  };
-}
-
 function parsePositiveIntArray(formData: FormData, key: string, expectedSize: number, errorCode: string) {
   const rawValues = formData
     .getAll(key)
@@ -275,9 +250,9 @@ export async function createListingAction(formData: FormData) {
         candidateGenderPreference,
         animalsPolicy,
       });
-  const contactSelection = readContactMethodSelection(formData);
-  const contactPhone = contactSelection.phoneValue;
-  const contactEmail = contactSelection.emailValue;
+  const rawWhatsapp = `${formData.get("contact_whatsapp") ?? ""}`.trim();
+  const contactPhone = normalizeWhatsapp(rawWhatsapp);
+  const contactEmail = cleanOptionalText(user.email ?? null);
   let uploadedPhotos: ListingPhoto[] = [];
 
   if (!listingType) {
@@ -304,16 +279,12 @@ export async function createListingAction(formData: FormData) {
     redirect("/deposer?error=vibe_required");
   }
 
-  if (!contactSelection.hasPhone && !contactSelection.hasEmail) {
-    redirect("/deposer?error=contact_method_required");
-  }
-
-  if (contactSelection.hasPhone && !contactPhone) {
+  if (rawWhatsapp && !contactPhone) {
     redirect("/deposer?error=contact_phone_required");
   }
 
-  if (contactSelection.hasEmail && !contactEmail) {
-    redirect("/deposer?error=contact_email_required");
+  if (!contactEmail) {
+    redirect("/deposer?error=account_email_required");
   }
 
   try {

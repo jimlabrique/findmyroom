@@ -19,10 +19,11 @@ type DeposerPageProps = {
 export const dynamic = "force-dynamic";
 
 export default async function DeposerPage({ searchParams }: DeposerPageProps) {
-  await requireUser("/deposer");
+  const { user } = await requireUser("/deposer");
   const query = await searchParams;
   const errorCode = typeof query.error === "string" ? query.error : null;
   const error = humanizeAppError(errorCode);
+  const accountEmail = user.email ?? "Email du compte indisponible";
 
   return (
     <div className="container-page max-w-3xl space-y-6">
@@ -192,38 +193,18 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
           <div className="space-y-4">
             <PhotoFields mode="create" />
             <div className="space-y-2">
-              <p className="label m-0">Moyens de contact</p>
-              <div className="flex flex-wrap gap-4 text-sm text-stone-700">
-                <label className="inline-flex items-center gap-2">
-                  <input type="checkbox" name="contact_methods" value="email" defaultChecked />
-                  Email
-                </label>
-                <label className="inline-flex items-center gap-2">
-                  <input type="checkbox" name="contact_methods" value="phone" />
-                  Téléphone (WhatsApp)
-                </label>
-              </div>
-              <p className="text-xs text-stone-500">Choisis au moins un moyen de contact.</p>
+              <p className="label m-0">Email de contact (automatique)</p>
+              <p className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-700">
+                {accountEmail}
+              </p>
+              <p className="text-xs text-stone-500">Les candidats peuvent toujours te contacter par email sur cette adresse.</p>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="label" htmlFor="contact_whatsapp">
-                  Numéro WhatsApp (si coché)
-                </label>
-                <input id="contact_whatsapp" name="contact_whatsapp" className="input" placeholder="+324..." />
-              </div>
-              <div>
-                <label className="label" htmlFor="contact_email">
-                  Email (si coché)
-                </label>
-                <input
-                  id="contact_email"
-                  name="contact_email"
-                  type="email"
-                  className="input"
-                  placeholder="toi@email.com"
-                />
-              </div>
+            <div>
+              <label className="label" htmlFor="contact_whatsapp">
+                Numéro WhatsApp (optionnel)
+              </label>
+              <input id="contact_whatsapp" name="contact_whatsapp" className="input" placeholder="+324..." />
+              <p className="mt-1 text-xs text-stone-500">Laisse vide si tu ne veux pas être contacté sur WhatsApp.</p>
             </div>
           </div>
         </section>

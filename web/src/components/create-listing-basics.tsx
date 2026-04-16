@@ -7,6 +7,7 @@ import {
   COMMON_SPACES_COLOCATION_OPTIONS,
   COMMON_SPACES_STUDIO_OPTIONS,
   getNeighborhoodsForCommune,
+  isValidNeighborhoodForCommune,
   LISTING_TYPE_OPTIONS,
   OTHER_NEIGHBORHOOD_LABEL,
   OTHER_NEIGHBORHOOD_VALUE,
@@ -28,6 +29,22 @@ type RoomDraft = {
   view: string;
 };
 
+export type CreateListingBasicsInitialValues = {
+  listingType?: "colocation" | "studio";
+  commune?: string;
+  neighborhood?: string;
+  availableRooms?: number;
+  totalRooms?: number;
+  availableFrom?: string;
+  roomDrafts?: RoomDraft[];
+  commonSpaces?: string[];
+  commonSpacesOther?: string;
+};
+
+type CreateListingBasicsProps = {
+  initialValues?: CreateListingBasicsInitialValues;
+};
+
 const ROOM_DRAFT_DEFAULT: RoomDraft = {
   size_sqm: "",
   price_eur: "",
@@ -44,14 +61,73 @@ function normalizeRoomCount(value: string) {
   return parsed;
 }
 
-export function CreateListingBasics() {
-  const [listingType, setListingType] = useState<"colocation" | "studio">("colocation");
-  const [commune, setCommune] = useState("Bruxelles-Ville");
-  const [neighborhood, setNeighborhood] = useState(getNeighborhoodsForCommune("Bruxelles-Ville")[0] ?? "");
-  const [customNeighborhood, setCustomNeighborhood] = useState("");
-  const [availableRooms, setAvailableRooms] = useState(1);
-  const [totalRooms, setTotalRooms] = useState(1);
-  const [roomDrafts, setRoomDrafts] = useState<RoomDraft[]>([{ ...ROOM_DRAFT_DEFAULT }]);
+function ensureRoomDraftCount(roomDrafts: RoomDraft[], expectedCount: number) {
+  if (roomDrafts.length === expectedCount) return roomDrafts;
+  if (roomDrafts.length > expectedCount) return roomDrafts.slice(0, expectedCount);
+  return [...roomDrafts, ...Array.from({ length: expectedCount - roomDrafts.length }, () => ({ ...ROOM_DRAFT_DEFAULT }))];
+}
+
+function normalizeRoomDraft(input: RoomDraft | undefined): RoomDraft {
+  return {
+    size_sqm: `${input?.size_sqm ?? ""}`.trim(),
+    price_eur: `${input?.price_eur ?? ""}`.trim(),
+    furnishing: `${input?.furnishing ?? ROOM_DRAFT_DEFAULT.furnishing}`.trim() || ROOM_DRAFT_DEFAULT.furnishing,
+    bathroom: `${input?.bathroom ?? ROOM_DRAFT_DEFAULT.bathroom}`.trim() || ROOM_DRAFT_DEFAULT.bathroom,
+    outdoor: `${input?.outdoor ?? ROOM_DRAFT_DEFAULT.outdoor}`.trim() || ROOM_DRAFT_DEFAULT.outdoor,
+    view: `${input?.view ?? ROOM_DRAFT_DEFAULT.view}`.trim() || ROOM_DRAFT_DEFAULT.view,
+  };
+}
+
+function getAllowedCommonSpaceValues(type: "colocation" | "studio"): Set<string> {
+  const options = type === "studio" ? COMMON_SPACES_STUDIO_OPTIONS : COMMON_SPACES_COLOCATION_OPTIONS;
+  return new Set(options.map((option) => option.value));
+}
+
+export function CreateListingBasics({ initialValues }: CreateListingBasicsProps) {
+  const initialListingType = initialValues?.listingType === "studio" ? "studio" : "colocation";
+  const initialCommune =
+    initialValues?.commune && BRUSSELS_COMMUNES.includes(initialValues.commune as (typeof BRUSSELS_COMMUNES)[number])
+      ? initialValues.commune
+      : "Bruxelles-Ville";
+  const initialCommuneNeighborhoods = getNeighborhoodsForCommune(initialCommune);
+  const initialNeighborhoodRaw = `${initialValues?.neighborhood ?? ""}`.trim();
+  const initialHasCustomNeighborhood = Boolean(initialNeighborhoodRaw) && !isValidNeighborhoodForCommune(initialCommune, initialNeighborhoodRaw);
+  const initialNeighborhood = initialHasCustomNeighborhood
+    ? OTHER_NEIGHBORHOOD_VALUE
+    : initialNeighborhoodRaw || initialCommuneNeighborhoods[0] || "";
+  const initialCustomNeighborhood = initialHasCustomNeighborhood ? initialNeighborhoodRaw : "";
+  const initialRoomDraftsRaw = (initialValues?.roomDrafts?.length ? initialValues.roomDrafts : [{ ...ROOM_DRAFT_DEFAULT }]).map(
+    (room) => normalizeRoomDraft(room),
+  );
+  const initialAvailableRoomsSeed = (initialValues?.availableRooms ?? initialRoomDraftsRaw.length) || MIN_ROOMS;
+  const initialAvailableRooms =
+    initialListingType === "studio"
+      ? 1
+      : normalizeRoomCount(`${initialAvailableRoomsSeed}`);
+  const initialTotalRooms =
+    initialListingType === "studio"
+      ? 1
+      : Math.max(
+          normalizeRoomCount(`${initialValues?.totalRooms ?? initialValues?.availableRooms ?? initialAvailableRooms}`),
+          initialAvailableRooms,
+        );
+  const initialRoomDrafts = ensureRoomDraftCount(initialRoomDraftsRaw, initialAvailableRooms);
+  const initialAllowedCommonSpaces = getAllowedCommonSpaceValues(initialListingType);
+  const initialSelectedCommonSpaces =
+    initialValues?.commonSpaces?.filter((value) => initialAllowedCommonSpaces.has(value)) ?? [];
+  const initialCommonSpacesOther = `${initialValues?.commonSpacesOther ?? ""}`.trim();
+  const initialAvailableFrom = `${initialValues?.availableFrom ?? ""}`.trim();
+
+  const [listingType, setListingType] = useState<"colocation" | "studio">(initialListingType);
+  const [commune, setCommune] = useState(initialCommune);
+  const [neighborhood, setNeighborhood] = useState(initialNeighborhood);
+  const [customNeighborhood, setCustomNeighborhood] = useState(initialCustomNeighborhood);
+  const [availableRooms, setAvailableRooms] = useState(initialAvailableRooms);
+  const [totalRooms, setTotalRooms] = useState(initialTotalRooms);
+  const [roomDrafts, setRoomDrafts] = useState<RoomDraft[]>(initialRoomDrafts);
+  const [selectedCommonSpaces, setSelectedCommonSpaces] = useState<string[]>(initialSelectedCommonSpaces);
+  const [commonSpacesOther, setCommonSpacesOther] = useState(initialCommonSpacesOther);
+
   const neighborhoodOptions = useMemo(() => getNeighborhoodsForCommune(commune), [commune]);
   const commonSpacesOptions = listingType === "studio" ? COMMON_SPACES_STUDIO_OPTIONS : COMMON_SPACES_COLOCATION_OPTIONS;
   const effectiveNeighborhood = neighborhood === OTHER_NEIGHBORHOOD_VALUE ? customNeighborhood : neighborhood;
@@ -78,11 +154,7 @@ export function CreateListingBasics() {
     const nextRoomCount = normalizeRoomCount(rawValue);
     setAvailableRooms(nextRoomCount);
     setTotalRooms((prev) => Math.max(prev, nextRoomCount));
-    setRoomDrafts((prev) => {
-      if (prev.length === nextRoomCount) return prev;
-      if (prev.length > nextRoomCount) return prev.slice(0, nextRoomCount);
-      return [...prev, ...Array.from({ length: nextRoomCount - prev.length }, () => ({ ...ROOM_DRAFT_DEFAULT }))];
-    });
+    setRoomDrafts((prev) => ensureRoomDraftCount(prev, nextRoomCount));
   }
 
   function handleTotalRoomsChange(rawValue: string) {
@@ -99,6 +171,8 @@ export function CreateListingBasics() {
 
   function handleListingTypeChange(nextType: "colocation" | "studio") {
     setListingType(nextType);
+    const allowedCommonSpaces = getAllowedCommonSpaceValues(nextType);
+    setSelectedCommonSpaces((prev) => prev.filter((value) => allowedCommonSpaces.has(value)));
     if (nextType === "studio") {
       setAvailableRooms(1);
       setTotalRooms(1);
@@ -111,6 +185,15 @@ export function CreateListingBasics() {
     if (nextNeighborhood !== OTHER_NEIGHBORHOOD_VALUE) {
       setCustomNeighborhood("");
     }
+  }
+
+  function toggleCommonSpace(value: string, checked: boolean) {
+    setSelectedCommonSpaces((prev) => {
+      if (checked) {
+        return prev.includes(value) ? prev : [...prev, value];
+      }
+      return prev.filter((item) => item !== value);
+    });
   }
 
   return (
@@ -186,9 +269,7 @@ export function CreateListingBasics() {
                 {option}
               </option>
             ))}
-            {neighborhoodOptions.length ? (
-              <option value={OTHER_NEIGHBORHOOD_VALUE}>{OTHER_NEIGHBORHOOD_LABEL}</option>
-            ) : null}
+            {neighborhoodOptions.length ? <option value={OTHER_NEIGHBORHOOD_VALUE}>{OTHER_NEIGHBORHOOD_LABEL}</option> : null}
           </select>
         </div>
 
@@ -261,20 +342,23 @@ export function CreateListingBasics() {
           <label className="label" htmlFor="available_from">
             Disponibilité
           </label>
-          <input id="available_from" name="available_from" type="date" required className="input" />
+          <input
+            id="available_from"
+            name="available_from"
+            type="date"
+            required
+            className="input"
+            defaultValue={initialAvailableFrom}
+          />
         </div>
       </div>
 
       <div className="space-y-3">
-        <p className="label m-0">
-          {listingType === "studio" ? "Détails du studio" : "Détails par chambre disponible"}
-        </p>
+        <p className="label m-0">{listingType === "studio" ? "Détails du studio" : "Détails par chambre disponible"}</p>
         <div className="space-y-3">
           {roomDrafts.map((room, index) => (
             <div key={`room-${index}`} className="rounded-xl border border-stone-200 bg-stone-50 p-3">
-              <p className="mb-3 text-sm font-semibold text-stone-800">
-                {listingType === "studio" ? "Studio" : `Chambre ${index + 1}`}
-              </p>
+              <p className="mb-3 text-sm font-semibold text-stone-800">{listingType === "studio" ? "Studio" : `Chambre ${index + 1}`}</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <label className="label" htmlFor={`room-size-${index}`}>
@@ -393,7 +477,13 @@ export function CreateListingBasics() {
         <div className="grid gap-2 sm:grid-cols-2 text-sm text-stone-700">
           {commonSpacesOptions.map((option) => (
             <label key={option.value} className="inline-flex items-center gap-2">
-              <input type="checkbox" name="common_spaces" value={option.value} />
+              <input
+                type="checkbox"
+                name="common_spaces"
+                value={option.value}
+                checked={selectedCommonSpaces.includes(option.value)}
+                onChange={(event) => toggleCommonSpace(option.value, event.currentTarget.checked)}
+              />
               {option.label}
             </label>
           ))}
@@ -407,6 +497,8 @@ export function CreateListingBasics() {
             name="common_spaces_other"
             className="input"
             placeholder="Précise un équipement ou espace supplémentaire"
+            value={commonSpacesOther}
+            onChange={(event) => setCommonSpacesOther(event.currentTarget.value)}
           />
         </div>
       </div>

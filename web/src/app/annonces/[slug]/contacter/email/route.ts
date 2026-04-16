@@ -83,12 +83,19 @@ export async function POST(request: Request, { params }: EmailContactRouteProps)
   }
 
   try {
+    const listingPhotoUrl =
+      Array.isArray(listing.photo_urls) && listing.photo_urls.length
+        ? `${listing.photo_urls[0] ?? ""}`.trim() || null
+        : null;
+
     await sendListingContactEmail({
       to: listing.contact_email ?? "",
       senderFullName: `${firstName} ${lastName}`,
       senderEmail,
       listingTitle: listing.title,
       listingCity: listing.city,
+      listingSlug: listing.slug,
+      listingPhotoUrl,
       message,
     });
   } catch (error) {

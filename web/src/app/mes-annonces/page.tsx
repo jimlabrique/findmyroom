@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { getOwnerListings } from "@/lib/data/listings";
 import { getOwnerListingMetrics } from "@/lib/data/listing-events";
-import { deleteListingAction, updateListingStatusAction } from "@/app/mes-annonces/actions";
+import { deleteAccountAction, deleteListingAction, updateListingStatusAction } from "@/app/mes-annonces/actions";
 import { listingStatusLabel, listingTypeLabel } from "@/lib/listing";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 
@@ -18,12 +18,21 @@ function nextStatus(status: "active" | "paused" | "archived") {
   return "active";
 }
 
+function humanizeMyListingsError(errorCode: string | null) {
+  if (!errorCode) return null;
+  if (errorCode === "account_delete_not_configured") {
+    return "Suppression de compte non configurée côté serveur. Ajoute SUPABASE_SERVICE_ROLE_KEY dans l'environnement.";
+  }
+  return errorCode;
+}
+
 export default async function MyListingsPage({ searchParams }: MyListingsPageProps) {
   const { user } = await requireUser("/mes-annonces");
   const query = await searchParams;
   const updated = query.updated === "1";
   const deleted = query.deleted === "1";
-  const error = typeof query.error === "string" ? query.error : null;
+  const errorCode = typeof query.error === "string" ? query.error : null;
+  const error = humanizeMyListingsError(errorCode);
 
   const listings = await getOwnerListings(user.id);
   const metricsByListingId = await getOwnerListingMetrics(listings.map((listing) => listing.id));
@@ -118,6 +127,20 @@ export default async function MyListingsPage({ searchParams }: MyListingsPagePro
       ) : (
         <div className="panel p-6 text-stone-700">Tu n&apos;as pas encore publié d&apos;annonce.</div>
       )}
+
+      <section className="panel space-y-3 border-red-200 p-5">
+        <h2 className="text-lg font-semibold text-red-700">Zone danger</h2>
+        <p className="text-sm text-stone-700">
+          Supprimer ton compte efface définitivement ton accès, tes annonces et tes photos.
+        </p>
+        <form action={deleteAccountAction}>
+          <ConfirmSubmitButton
+            label="Supprimer mon compte"
+            confirmMessage="Supprimer ton compte définitivement ? Cette action est irréversible."
+            className="btn btn-ghost border-red-300 text-red-700 hover:border-red-400 hover:bg-red-50 hover:text-red-700"
+          />
+        </form>
+      </section>
     </div>
   );
 }

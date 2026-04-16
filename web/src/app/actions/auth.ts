@@ -63,8 +63,47 @@ function resolveRequestOrigin(requestHeaders: Headers) {
   return env.NEXT_PUBLIC_SITE_URL;
 }
 
+function readNextPath(formData: FormData) {
+  const nextPath = `${formData.get("next") ?? "/"}`.trim();
+  if (!nextPath.startsWith("/")) {
+    redirect("/connexion?error=invalid_next");
+  }
+  return nextPath;
+}
+
+function readEmail(formData: FormData) {
+  return `${formData.get("email") ?? ""}`.trim().toLowerCase();
+}
+
+function readPassword(formData: FormData) {
+  return `${formData.get("password") ?? ""}`;
+}
+
+function isValidEmailAddress(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isEmailNotConfirmedError(error: { message?: string; code?: string } | null | undefined) {
+  if (!error) return false;
+  const message = `${error.message ?? ""}`.toLowerCase();
+  const code = `${error.code ?? ""}`.toLowerCase();
+  return message.includes("email not confirmed") || code === "email_not_confirmed";
+}
+
+function isInvalidCredentialsError(error: { message?: string; code?: string } | null | undefined) {
+  if (!error) return false;
+  const message = `${error.message ?? ""}`.toLowerCase();
+  const code = `${error.code ?? ""}`.toLowerCase();
+  return (
+    message.includes("invalid login credentials") ||
+    message.includes("invalid email or password") ||
+    code === "invalid_credentials" ||
+    code === "invalid_grant"
+  );
+}
+
 export async function signInWithGoogle(formData: FormData) {
-  const nextPath = `${formData.get("next") ?? "/"}`;
+  readNextPath(formData);
   const requestHeaders = await headers();
   const origin = resolveRequestOrigin(requestHeaders);
   const redirectTo = `${origin}/auth/callback`;
@@ -85,13 +124,74 @@ export async function signInWithGoogle(formData: FormData) {
     redirect("/connexion?error=google_oauth_failed");
   }
 
-  // Preserve post-login destination in app-level navigation when needed,
-  // but keep OAuth redirectTo strict to avoid provider fallback to production site URL.
-  if (!nextPath.startsWith("/")) {
-    redirect("/connexion?error=invalid_next");
+  redirect(data.url);
+}
+
+export async function signUpWithEmailPassword(formData: FormData) {
+  readNextPath(formData);
+  const email = readEmail(formData);
+  const password = readPassword(formData);
+
+  if (!isValidEmailAddress(email)) {
+    redirect("/connexion?error=invalid_email");
+  }
+  if (password.length < 8) {
+    redirect("/connexion?error=password_too_short");
   }
 
-  redirect(data.url);
+  const requestHeaders = await headers();
+  const origin = resolveRequestOrigin(requestHeaders);
+  const emailRedirectTo = `${origin}/connexion?confirmed=1`;
+
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo,
+    },
+  });
+
+  if (error) {
+    redirect(`/connexion?error=${encodeURIComponent(error.code || error.message || "signup_failed")}`);
+  }
+
+  if (data.session) {
+    redirect("/annonces");
+  }
+
+  redirect("/connexion?check_email=1");
+}
+
+export async function signInWithPassword(formData: FormData) {
+  const nextPath = readNextPath(formData);
+  const email = readEmail(formData);
+  const password = readPassword(formData);
+
+  if (!isValidEmailAddress(email)) {
+    redirect("/connexion?error=invalid_email");
+  }
+  if (!password) {
+    redirect("/connexion?error=missing_password");
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (isEmailNotConfirmedError(error)) {
+    redirect("/connexion?error=email_not_confirmed");
+  }
+  if (isInvalidCredentialsError(error)) {
+    redirect("/connexion?error=invalid_credentials");
+  }
+  if (error) {
+    redirect(`/connexion?error=${encodeURIComponent(error.code || error.message || "signin_failed")}`);
+  }
+
+  redirect(nextPath);
 }
 
 export async function signOut() {

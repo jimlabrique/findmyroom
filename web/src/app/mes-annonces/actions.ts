@@ -1,14 +1,41 @@
 "use server";
 
+import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
+import type { Database } from "@/lib/database.types";
+import { env } from "@/lib/env";
 import {
+  type AnimalsPolicy,
   cleanOptionalText,
+  type ListingRoomDetail,
   type ListingPhoto,
   normalizeWhatsapp,
   parseOptionalInt,
-  parseRequiredInt,
 } from "@/lib/listing";
+import {
+  buildAutoListingTitle,
+  buildStructuredFlatshareVibe,
+  buildStructuredHousingDescription,
+  sanitizeOptionValues,
+} from "@/lib/listing-composer";
+import {
+  ANIMALS_POLICY_OPTIONS,
+  AREA_CONTEXT_OPTIONS,
+  CANDIDATE_GENDER_PREFERENCE_OPTIONS,
+  COMMON_SPACES_COLOCATION_OPTIONS,
+  COMMON_SPACES_STUDIO_OPTIONS,
+  CURRENT_FLATMATES_OPTIONS,
+  isOtherNeighborhoodValue,
+  LISTING_TYPE_OPTIONS,
+  OTHER_NEIGHBORHOOD_VALUE,
+  ROOM_BATHROOM_OPTIONS,
+  ROOM_FURNISHING_OPTIONS,
+  ROOM_OUTDOOR_OPTIONS,
+  ROOM_VIEW_OPTIONS,
+  TRANSPORT_MODE_OPTIONS,
+  VIBE_TAG_OPTIONS,
+} from "@/lib/listing-form-options";
 import {
   deleteListingPhotoUrls,
   extractExistingListingPhotos,
@@ -25,6 +52,18 @@ function isMissingPhotoCaptionsColumn(message: string) {
 
 function isMissingExpiresAtColumn(message: string) {
   return /expires_at/i.test(message) && /column/i.test(message);
+}
+
+function isMissingStructuredListingColumns(message: string) {
+  const lower = message.toLowerCase();
+  return (
+    (lower.includes("total_rooms") && lower.includes("column")) ||
+    (lower.includes("room_details") && lower.includes("column")) ||
+    (lower.includes("animals_policy") && lower.includes("column")) ||
+    (lower.includes("current_flatmates") && lower.includes("column")) ||
+    (lower.includes("lgbtq_friendly") && lower.includes("column")) ||
+    (lower.includes("listing_type") && lower.includes("column"))
+  );
 }
 
 function todayIsoDate() {
@@ -45,29 +84,92 @@ function alignCaptionsToUrls(urls: string[], captions: string[]) {
   return urls.map((_, index) => captions[index] ?? "");
 }
 
-function readContactMethodSelection(formData: FormData) {
-  const rawSelectedMethods = formData
-    .getAll("contact_methods")
-    .map((value) => `${value}`.trim())
-    .filter(Boolean);
+function parsePositiveIntArray(formData: FormData, key: string, expectedSize: number, errorCode: string) {
+  const rawValues = formData
+    .getAll(key)
+    .map((value) => `${value ?? ""}`.trim())
+    .filter((value) => value.length > 0);
 
-  const rawPhone = normalizeWhatsapp(formData.get("contact_whatsapp"));
-  const rawEmail = cleanOptionalText(formData.get("contact_email"));
-  let hasPhone = rawSelectedMethods.includes("phone");
-  let hasEmail = rawSelectedMethods.includes("email");
-
-  // Backward compatibility if old forms submit without contact_methods.
-  if (!hasPhone && !hasEmail) {
-    hasPhone = Boolean(rawPhone);
-    hasEmail = Boolean(rawEmail);
+  if (rawValues.length !== expectedSize) {
+    throw new Error(errorCode);
   }
 
-  return {
-    hasPhone,
-    hasEmail,
-    phoneValue: hasPhone ? rawPhone : null,
-    emailValue: hasEmail ? rawEmail : null,
-  };
+  const parsed = rawValues.map((value) => Number.parseInt(value, 10));
+  if (parsed.some((value) => !Number.isFinite(value) || value <= 0)) {
+    throw new Error(errorCode);
+  }
+
+  return parsed;
+}
+
+function parseEnumArray(
+  formData: FormData,
+  key: string,
+  expectedSize: number,
+  allowedValues: Set<string>,
+  errorCode: string,
+) {
+  const rawValues = formData
+    .getAll(key)
+    .map((value) => `${value ?? ""}`.trim())
+    .filter((value) => value.length > 0);
+
+  if (rawValues.length !== expectedSize) {
+    throw new Error(errorCode);
+  }
+
+  if (rawValues.some((value) => !allowedValues.has(value))) {
+    throw new Error(errorCode);
+  }
+
+  return rawValues;
+}
+
+function parseOptionalEnumValue<T extends string>(rawValue: string, allowedValues: readonly T[]) {
+  return allowedValues.includes(rawValue as T) ? (rawValue as T) : null;
+}
+
+function parseRoomDetails(formData: FormData, availableRooms: number): ListingRoomDetail[] {
+  const sizes = parsePositiveIntArray(formData, "room_size_sqm", availableRooms, "room_details_invalid");
+  const prices = parsePositiveIntArray(formData, "room_price_eur", availableRooms, "room_details_invalid");
+  const furnishing = parseEnumArray(
+    formData,
+    "room_furnishing",
+    availableRooms,
+    new Set(ROOM_FURNISHING_OPTIONS.map((option) => option.value)),
+    "room_details_invalid",
+  );
+  const bathrooms = parseEnumArray(
+    formData,
+    "room_bathroom",
+    availableRooms,
+    new Set(ROOM_BATHROOM_OPTIONS.map((option) => option.value)),
+    "room_details_invalid",
+  );
+  const outdoors = parseEnumArray(
+    formData,
+    "room_outdoor",
+    availableRooms,
+    new Set(ROOM_OUTDOOR_OPTIONS.map((option) => option.value)),
+    "room_details_invalid",
+  );
+  const views = parseEnumArray(
+    formData,
+    "room_view",
+    availableRooms,
+    new Set(ROOM_VIEW_OPTIONS.map((option) => option.value)),
+    "room_details_invalid",
+  );
+
+  return Array.from({ length: availableRooms }, (_, index) => ({
+    index: index + 1,
+    size_sqm: sizes[index],
+    price_eur: prices[index],
+    furnishing: furnishing[index] as ListingRoomDetail["furnishing"],
+    bathroom: bathrooms[index] as ListingRoomDetail["bathroom"],
+    outdoor: outdoors[index] as ListingRoomDetail["outdoor"],
+    view: views[index] as ListingRoomDetail["view"],
+  }));
 }
 
 async function loadListingPhotosForOwner({
@@ -231,6 +333,62 @@ export async function deleteListingAction(formData: FormData) {
   redirect("/mes-annonces?deleted=1");
 }
 
+export async function deleteAccountAction() {
+  const { supabase, user } = await requireUser("/mes-annonces");
+
+  const { data: listings, error: listingsError } = await supabase
+    .from("listings")
+    .select("photo_urls")
+    .eq("user_id", user.id);
+
+  if (listingsError) {
+    redirect(`/mes-annonces?error=${encodeURIComponent(listingsError.message)}`);
+  }
+
+  const allPhotoUrls = (listings ?? []).flatMap((listing) =>
+    Array.isArray(listing.photo_urls)
+      ? listing.photo_urls.filter((url): url is string => typeof url === "string" && url.trim().length > 0)
+      : [],
+  );
+
+  if (allPhotoUrls.length) {
+    try {
+      await deleteListingPhotoUrls({
+        supabase,
+        userId: user.id,
+        urls: allPhotoUrls,
+      });
+    } catch {
+      // Continue: account deletion should not fail due to storage cleanup.
+    }
+  }
+
+  const serviceRoleKey = `${process.env.SUPABASE_SERVICE_ROLE_KEY ?? ""}`.trim();
+  if (!serviceRoleKey) {
+    redirect("/mes-annonces?error=account_delete_not_configured");
+  }
+
+  const adminSupabase = createClient<Database>(env.NEXT_PUBLIC_SUPABASE_URL, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+
+  const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(user.id);
+  if (deleteUserError) {
+    redirect(`/mes-annonces?error=${encodeURIComponent(deleteUserError.message)}`);
+  }
+
+  try {
+    await supabase.auth.signOut();
+  } catch {
+    // Ignore sign-out failure after account deletion.
+  }
+
+  redirect("/connexion?account_deleted=1");
+}
+
 export async function updateListingAction(formData: FormData) {
   const listingId = `${formData.get("listing_id") ?? ""}`.trim();
   if (!listingId) {
@@ -238,24 +396,132 @@ export async function updateListingAction(formData: FormData) {
   }
 
   const { supabase, user } = await requireUser(`/mes-annonces/${listingId}/editer`);
-  const title = `${formData.get("title") ?? ""}`.trim();
+  const listingTypeRaw = `${formData.get("listing_type") ?? ""}`.trim();
+  const listingType = parseOptionalEnumValue(
+    listingTypeRaw,
+    LISTING_TYPE_OPTIONS.map((option) => option.value),
+  );
   const city = `${formData.get("city") ?? ""}`.trim();
+  const neighborhoodSelection = `${formData.get("neighborhood") ?? ""}`.trim();
+  const neighborhoodCustom = `${formData.get("neighborhood_custom") ?? ""}`.trim();
+  const isOtherNeighborhood = isOtherNeighborhoodValue(neighborhoodSelection);
+  const neighborhood = isOtherNeighborhood ? neighborhoodCustom : neighborhoodSelection;
   const availableFrom = `${formData.get("available_from") ?? ""}`.trim();
-  const housingDescription = `${formData.get("housing_description") ?? ""}`.trim();
-  const flatshareVibe = `${formData.get("flatshare_vibe") ?? ""}`.trim();
+  const availableRoomsRaw = Number.parseInt(`${formData.get("available_rooms") ?? ""}`.trim(), 10);
+  const totalRoomsRaw = Number.parseInt(`${formData.get("total_rooms") ?? ""}`.trim(), 10);
+  const isStudio = listingType === "studio";
+  const availableRooms = isStudio ? 1 : availableRoomsRaw;
+  const totalRooms = isStudio ? 1 : totalRoomsRaw;
 
-  if (!title || !city || !availableFrom || !housingDescription || !flatshareVibe) {
+  if (!listingType) {
+    redirect(`/mes-annonces/${listingId}/editer?error=listing_type_required`);
+  }
+  if (
+    !Number.isFinite(availableRooms) ||
+    availableRooms <= 0 ||
+    !Number.isFinite(totalRooms) ||
+    totalRooms <= 0 ||
+    totalRooms < availableRooms
+  ) {
+    redirect(`/mes-annonces/${listingId}/editer?error=total_rooms_invalid`);
+  }
+  if (
+    isOtherNeighborhood &&
+    (!neighborhoodCustom || isOtherNeighborhoodValue(neighborhoodCustom) || neighborhoodCustom === OTHER_NEIGHBORHOOD_VALUE)
+  ) {
+    redirect(`/mes-annonces/${listingId}/editer?error=neighborhood_custom_required`);
+  }
+
+  let roomDetails: ListingRoomDetail[] = [];
+  try {
+    roomDetails = parseRoomDetails(formData, availableRooms);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "room_details_invalid";
+    redirect(`/mes-annonces/${listingId}/editer?error=${encodeURIComponent(message)}`);
+  }
+
+  const currentFlatmatesRaw = cleanOptionalText(formData.get("current_flatmates"));
+  const currentFlatmates = currentFlatmatesRaw
+    ? parseOptionalEnumValue(
+        currentFlatmatesRaw,
+        CURRENT_FLATMATES_OPTIONS.map((option) => option.value),
+      )
+    : null;
+  const animalsPolicyRaw = `${formData.get("animals_policy") ?? ""}`.trim();
+  const animalsPolicy = (parseOptionalEnumValue(
+    animalsPolicyRaw,
+    ANIMALS_POLICY_OPTIONS.map((option) => option.value),
+  ) ?? "negotiable") as AnimalsPolicy;
+  const candidateGenderPreferenceRaw = cleanOptionalText(formData.get("candidate_gender_preference"));
+  const candidateGenderPreference = candidateGenderPreferenceRaw
+    ? parseOptionalEnumValue(
+        candidateGenderPreferenceRaw,
+        CANDIDATE_GENDER_PREFERENCE_OPTIONS.map((option) => option.value),
+      )
+    : null;
+
+  const selectedTransportModes = sanitizeOptionValues(
+    formData.getAll("transport_modes").map((value) => `${value ?? ""}`),
+    TRANSPORT_MODE_OPTIONS.map((option) => option.value),
+  );
+  const selectedAreaContexts = sanitizeOptionValues(
+    formData.getAll("area_contexts").map((value) => `${value ?? ""}`),
+    AREA_CONTEXT_OPTIONS.map((option) => option.value),
+  );
+  const selectedCommonSpaces = sanitizeOptionValues(
+    formData.getAll("common_spaces").map((value) => `${value ?? ""}`),
+    (isStudio ? COMMON_SPACES_STUDIO_OPTIONS : COMMON_SPACES_COLOCATION_OPTIONS).map((option) => option.value),
+  );
+  const selectedVibeTags = sanitizeOptionValues(
+    formData.getAll("vibe_tags").map((value) => `${value ?? ""}`),
+    VIBE_TAG_OPTIONS.map((option) => option.value),
+  );
+  const transportLines = cleanOptionalText(formData.get("transport_lines"));
+  const commonSpacesOther = cleanOptionalText(formData.get("common_spaces_other"));
+  const housingDescriptionExtra = cleanOptionalText(formData.get("housing_description_extra"));
+  const flatshareVibeOther = cleanOptionalText(formData.get("flatshare_vibe_other"));
+  const title = buildAutoListingTitle({
+    listingType: isStudio ? "studio" : "colocation",
+    commune: city,
+    roomCount: availableRooms,
+    roomSizesSqm: roomDetails.map((room) => room.size_sqm),
+    neighborhood,
+  });
+  const housingDescription = buildStructuredHousingDescription({
+    listingType: isStudio ? "studio" : "colocation",
+    neighborhood,
+    roomDetails,
+    transportModes: selectedTransportModes,
+    transportLines,
+    areaContexts: selectedAreaContexts,
+    commonSpaces: selectedCommonSpaces,
+    commonSpacesOther,
+    extraDetails: housingDescriptionExtra,
+  });
+  const flatshareVibe = isStudio
+    ? ["Type: Studio", flatshareVibeOther ? `Autre: ${flatshareVibeOther}` : ""].filter(Boolean).join("\n")
+    : buildStructuredFlatshareVibe({
+        vibeTags: selectedVibeTags,
+        vibeOther: flatshareVibeOther,
+        currentFlatmates,
+        candidateGenderPreference,
+        animalsPolicy,
+      });
+
+  if (!city || !neighborhood || !availableFrom || !title || !housingDescription || !flatshareVibe) {
     redirect(`/mes-annonces/${listingId}/editer?error=missing_required_fields`);
   }
 
-  const rent = parseRequiredInt(formData.get("rent_eur"), "rent_eur");
-  const availableRooms = parseRequiredInt(formData.get("available_rooms"), "available_rooms");
+  if (!isStudio && !flatshareVibe) {
+    redirect(`/mes-annonces/${listingId}/editer?error=vibe_required`);
+  }
+
   const charges = parseOptionalInt(formData.get("charges_eur"));
   const minDurationMonths = parseOptionalInt(formData.get("min_duration_months"));
   const leaseType = cleanOptionalText(formData.get("lease_type"));
-  const contactSelection = readContactMethodSelection(formData);
-  const contactPhone = contactSelection.phoneValue;
-  const contactEmail = contactSelection.emailValue;
+  const rawWhatsapp = `${formData.get("contact_whatsapp") ?? ""}`.trim();
+  const contactPhone = normalizeWhatsapp(rawWhatsapp);
+  const contactEmail = cleanOptionalText(user.email ?? null);
   const currentListing = await loadListingPhotosForOwner({
     supabase,
     listingId,
@@ -295,16 +561,12 @@ export async function updateListingAction(formData: FormData) {
     redirect(`/mes-annonces/${listingId}/editer?error=${encodeURIComponent(message)}`);
   }
 
-  if (!contactSelection.hasPhone && !contactSelection.hasEmail) {
-    redirect(`/mes-annonces/${listingId}/editer?error=contact_method_required`);
-  }
-
-  if (contactSelection.hasPhone && !contactPhone) {
+  if (rawWhatsapp && !contactPhone) {
     redirect(`/mes-annonces/${listingId}/editer?error=contact_phone_required`);
   }
 
-  if (contactSelection.hasEmail && !contactEmail) {
-    redirect(`/mes-annonces/${listingId}/editer?error=contact_email_required`);
+  if (!contactEmail) {
+    redirect(`/mes-annonces/${listingId}/editer?error=account_email_required`);
   }
 
   if (!allPhotos.length) {
@@ -317,9 +579,15 @@ export async function updateListingAction(formData: FormData) {
 
   const baseUpdatePayload = {
     title,
+    listing_type: listingType,
+    rent_eur: Math.min(...roomDetails.map((room) => room.price_eur)),
     city,
-    rent_eur: rent,
     available_rooms: availableRooms,
+    total_rooms: totalRooms,
+    room_details: roomDetails,
+    animals_policy: animalsPolicy,
+    current_flatmates: currentFlatmates,
+    lgbtq_friendly: true,
     available_from: availableFrom,
     housing_description: housingDescription,
     flatshare_vibe: flatshareVibe,
@@ -342,6 +610,9 @@ export async function updateListingAction(formData: FormData) {
 
   if (error && isMissingPhotoCaptionsColumn(error.message)) {
     redirect(`/mes-annonces/${listingId}/editer?error=schema_missing_photo_captions`);
+  }
+  if (error && isMissingStructuredListingColumns(error.message)) {
+    redirect(`/mes-annonces/${listingId}/editer?error=schema_missing_listing_fields`);
   }
 
   if (error) {
