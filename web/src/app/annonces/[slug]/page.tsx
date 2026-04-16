@@ -5,6 +5,7 @@ import { trackListingEvent } from "@/lib/data/listing-events";
 import {
   getListingContactOptions,
   listingAnimalsPolicyLabel,
+  listingCandidatePreferenceFromFlatshareVibe,
   listingCurrentFlatmatesLabel,
   listingPhotosFromRow,
   listingPriceRangeLabel,
@@ -63,6 +64,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
   const roomDetails = listingRoomDetailsFromRow(listing);
   const animalsPolicy = listingAnimalsPolicyLabel(listing.animals_policy);
   const flatmatesLabel = listingCurrentFlatmatesLabel(listing.current_flatmates);
+  const candidatePreferenceLabel = listingCandidatePreferenceFromFlatshareVibe(listing.flatshare_vibe);
   const furnishingLabels = new Map(ROOM_FURNISHING_OPTIONS.map((option) => [option.value, option.label]));
   const bathroomLabels = new Map(ROOM_BATHROOM_OPTIONS.map((option) => [option.value, option.label]));
   const outdoorLabels = new Map(ROOM_OUTDOOR_OPTIONS.map((option) => [option.value, option.label]));
@@ -143,6 +145,11 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
                   <span className="font-semibold">Type de coloc:</span> {flatmatesLabel}
                 </p>
               ) : null}
+              {candidatePreferenceLabel ? (
+                <p>
+                  <span className="font-semibold">Profil recherché:</span> {candidatePreferenceLabel}
+                </p>
+              ) : null}
               {listing.charges_eur !== null ? (
                 <p>
                   <span className="font-semibold">Charges:</span> {listing.charges_eur} EUR
@@ -165,7 +172,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
                         <th className="px-3 py-2 font-medium">Chambre</th>
                         <th className="px-3 py-2 font-medium">Taille</th>
                         <th className="px-3 py-2 font-medium">Prix</th>
-                        <th className="px-3 py-2 font-medium">Meublée</th>
+                        <th className="px-3 py-2 font-medium">Meublé</th>
                         <th className="px-3 py-2 font-medium">SDB</th>
                         <th className="px-3 py-2 font-medium">Extérieur</th>
                         <th className="px-3 py-2 font-medium">Vue</th>

@@ -52,8 +52,6 @@ export function CreateListingBasics() {
   const [availableRooms, setAvailableRooms] = useState(1);
   const [totalRooms, setTotalRooms] = useState(1);
   const [roomDrafts, setRoomDrafts] = useState<RoomDraft[]>([{ ...ROOM_DRAFT_DEFAULT }]);
-  const [customTitle, setCustomTitle] = useState("");
-  const [isTitleCustomized, setIsTitleCustomized] = useState(false);
   const neighborhoodOptions = useMemo(() => getNeighborhoodsForCommune(commune), [commune]);
   const commonSpacesOptions = listingType === "studio" ? COMMON_SPACES_STUDIO_OPTIONS : COMMON_SPACES_COLOCATION_OPTIONS;
   const effectiveNeighborhood = neighborhood === OTHER_NEIGHBORHOOD_VALUE ? customNeighborhood : neighborhood;
@@ -69,8 +67,6 @@ export function CreateListingBasics() {
       }),
     [listingType, commune, availableRooms, roomDrafts, effectiveNeighborhood],
   );
-
-  const titleValue = isTitleCustomized ? customTitle : autoTitle;
 
   function updateRoomDraft(index: number, key: keyof RoomDraft, value: string) {
     setRoomDrafts((prev) =>
@@ -92,11 +88,6 @@ export function CreateListingBasics() {
   function handleTotalRoomsChange(rawValue: string) {
     const parsed = normalizeRoomCount(rawValue);
     setTotalRooms(Math.max(parsed, availableRooms));
-  }
-
-  function handleTitleChange(value: string) {
-    setCustomTitle(value);
-    setIsTitleCustomized(value.trim() !== autoTitle.trim());
   }
 
   function handleCommuneChange(nextCommune: string) {
@@ -122,11 +113,6 @@ export function CreateListingBasics() {
     }
   }
 
-  function regenerateTitle() {
-    setCustomTitle(autoTitle);
-    setIsTitleCustomized(false);
-  }
-
   return (
     <div className="space-y-4">
       <div>
@@ -150,24 +136,14 @@ export function CreateListingBasics() {
       </div>
 
       <div className="space-y-2">
-        <label className="label" htmlFor="title">
-          Titre (auto, modifiable)
+        <label className="label" htmlFor="generated-title">
+          Titre généré automatiquement
         </label>
-        <div className="flex flex-wrap gap-2">
-          <input
-            id="title"
-            name="title"
-            required
-            className="input min-w-[280px] flex-1"
-            value={titleValue}
-            onChange={(event) => handleTitleChange(event.currentTarget.value)}
-          />
-          <button type="button" className="btn btn-ghost" onClick={regenerateTitle}>
-            Régénérer
-          </button>
-        </div>
+        <output id="generated-title" aria-live="polite" className="input block bg-stone-50 text-stone-700">
+          {autoTitle}
+        </output>
         <p className="text-xs text-stone-500">
-          Format: Commune - {listingType === "studio" ? "studio" : "chambres"} - tailles - quartier.
+          Il se met à jour automatiquement selon la commune, les chambres, les tailles et le quartier.
         </p>
       </div>
 
@@ -332,7 +308,7 @@ export function CreateListingBasics() {
                 </div>
                 <div>
                   <label className="label" htmlFor={`room-furnishing-${index}`}>
-                    Meublée
+                    Meublé
                   </label>
                   <select
                     id={`room-furnishing-${index}`}

@@ -19,7 +19,7 @@ export function humanizeAppError(errorCode: string | null) {
     case "room_sizes_invalid":
       return "Les tailles de chambre doivent être des nombres positifs.";
     case "room_details_invalid":
-      return "Chaque chambre doit avoir taille, prix, meublée, SDB, extérieur et vue.";
+      return "Chaque chambre doit avoir taille, prix, meublé, SDB, extérieur et vue.";
     case "total_rooms_invalid":
       return "Le total de chambres doit être supérieur ou égal aux chambres disponibles.";
     case "schema_missing_listing_fields":

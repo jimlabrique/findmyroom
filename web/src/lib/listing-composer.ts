@@ -1,6 +1,7 @@
 import {
   ANIMALS_POLICY_OPTIONS,
   AREA_CONTEXT_OPTIONS,
+  CANDIDATE_GENDER_PREFERENCE_OPTIONS,
   COMMON_SPACES_COLOCATION_OPTIONS,
   COMMON_SPACES_STUDIO_OPTIONS,
   CURRENT_FLATMATES_OPTIONS,
@@ -167,15 +168,18 @@ export function buildStructuredFlatshareVibe({
   vibeTags,
   vibeOther,
   currentFlatmates,
+  candidateGenderPreference,
   animalsPolicy,
 }: {
   vibeTags: string[];
   vibeOther: string | null;
   currentFlatmates: string | null;
+  candidateGenderPreference: string | null;
   animalsPolicy: AnimalsPolicy;
 }) {
   const vibeLabels = optionLabelMap(VIBE_TAG_OPTIONS);
   const flatmatesLabels = optionLabelMap(CURRENT_FLATMATES_OPTIONS);
+  const candidateGenderLabels = optionLabelMap(CANDIDATE_GENDER_PREFERENCE_OPTIONS);
   const animalsLabels = optionLabelMap(ANIMALS_POLICY_OPTIONS);
   const selectedVibes = vibeTags
     .map((tag) => vibeLabels.get(tag))
@@ -187,6 +191,15 @@ export function buildStructuredFlatshareVibe({
   const safeFlatmates = cleanText(currentFlatmates);
   if (safeFlatmates) {
     lines.push(`Type de coloc: ${flatmatesLabels.get(safeFlatmates) ?? safeFlatmates}`);
+  }
+
+  const safeCandidateGenderPreference = cleanText(candidateGenderPreference);
+  if (safeCandidateGenderPreference && safeCandidateGenderPreference !== "non_precise") {
+    lines.push(
+      `Profil recherché: ${
+        candidateGenderLabels.get(safeCandidateGenderPreference) ?? safeCandidateGenderPreference
+      }`,
+    );
   }
 
   if (selectedVibes.length) {

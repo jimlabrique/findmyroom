@@ -23,7 +23,7 @@ We avoid sensitive exclusion mechanics by not introducing explicit gender target
 - `Animaux autorisés` is tri-state: `oui / non / à discuter`.
 - Structured attributes are mandatory where selected:
   - `SDB`: privative / partagée
-  - `Meublée`: oui / non / partiellement
+  - `Meublé`: oui / non / partiellement
   - `Extérieur`: balcon / terrasse / aucun
   - `Vue`: jardin / cour / rue / autre
 

@@ -252,3 +252,14 @@ export function listingNeighborhoodFromHousingDescription(housingDescription: st
   if (!rawNeighborhood || /^non pr[ée]cis[ée]$/i.test(rawNeighborhood)) return null;
   return rawNeighborhood;
 }
+
+export function listingCandidatePreferenceFromFlatshareVibe(flatshareVibe: string | null | undefined) {
+  const source = `${flatshareVibe ?? ""}`.trim();
+  if (!source) return null;
+  const lines = source.split(/\r?\n/);
+  const preferenceLine = lines.find((line) => /^\s*profil recherch[ée]\s*:/i.test(line));
+  if (!preferenceLine) return null;
+  const rawPreference = preferenceLine.replace(/^\s*profil recherch[ée]\s*:\s*/i, "").trim();
+  if (!rawPreference || /^non pr[ée]cis[ée]$/i.test(rawPreference)) return null;
+  return rawPreference;
+}

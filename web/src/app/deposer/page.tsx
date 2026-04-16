@@ -6,6 +6,7 @@ import { CreateListingBasics } from "@/components/create-listing-basics";
 import {
   ANIMALS_POLICY_OPTIONS,
   AREA_CONTEXT_OPTIONS,
+  CANDIDATE_GENDER_PREFERENCE_OPTIONS,
   CURRENT_FLATMATES_OPTIONS,
   TRANSPORT_MODE_OPTIONS,
   VIBE_TAG_OPTIONS,
@@ -138,6 +139,23 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
                 </label>
                 <select id="current_flatmates" name="current_flatmates" className="input" defaultValue="mixte">
                   {CURRENT_FLATMATES_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="label" htmlFor="candidate_gender_preference">
+                  Profil recherché
+                </label>
+                <select
+                  id="candidate_gender_preference"
+                  name="candidate_gender_preference"
+                  className="input"
+                  defaultValue="non_precise"
+                >
+                  {CANDIDATE_GENDER_PREFERENCE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>

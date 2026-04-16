@@ -191,10 +191,17 @@ export const CURRENT_FLATMATES_OPTIONS = [
   { value: "non_precise", label: "Non précisé" },
 ] as const;
 
+export const CANDIDATE_GENDER_PREFERENCE_OPTIONS = [
+  { value: "non_precise", label: "Non précisé" },
+  { value: "indifferent", label: "Indifférent" },
+  { value: "fille_only", label: "Fille" },
+  { value: "garcon_only", label: "Garçon" },
+] as const;
+
 export const ROOM_FURNISHING_OPTIONS = [
-  { value: "furnished", label: "Meublée" },
-  { value: "unfurnished", label: "Non meublée" },
-  { value: "partially_furnished", label: "Partiellement meublée" },
+  { value: "furnished", label: "Meublé" },
+  { value: "unfurnished", label: "Non meublé" },
+  { value: "partially_furnished", label: "Partiellement meublé" },
 ] as const;
 
 export const ROOM_BATHROOM_OPTIONS = [

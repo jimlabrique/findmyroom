@@ -27,6 +27,7 @@ import {
   ANIMALS_POLICY_OPTIONS,
   AREA_CONTEXT_OPTIONS,
   BRUSSELS_COMMUNES,
+  CANDIDATE_GENDER_PREFERENCE_OPTIONS,
   COMMON_SPACES_COLOCATION_OPTIONS,
   COMMON_SPACES_STUDIO_OPTIONS,
   CURRENT_FLATMATES_OPTIONS,
@@ -179,7 +180,6 @@ export async function createListingAction(formData: FormData) {
     listingTypeRaw,
     LISTING_TYPE_OPTIONS.map((option) => option.value),
   );
-  const titleInput = `${formData.get("title") ?? ""}`.trim();
   const city = `${formData.get("city") ?? ""}`.trim();
   const neighborhoodSelection = `${formData.get("neighborhood") ?? ""}`.trim();
   const neighborhoodCustom = `${formData.get("neighborhood_custom") ?? ""}`.trim();
@@ -196,6 +196,13 @@ export async function createListingAction(formData: FormData) {
     ? parseOptionalEnumValue(
         currentFlatmatesRaw,
         CURRENT_FLATMATES_OPTIONS.map((option) => option.value),
+      )
+    : null;
+  const candidateGenderPreferenceRaw = cleanOptionalText(formData.get("candidate_gender_preference"));
+  const candidateGenderPreference = candidateGenderPreferenceRaw
+    ? parseOptionalEnumValue(
+        candidateGenderPreferenceRaw,
+        CANDIDATE_GENDER_PREFERENCE_OPTIONS.map((option) => option.value),
       )
     : null;
   const animalsPolicyRaw = `${formData.get("animals_policy") ?? ""}`.trim();
@@ -241,15 +248,13 @@ export async function createListingAction(formData: FormData) {
   const commonSpacesOther = cleanOptionalText(formData.get("common_spaces_other"));
   const housingDescriptionExtra = cleanOptionalText(formData.get("housing_description_extra"));
   const flatshareVibeOther = cleanOptionalText(formData.get("flatshare_vibe_other"));
-  const title =
-    titleInput ||
-    buildAutoListingTitle({
-      listingType: isStudio ? "studio" : "colocation",
-      commune: city,
-      roomCount: availableRooms,
-      roomSizesSqm: roomDetails.map((room) => room.size_sqm),
-      neighborhood,
-    });
+  const title = buildAutoListingTitle({
+    listingType: isStudio ? "studio" : "colocation",
+    commune: city,
+    roomCount: availableRooms,
+    roomSizesSqm: roomDetails.map((room) => room.size_sqm),
+    neighborhood,
+  });
   const housingDescription = buildStructuredHousingDescription({
     listingType: isStudio ? "studio" : "colocation",
     neighborhood,
@@ -267,6 +272,7 @@ export async function createListingAction(formData: FormData) {
         vibeTags: selectedVibeTags,
         vibeOther: flatshareVibeOther,
         currentFlatmates,
+        candidateGenderPreference,
         animalsPolicy,
       });
   const contactSelection = readContactMethodSelection(formData);
