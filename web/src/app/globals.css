@@ -5,8 +5,10 @@
   --foreground: #1f2937;
   --surface: #fffdf8;
   --muted: #57534e;
-  --brand: #c2410c;
-  --brand-strong: #9a3412;
+  --brand: #ee7768;
+  --brand-strong: #d85f51;
+  --brand-soft: #fee9e6;
+  --brand-outline: rgba(238, 119, 104, 0.42);
   --line: #e7e0d4;
 }
 
@@ -17,6 +19,7 @@
   --color-muted: var(--muted);
   --color-brand: var(--brand);
   --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
   --color-line: var(--line);
   --font-sans: var(--font-lato);
   --font-serif: var(--font-lato);
@@ -53,7 +56,7 @@ a {
 }
 
 .input:focus {
-  outline: 2px solid #fdba74;
+  outline: 2px solid var(--brand-outline);
   outline-offset: 1px;
 }
 
@@ -79,11 +82,13 @@ a {
 
 .btn-primary {
   background: var(--brand);
-  color: #fff7ed;
+  color: #ffffff;
+  border: 1px solid var(--brand-strong);
 }
 
 .btn-primary:hover {
   background: var(--brand-strong);
+  border-color: var(--brand-strong);
 }
 
 .btn-ghost {
@@ -93,7 +98,27 @@ a {
 }
 
 .btn-ghost:hover {
-  background: #f5f5f4;
+  background: var(--brand-soft);
+  border-color: #f2b6ad;
+}
+
+.btn:focus-visible,
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--brand-outline);
+  outline-offset: 2px;
+}
+
+.link-brand {
+  color: var(--brand-strong);
+  transition: color 120ms ease;
+}
+
+.link-brand:hover {
+  color: var(--brand);
 }
 
 .grid-listings {

@@ -55,8 +55,9 @@ export const ANIMALS_POLICY_OPTIONS = [
 
 export const CURRENT_FLATMATES_OPTIONS = [
   { value: "mixte", label: "Mixte" },
-  { value: "majorite_filles", label: "Majorite filles" },
-  { value: "majorite_garcons", label: "Majorite garcons" },
+  { value: "filles_only", label: "Filles only" },
+  { value: "garcons_only", label: "Garcons only" },
+  { value: "lgbt_only", label: "LGBT only" },
   { value: "non_precise", label: "Non precise" },
 ] as const;
 
@@ -74,6 +75,7 @@ export const ROOM_BATHROOM_OPTIONS = [
 export const ROOM_OUTDOOR_OPTIONS = [
   { value: "balcony", label: "Balcon" },
   { value: "terrace", label: "Terrasse" },
+  { value: "garden", label: "Jardin" },
   { value: "none", label: "Aucun" },
 ] as const;
 

@@ -23,3 +23,16 @@ export async function createServerSupabaseClient() {
     },
   });
 }
+
+export function createServerSupabasePublicClient() {
+  return createServerClient<Database>(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+    cookies: {
+      getAll() {
+        return [];
+      },
+      setAll() {
+        // No-op: public client does not persist auth cookies.
+      },
+    },
+  });
+}

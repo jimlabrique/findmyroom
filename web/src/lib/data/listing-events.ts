@@ -41,7 +41,7 @@ export type ListingMetrics = {
   contacts: number;
 };
 
-export async function getOwnerListingMetrics(listingIds: string[]) {
+export async function getListingMetricsByListingIds(listingIds: string[]) {
   const metrics = new Map<string, ListingMetrics>();
   if (!listingIds.length) {
     return metrics;
@@ -72,4 +72,8 @@ export async function getOwnerListingMetrics(listingIds: string[]) {
   }
 
   return metrics;
+}
+
+export async function getOwnerListingMetrics(listingIds: string[]) {
+  return getListingMetricsByListingIds(listingIds);
 }

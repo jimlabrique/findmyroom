@@ -11,8 +11,25 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "Findmyroom",
-  description: "Findmyroom - annonces de colocation a Bruxelles.",
+  metadataBase: new URL("https://www.findmyroom.be"),
+  title: "findmyroom.be",
+  description: "findmyroom.be - annonces de colocation a Bruxelles.",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    shortcut: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/logo-icon.png" }],
+  },
+  openGraph: {
+    title: "findmyroom.be",
+    description: "findmyroom.be - annonces de colocation a Bruxelles.",
+    images: [{ url: "/findmyrooom-logo.png", width: 1650, height: 318, alt: "findmyroom.be" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "findmyroom.be",
+    description: "findmyroom.be - annonces de colocation a Bruxelles.",
+    images: ["/findmyrooom-logo.png"],
+  },
 };
 
 export const dynamic = "force-dynamic";

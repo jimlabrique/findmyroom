@@ -119,7 +119,7 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-stone-900">Ambiance de la coloc</h2>
           <div className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="animals_policy">
                   Animaux autorises
@@ -134,7 +134,7 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
               </div>
               <div>
                 <label className="label" htmlFor="current_flatmates">
-                  Coloc actuelle
+                  Type de coloc
                 </label>
                 <select id="current_flatmates" name="current_flatmates" className="input" defaultValue="mixte">
                   {CURRENT_FLATMATES_OPTIONS.map((option) => (
@@ -142,15 +142,6 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
                       {option.label}
                     </option>
                   ))}
-                </select>
-              </div>
-              <div>
-                <label className="label" htmlFor="lgbtq_friendly">
-                  LGBTQIA+ friendly
-                </label>
-                <select id="lgbtq_friendly" name="lgbtq_friendly" className="input" defaultValue="yes">
-                  <option value="yes">Oui</option>
-                  <option value="no">Non</option>
                 </select>
               </div>
             </div>

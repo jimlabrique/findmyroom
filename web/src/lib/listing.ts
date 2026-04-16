@@ -1,6 +1,7 @@
 import type { Database } from "@/lib/database.types";
 import {
   ANIMALS_POLICY_OPTIONS,
+  CURRENT_FLATMATES_OPTIONS,
   ROOM_BATHROOM_OPTIONS,
   ROOM_FURNISHING_OPTIONS,
   ROOM_OUTDOOR_OPTIONS,
@@ -13,7 +14,7 @@ export type ListingUpdate = Database["public"]["Tables"]["listings"]["Update"];
 export type ListingPhoto = { url: string; caption: string };
 export type RoomFurnishing = "furnished" | "unfurnished" | "partially_furnished";
 export type RoomBathroom = "private" | "shared";
-export type RoomOutdoor = "balcony" | "terrace" | "none";
+export type RoomOutdoor = "balcony" | "terrace" | "garden" | "none";
 export type RoomView = "garden" | "courtyard" | "street" | "other";
 export type AnimalsPolicy = "yes" | "no" | "negotiable";
 export type ListingRoomDetail = {
@@ -66,6 +67,11 @@ const ROOM_BATHROOM_VALUES = optionValueSet(ROOM_BATHROOM_OPTIONS);
 const ROOM_OUTDOOR_VALUES = optionValueSet(ROOM_OUTDOOR_OPTIONS);
 const ROOM_VIEW_VALUES = optionValueSet(ROOM_VIEW_OPTIONS);
 const ANIMALS_POLICY_VALUES = optionValueSet(ANIMALS_POLICY_OPTIONS);
+const CURRENT_FLATMATES_LABELS: Map<string, string> = new Map([
+  ...CURRENT_FLATMATES_OPTIONS.map((item) => [item.value, item.label] as const),
+  ["majorite_filles", "Filles only"] as const,
+  ["majorite_garcons", "Garcons only"] as const,
+]);
 
 export function listingRoomDetailsFromRow(listing: Partial<Pick<Listing, "room_details">>): ListingRoomDetail[] {
   if (!Array.isArray(listing.room_details)) {
@@ -135,6 +141,11 @@ export function listingAnimalsPolicyLabel(policy: string | null | undefined) {
   }
   const labels = new Map(ANIMALS_POLICY_OPTIONS.map((item) => [item.value, item.label]));
   return labels.get(policy as AnimalsPolicy) ?? null;
+}
+
+export function listingCurrentFlatmatesLabel(value: string | null | undefined) {
+  if (!value) return null;
+  return CURRENT_FLATMATES_LABELS.get(value) ?? null;
 }
 
 export function listingPhotosFromRow(

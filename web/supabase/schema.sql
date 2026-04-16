@@ -1,5 +1,32 @@
 create extension if not exists pgcrypto;
 
+create table if not exists public.app_users (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text,
+  role text not null default 'user' check (role in ('user', 'admin', 'super_admin')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+insert into public.app_users (id, email, role)
+select
+  id,
+  lower(nullif(trim(email), '')) as email,
+  case
+    when lower(nullif(trim(email), '')) = 'jim@la-brique.be' then 'super_admin'
+    else 'user'
+  end as role
+from auth.users
+on conflict (id) do update
+set email = excluded.email;
+
+update public.app_users
+set role = 'super_admin'
+where lower(coalesce(email, '')) = 'jim@la-brique.be';
+
+create index if not exists app_users_role_idx on public.app_users (role);
+create index if not exists app_users_email_idx on public.app_users (lower(email));
+
 create table if not exists public.listings (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -158,19 +185,81 @@ begin
 end;
 $$;
 
+create or replace function public.current_app_role()
+returns text
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select role
+  from public.app_users
+  where id = auth.uid()
+  limit 1;
+$$;
+
+drop trigger if exists app_users_touch_updated_at on public.app_users;
+create trigger app_users_touch_updated_at
+before update on public.app_users
+for each row
+execute function public.touch_updated_at();
+
 drop trigger if exists listings_touch_updated_at on public.listings;
 create trigger listings_touch_updated_at
 before update on public.listings
 for each row
 execute function public.touch_updated_at();
 
+alter table public.app_users enable row level security;
 alter table public.listings enable row level security;
+
+drop policy if exists "Users can read own app user profile" on public.app_users;
+create policy "Users can read own app user profile"
+on public.app_users
+for select
+to authenticated
+using (auth.uid() = id);
+
+drop policy if exists "Admins can read all app users" on public.app_users;
+create policy "Admins can read all app users"
+on public.app_users
+for select
+to authenticated
+using (public.current_app_role() in ('admin', 'super_admin'));
+
+drop policy if exists "Users can bootstrap app user profile" on public.app_users;
+create policy "Users can bootstrap app user profile"
+on public.app_users
+for insert
+to authenticated
+with check (
+  auth.uid() = id
+  and (
+    role = 'user'
+    or (
+      role = 'super_admin'
+      and lower(coalesce(email, '')) = 'jim@la-brique.be'
+    )
+  )
+);
+
+drop policy if exists "Super admins can manage app user roles" on public.app_users;
+create policy "Super admins can manage app user roles"
+on public.app_users
+for update
+to authenticated
+using (public.current_app_role() = 'super_admin')
+with check (public.current_app_role() = 'super_admin');
 
 drop policy if exists "Public can read active listings" on public.listings;
 create policy "Public can read active listings"
 on public.listings
 for select
-using ((status = 'active' and expires_at >= current_date) or auth.uid() = user_id);
+using (
+  (status = 'active' and expires_at >= current_date)
+  or auth.uid() = user_id
+  or public.current_app_role() in ('admin', 'super_admin')
+);
 
 drop policy if exists "Users can insert own listings" on public.listings;
 create policy "Users can insert own listings"
@@ -182,8 +271,14 @@ drop policy if exists "Users can update own listings" on public.listings;
 create policy "Users can update own listings"
 on public.listings
 for update
-using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
+using (
+  auth.uid() = user_id
+  or public.current_app_role() in ('admin', 'super_admin')
+)
+with check (
+  auth.uid() = user_id
+  or public.current_app_role() in ('admin', 'super_admin')
+);
 
 drop policy if exists "Users can delete own listings" on public.listings;
 create policy "Users can delete own listings"
@@ -221,6 +316,7 @@ using (
     where l.id = listing_id
       and l.user_id = auth.uid()
   )
+  or public.current_app_role() in ('admin', 'super_admin')
 );
 
 drop policy if exists "Public can view listing photos" on storage.objects;

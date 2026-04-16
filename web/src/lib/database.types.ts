@@ -3,6 +3,36 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export interface Database {
   public: {
     Tables: {
+      app_users: {
+        Row: {
+          id: string;
+          email: string | null;
+          role: "user" | "admin" | "super_admin";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          email?: string | null;
+          role?: "user" | "admin" | "super_admin";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          email?: string | null;
+          role?: "user" | "admin" | "super_admin";
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "app_users_id_fkey";
+            columns: ["id"];
+            isOneToOne: true;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       listings: {
         Row: {
           id: string;
@@ -136,7 +166,10 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      current_app_role: {
+        Args: Record<PropertyKey, never>;
+        Returns: string;
+      };
     };
     Enums: {
       [_ in never]: never;

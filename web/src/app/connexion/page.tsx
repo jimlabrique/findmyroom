@@ -34,7 +34,7 @@ export default async function ConnexionPage({ searchParams }: ConnexionPageProps
 
         <p className="text-sm text-stone-600">
           Retour a la recherche:{" "}
-          <Link href="/annonces" className="font-medium text-orange-700 hover:text-orange-800">
+          <Link href="/annonces" className="font-medium link-brand">
             voir les annonces
           </Link>
         </p>

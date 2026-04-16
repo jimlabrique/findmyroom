@@ -173,7 +173,6 @@ export async function createListingAction(formData: FormData) {
   const availableFrom = `${formData.get("available_from") ?? ""}`.trim();
   const availableRooms = Number.parseInt(`${formData.get("available_rooms") ?? ""}`.trim(), 10);
   const totalRooms = Number.parseInt(`${formData.get("total_rooms") ?? ""}`.trim(), 10);
-  const lgbtqFriendly = `${formData.get("lgbtq_friendly") ?? ""}`.trim() === "yes";
   const currentFlatmatesRaw = cleanOptionalText(formData.get("current_flatmates"));
   const currentFlatmates = currentFlatmatesRaw
     ? parseOptionalEnumValue(
@@ -237,7 +236,6 @@ export async function createListingAction(formData: FormData) {
     vibeTags: selectedVibeTags,
     vibeOther: flatshareVibeOther,
     currentFlatmates,
-    lgbtqFriendly,
     animalsPolicy,
   });
   const contactSelection = readContactMethodSelection(formData);
@@ -304,7 +302,7 @@ export async function createListingAction(formData: FormData) {
     room_details: roomDetails,
     animals_policy: animalsPolicy,
     current_flatmates: currentFlatmates,
-    lgbtq_friendly: lgbtqFriendly,
+    lgbtq_friendly: true,
     available_from: availableFrom,
     housing_description: housingDescription,
     flatshare_vibe: flatshareVibe,

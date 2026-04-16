@@ -5,18 +5,13 @@ import { trackListingEvent } from "@/lib/data/listing-events";
 import {
   getListingContactOptions,
   listingAnimalsPolicyLabel,
+  listingCurrentFlatmatesLabel,
   listingPhotosFromRow,
   listingPriceRangeLabel,
   listingRoomDetailsFromRow,
   listingRoomsSummary,
 } from "@/lib/listing";
-import {
-  CURRENT_FLATMATES_OPTIONS,
-  ROOM_BATHROOM_OPTIONS,
-  ROOM_FURNISHING_OPTIONS,
-  ROOM_OUTDOOR_OPTIONS,
-  ROOM_VIEW_OPTIONS,
-} from "@/lib/listing-form-options";
+import { ROOM_BATHROOM_OPTIONS, ROOM_FURNISHING_OPTIONS, ROOM_OUTDOOR_OPTIONS, ROOM_VIEW_OPTIONS } from "@/lib/listing-form-options";
 import { ListingCard } from "@/components/listing-card";
 
 type ListingDetailPageProps = {
@@ -66,9 +61,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
   const photos = listingPhotosFromRow(listing);
   const roomDetails = listingRoomDetailsFromRow(listing);
   const animalsPolicy = listingAnimalsPolicyLabel(listing.animals_policy);
-  const flatmatesLabel = listing.current_flatmates
-    ? CURRENT_FLATMATES_OPTIONS.find((option) => option.value === listing.current_flatmates)?.label
-    : undefined;
+  const flatmatesLabel = listingCurrentFlatmatesLabel(listing.current_flatmates);
   const furnishingLabels = new Map(ROOM_FURNISHING_OPTIONS.map((option) => [option.value, option.label]));
   const bathroomLabels = new Map(ROOM_BATHROOM_OPTIONS.map((option) => [option.value, option.label]));
   const outdoorLabels = new Map(ROOM_OUTDOOR_OPTIONS.map((option) => [option.value, option.label]));
@@ -143,12 +136,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
               ) : null}
               {flatmatesLabel ? (
                 <p>
-                  <span className="font-semibold">Coloc actuelle:</span> {flatmatesLabel}
-                </p>
-              ) : null}
-              {listing.lgbtq_friendly !== null ? (
-                <p>
-                  <span className="font-semibold">LGBTQIA+ friendly:</span> {listing.lgbtq_friendly ? "Oui" : "Non"}
+                  <span className="font-semibold">Type de coloc:</span> {flatmatesLabel}
                 </p>
               ) : null}
               {listing.charges_eur !== null ? (

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createServerSupabasePublicClient } from "@/lib/supabase/server";
 import { listingRoomDetailsFromRow, type Listing } from "@/lib/listing";
 import { BRUSSELS_COMMUNES } from "@/lib/listing-form-options";
 
@@ -28,6 +28,10 @@ function todayIsoDate() {
 
 function isMissingExpiresAtColumn(message: string) {
   return /expires_at/i.test(message) && /column/i.test(message);
+}
+
+function isJwtExpired(message: string) {
+  return /jwt expired/i.test(message);
 }
 
 function normalizeText(value: string) {
@@ -58,6 +62,57 @@ function isBrusselsCommune(city: string) {
 
 function hasText(value: string | null | undefined) {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function buildLatestListingsQuery(supabase: SupabaseClient<Database>, limit: number, includeExpiresAt: boolean) {
+  let query = supabase.from("listings").select("*").eq("status", "active");
+  if (includeExpiresAt) {
+    query = query.gte("expires_at", todayIsoDate());
+  }
+  return query.order("created_at", { ascending: false }).limit(limit);
+}
+
+function buildSearchListingsQuery(
+  supabase: SupabaseClient<Database>,
+  filters: ListingFilters,
+  includeExpiresAt: boolean,
+) {
+  let query = supabase.from("listings").select("*").eq("status", "active");
+  if (includeExpiresAt) {
+    query = query.gte("expires_at", todayIsoDate());
+  }
+
+  if (filters.city && !isBrusselsRegionQuery(filters.city)) {
+    query = query.ilike("city", `%${escapeIlikeInput(filters.city)}%`);
+  }
+
+  if (filters.minRent) {
+    query = query.gte("rent_eur", filters.minRent);
+  }
+
+  if (filters.maxRent) {
+    query = query.lte("rent_eur", filters.maxRent);
+  }
+
+  if (filters.availableFrom) {
+    query = query.lte("available_from", filters.availableFrom);
+  }
+
+  if (filters.minRooms) {
+    query = query.gte("available_rooms", filters.minRooms);
+  }
+
+  if (filters.sort === "price_asc") {
+    query = query.order("rent_eur", { ascending: true }).order("created_at", { ascending: false });
+  } else if (filters.sort === "price_desc") {
+    query = query.order("rent_eur", { ascending: false }).order("created_at", { ascending: false });
+  } else if (filters.sort === "available_asc") {
+    query = query.order("available_from", { ascending: true }).order("created_at", { ascending: false });
+  } else {
+    query = query.order("created_at", { ascending: false });
+  }
+
+  return query;
 }
 
 function applyPostFilters(rows: Listing[], filters: ListingFilters) {
@@ -116,24 +171,25 @@ function applyPostFilters(rows: Listing[], filters: ListingFilters) {
 
 export async function getLatestListings(limit = 8) {
   const supabase = await createServerSupabaseClient();
-  const today = todayIsoDate();
-  let { data, error } = await supabase
-    .from("listings")
-    .select("*")
-    .eq("status", "active")
-    .gte("expires_at", today)
-    .order("created_at", { ascending: false })
-    .limit(limit);
+  let { data, error } = await buildLatestListingsQuery(supabase, limit, true);
 
   if (error && isMissingExpiresAtColumn(error.message)) {
-    const retry = await supabase
-      .from("listings")
-      .select("*")
-      .eq("status", "active")
-      .order("created_at", { ascending: false })
-      .limit(limit);
+    const retry = await buildLatestListingsQuery(supabase, limit, false);
     data = retry.data;
     error = retry.error;
+  }
+
+  if (error && isJwtExpired(error.message)) {
+    const publicSupabase = createServerSupabasePublicClient();
+    const retryPublic = await buildLatestListingsQuery(publicSupabase, limit, true);
+    data = retryPublic.data;
+    error = retryPublic.error;
+
+    if (error && isMissingExpiresAtColumn(error.message)) {
+      const retryLegacyPublic = await buildLatestListingsQuery(publicSupabase, limit, false);
+      data = retryLegacyPublic.data;
+      error = retryLegacyPublic.error;
+    }
   }
 
   if (error) {
@@ -145,81 +201,27 @@ export async function getLatestListings(limit = 8) {
 
 export async function searchListings(filters: ListingFilters) {
   const supabase = await createServerSupabaseClient();
-  const today = todayIsoDate();
-  let query = supabase.from("listings").select("*").eq("status", "active").gte("expires_at", today);
+  let { data, error } = await buildSearchListingsQuery(supabase, filters, true);
 
-  if (filters.city) {
-    if (!isBrusselsRegionQuery(filters.city)) {
-      query = query.ilike("city", `%${escapeIlikeInput(filters.city)}%`);
-    }
-  }
-
-  if (filters.minRent) {
-    query = query.gte("rent_eur", filters.minRent);
-  }
-
-  if (filters.maxRent) {
-    query = query.lte("rent_eur", filters.maxRent);
-  }
-
-  if (filters.availableFrom) {
-    query = query.lte("available_from", filters.availableFrom);
-  }
-
-  if (filters.minRooms) {
-    query = query.gte("available_rooms", filters.minRooms);
-  }
-
-  if (filters.sort === "price_asc") {
-    query = query.order("rent_eur", { ascending: true }).order("created_at", { ascending: false });
-  } else if (filters.sort === "price_desc") {
-    query = query.order("rent_eur", { ascending: false }).order("created_at", { ascending: false });
-  } else if (filters.sort === "available_asc") {
-    query = query.order("available_from", { ascending: true }).order("created_at", { ascending: false });
-  } else {
-    query = query.order("created_at", { ascending: false });
-  }
-
-  let { data, error } = await query;
   if (error && isMissingExpiresAtColumn(error.message)) {
-    let legacyQuery = supabase.from("listings").select("*").eq("status", "active");
-
-    if (filters.city) {
-      if (!isBrusselsRegionQuery(filters.city)) {
-        legacyQuery = legacyQuery.ilike("city", `%${escapeIlikeInput(filters.city)}%`);
-      }
-    }
-
-    if (filters.minRent) {
-      legacyQuery = legacyQuery.gte("rent_eur", filters.minRent);
-    }
-
-    if (filters.maxRent) {
-      legacyQuery = legacyQuery.lte("rent_eur", filters.maxRent);
-    }
-
-    if (filters.availableFrom) {
-      legacyQuery = legacyQuery.lte("available_from", filters.availableFrom);
-    }
-
-    if (filters.minRooms) {
-      legacyQuery = legacyQuery.gte("available_rooms", filters.minRooms);
-    }
-
-    if (filters.sort === "price_asc") {
-      legacyQuery = legacyQuery.order("rent_eur", { ascending: true }).order("created_at", { ascending: false });
-    } else if (filters.sort === "price_desc") {
-      legacyQuery = legacyQuery.order("rent_eur", { ascending: false }).order("created_at", { ascending: false });
-    } else if (filters.sort === "available_asc") {
-      legacyQuery = legacyQuery.order("available_from", { ascending: true }).order("created_at", { ascending: false });
-    } else {
-      legacyQuery = legacyQuery.order("created_at", { ascending: false });
-    }
-
-    const retry = await legacyQuery;
+    const retry = await buildSearchListingsQuery(supabase, filters, false);
     data = retry.data;
     error = retry.error;
   }
+
+  if (error && isJwtExpired(error.message)) {
+    const publicSupabase = createServerSupabasePublicClient();
+    const retryPublic = await buildSearchListingsQuery(publicSupabase, filters, true);
+    data = retryPublic.data;
+    error = retryPublic.error;
+
+    if (error && isMissingExpiresAtColumn(error.message)) {
+      const retryLegacyPublic = await buildSearchListingsQuery(publicSupabase, filters, false);
+      data = retryLegacyPublic.data;
+      error = retryLegacyPublic.error;
+    }
+  }
+
   if (error) {
     throw new Error(error.message);
   }
@@ -318,6 +320,23 @@ export async function getOwnerListings(userId: string): Promise<Listing[]> {
   }
 
   return rows;
+}
+
+export async function getAllListingsForAdmin(): Promise<Listing[]> {
+  const supabase = await createServerSupabaseClient();
+  let { data, error } = await supabase.from("listings").select("*").order("created_at", { ascending: false });
+
+  if (error && isMissingExpiresAtColumn(error.message)) {
+    const retry = await supabase.from("listings").select("*").order("created_at", { ascending: false });
+    data = retry.data;
+    error = retry.error;
+  }
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as Listing[];
 }
 
 export async function generateUniqueSlug(

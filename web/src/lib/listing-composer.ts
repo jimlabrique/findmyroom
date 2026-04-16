@@ -140,13 +140,11 @@ export function buildStructuredFlatshareVibe({
   vibeTags,
   vibeOther,
   currentFlatmates,
-  lgbtqFriendly,
   animalsPolicy,
 }: {
   vibeTags: string[];
   vibeOther: string | null;
   currentFlatmates: string | null;
-  lgbtqFriendly: boolean;
   animalsPolicy: AnimalsPolicy;
 }) {
   const vibeLabels = optionLabelMap(VIBE_TAG_OPTIONS);
@@ -158,11 +156,10 @@ export function buildStructuredFlatshareVibe({
 
   const lines: string[] = [];
   lines.push(`Animaux autorises: ${animalsLabels.get(animalsPolicy) ?? animalsPolicy}`);
-  lines.push(`LGBTQIA+ friendly: ${lgbtqFriendly ? "Oui" : "Non"}`);
 
   const safeFlatmates = cleanText(currentFlatmates);
   if (safeFlatmates) {
-    lines.push(`Coloc actuelle: ${flatmatesLabels.get(safeFlatmates) ?? safeFlatmates}`);
+    lines.push(`Type de coloc: ${flatmatesLabels.get(safeFlatmates) ?? safeFlatmates}`);
   }
 
   if (selectedVibes.length) {

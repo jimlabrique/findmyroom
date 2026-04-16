@@ -33,6 +33,12 @@ function issueFromMessage(message: string) {
   ) {
     return "Base non migree: table `listing_events` manquante.";
   }
+  if (
+    includesAll(message, ["app_users", "relation"]) ||
+    includesAll(message, ["app_users", "table"])
+  ) {
+    return "Base non migree: table `app_users` manquante.";
+  }
   if (includesAll(message, ["bucket", "not found"])) {
     return "Storage non configure: bucket `listing-photos` introuvable.";
   }
@@ -64,6 +70,14 @@ async function computeSystemReadiness(): Promise<SystemReadiness> {
     if (eventsError) {
       const issue = issueFromMessage(eventsError.message);
       if (issue && !isExpectedRlsMessage(eventsError.message)) {
+        issues.push(issue);
+      }
+    }
+
+    const { error: appUsersError } = await supabase.from("app_users").select("id").limit(1);
+    if (appUsersError) {
+      const issue = issueFromMessage(appUsersError.message);
+      if (issue && !isExpectedRlsMessage(appUsersError.message)) {
         issues.push(issue);
       }
     }
