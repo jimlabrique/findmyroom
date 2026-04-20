@@ -6,6 +6,7 @@ import { assertTrustedFormRequest } from "@/lib/security/request";
 import { allowedStatuses, isMissingExpiresAtColumn, plusDaysIsoDate, todayIsoDate } from "@/app/mes-annonces/actions/shared";
 import { getRequestLocale } from "@/lib/i18n/request-locale";
 import { withLocalePath } from "@/lib/i18n/pathname";
+import { parseListingClosureReason } from "@/lib/listing-closure";
 
 export async function updateListingStatusAction(formData: FormData) {
   await assertTrustedFormRequest();
@@ -20,6 +21,11 @@ export async function updateListingStatusAction(formData: FormData) {
 
   const { supabase, user } = await requireUser(myListingsPath);
   const statusValue = status as "active" | "paused" | "archived";
+  const closureReason = parseListingClosureReason(formData.get("closure_reason"));
+
+  if (statusValue === "archived" && !closureReason) {
+    redirect(`${myListingsPath}?error=closure_reason_required`);
+  }
 
   const updatePayload: { status: "active" | "paused" | "archived"; expires_at?: string } = {
     status: statusValue,
@@ -59,6 +65,15 @@ export async function updateListingStatusAction(formData: FormData) {
 
   if (error) {
     redirect(`${myListingsPath}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  if (statusValue === "archived" && closureReason) {
+    await supabase.from("listing_closure_feedback").insert({
+      listing_id: listingId,
+      user_id: user.id,
+      action: "archived",
+      reason: closureReason,
+    });
   }
 
   redirect(`${myListingsPath}?updated=1`);

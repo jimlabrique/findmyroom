@@ -238,7 +238,7 @@ export async function sendListingContactEmail({
             <tr>
               <td style="padding:28px 32px 6px 32px;">
                 <img
-                  src="${siteUrl}/findmyrooom-logo.png"
+                  src="${siteUrl}/findmyrooom-logo.png?v=20260420"
                   alt="FindMyRoom"
                   width="220"
                   style="display:block;max-width:220px;height:auto;"

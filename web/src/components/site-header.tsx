@@ -37,7 +37,7 @@ export async function SiteHeader({ locale }: SiteHeaderProps) {
       <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Link href={withLocalePath("/annonces", typedLocale)} className="inline-flex items-center">
           <Image
-            src="/findmyrooom-logo.png"
+            src="/findmyrooom-logo.svg?v=20260420"
             alt="FindMyRoom"
             width={220}
             height={42}

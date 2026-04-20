@@ -626,3 +626,21 @@ export function listingCandidatePreferenceFromFlatshareVibe(
   const mappedValue = CANDIDATE_GENDER_LABEL_TO_VALUE.get(normalizeLabel(rawPreference)) ?? rawPreference;
   return CANDIDATE_GENDER_LABELS[mappedValue]?.[locale] ?? rawPreference;
 }
+
+export function listingCandidatePreferenceValueFromFlatshareVibe(
+  flatshareVibe: string | null | undefined,
+): "non_precise" | "indifferent" | "fille_only" | "garcon_only" | null {
+  const source = `${flatshareVibe ?? ""}`.trim();
+  if (!source) return null;
+  const lines = source.split(/\r?\n/);
+  const preferenceLine = lines.find((line) => /^\s*profil recherch[ée]\s*:/i.test(line));
+  if (!preferenceLine) return null;
+  const rawPreference = preferenceLine.replace(/^\s*profil recherch[ée]\s*:\s*/i, "").trim();
+  if (!rawPreference || /^non pr[ée]cis[ée]$/i.test(rawPreference)) return null;
+  const mappedValue = CANDIDATE_GENDER_LABEL_TO_VALUE.get(normalizeLabel(rawPreference));
+  if (!mappedValue) return null;
+  if (mappedValue === "non_precise" || mappedValue === "indifferent" || mappedValue === "fille_only" || mappedValue === "garcon_only") {
+    return mappedValue;
+  }
+  return null;
+}

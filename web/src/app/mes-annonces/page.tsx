@@ -7,6 +7,7 @@ import { deleteAccountAction, deleteListingAction, updateListingStatusAction } f
 import type { AppLocale } from "@/lib/i18n/locales";
 import { withLocalePath } from "@/lib/i18n/pathname";
 import { listingDisplayTitle, listingStatusLabel, listingTypeLabel } from "@/lib/listing";
+import { LISTING_CLOSURE_REASON_VALUES } from "@/lib/listing-closure";
 import { getLocalizedCommuneLabel } from "@/lib/listing-form-options";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 
@@ -41,10 +42,17 @@ export default async function MyListingsPage({ searchParams }: MyListingsPagePro
       ? t("accountDeleteNotConfigured")
       : errorCode === "account_delete_rpc_missing"
         ? t("accountDeleteRpcMissing")
+        : errorCode === "closure_reason_required"
+          ? t("closureReasonRequired")
         : humanizeMyListingsError(errorCode);
 
   const listings = await getOwnerListings(user.id);
   const metricsByListingId = await getOwnerListingMetrics(listings.map((listing) => listing.id));
+  const closureReasonOptions: Array<{ value: (typeof LISTING_CLOSURE_REASON_VALUES)[number]; label: string }> = [
+    { value: "found_via_app", label: t("closureReasonFoundViaApp") },
+    { value: "found_elsewhere", label: t("closureReasonFoundElsewhere") },
+    { value: "no_longer_needed", label: t("closureReasonNoLongerNeeded") },
+  ];
 
   return (
     <div className="container-page max-w-4xl space-y-6">
@@ -117,16 +125,56 @@ export default async function MyListingsPage({ searchParams }: MyListingsPagePro
                     </button>
                   </form>
                   {listing.status !== "archived" ? (
-                    <form action={updateListingStatusAction}>
+                    <form action={updateListingStatusAction} className="flex flex-wrap items-center gap-2">
                       <input type="hidden" name="listing_id" value={listing.id} />
                       <input type="hidden" name="status" value="archived" />
+                      <label htmlFor={`archive_reason_${listing.id}`} className="sr-only">
+                        {t("closureReasonLabel")}
+                      </label>
+                      <select
+                        id={`archive_reason_${listing.id}`}
+                        name="closure_reason"
+                        className="input min-w-[220px]"
+                        style={{ width: "auto" }}
+                        defaultValue=""
+                        required
+                      >
+                        <option value="" disabled>
+                          {t("closureReasonPlaceholder")}
+                        </option>
+                        {closureReasonOptions.map((reason) => (
+                          <option key={reason.value} value={reason.value}>
+                            {reason.label}
+                          </option>
+                        ))}
+                      </select>
                       <button type="submit" className="btn btn-ghost">
                         {t("archive")}
                       </button>
                     </form>
                   ) : null}
-                  <form action={deleteListingAction}>
+                  <form action={deleteListingAction} className="flex flex-wrap items-center gap-2">
                     <input type="hidden" name="listing_id" value={listing.id} />
+                    <label htmlFor={`delete_reason_${listing.id}`} className="sr-only">
+                      {t("closureReasonLabel")}
+                    </label>
+                    <select
+                      id={`delete_reason_${listing.id}`}
+                      name="closure_reason"
+                      className="input min-w-[220px]"
+                      style={{ width: "auto" }}
+                      defaultValue=""
+                      required
+                    >
+                      <option value="" disabled>
+                        {t("closureReasonPlaceholder")}
+                      </option>
+                      {closureReasonOptions.map((reason) => (
+                        <option key={reason.value} value={reason.value}>
+                          {reason.label}
+                        </option>
+                      ))}
+                    </select>
                     <ConfirmSubmitButton
                       label={t("deletePermanent")}
                       confirmMessage={t("deletePermanentConfirm")}

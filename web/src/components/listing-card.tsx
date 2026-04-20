@@ -2,7 +2,15 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import type { AppLocale } from "@/lib/i18n/locales";
 import { withLocalePath } from "@/lib/i18n/pathname";
-import { listingDisplayTitle, listingPriceRangeLabel, listingRoomsSummary, listingTypeLabel, type Listing } from "@/lib/listing";
+import {
+  listingCandidatePreferenceFromFlatshareVibe,
+  listingCandidatePreferenceValueFromFlatshareVibe,
+  listingDisplayTitle,
+  listingPriceRangeLabel,
+  listingRoomsSummary,
+  listingTypeLabel,
+  type Listing,
+} from "@/lib/listing";
 import { getLocalizedCommuneLabel } from "@/lib/listing-form-options";
 import { ListingCardCarousel } from "@/components/listing-card-carousel";
 
@@ -21,6 +29,7 @@ type ListingCardProps = {
     | "room_details"
     | "created_at"
     | "housing_description"
+    | "flatshare_vibe"
   >;
 };
 
@@ -33,6 +42,11 @@ export async function ListingCard({ listing }: ListingCardProps) {
   const detailsHref = withLocalePath(`/annonces/${listing.slug}`, locale);
   const displayTitle = listingDisplayTitle(listing, locale);
   const displayCity = getLocalizedCommuneLabel(listing.city, locale);
+  const candidatePreferenceValue = listingCandidatePreferenceValueFromFlatshareVibe(listing.flatshare_vibe);
+  const candidatePreferenceLabel =
+    candidatePreferenceValue === "fille_only" || candidatePreferenceValue === "garcon_only"
+      ? listingCandidatePreferenceFromFlatshareVibe(listing.flatshare_vibe, locale)
+      : null;
 
   return (
     <article className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:shadow-md sm:grid sm:grid-cols-[340px_1fr]">
@@ -56,7 +70,10 @@ export async function ListingCard({ listing }: ListingCardProps) {
         <div className="grid gap-2 text-sm text-stone-700 sm:grid-cols-2">
           <p className="font-medium">{displayCity}</p>
           <p className="sm:text-right">{listingPriceRangeLabel(listing, locale)}</p>
-          <p>{listingRoomsSummary(listing, locale)}</p>
+          <p>
+            {listingRoomsSummary(listing, locale)}
+            {candidatePreferenceLabel ? ` • ${candidatePreferenceLabel}` : ""}
+          </p>
           <p className="sm:text-right">{tCard("available", { date: listing.available_from })}</p>
         </div>
 

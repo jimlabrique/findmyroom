@@ -164,6 +164,37 @@ export interface Database {
           },
         ];
       };
+      listing_closure_feedback: {
+        Row: {
+          id: string;
+          listing_id: string;
+          user_id: string;
+          action: "archived" | "deleted";
+          reason: "found_via_app" | "found_elsewhere" | "no_longer_needed";
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          listing_id: string;
+          user_id: string;
+          action: "archived" | "deleted";
+          reason: "found_via_app" | "found_elsewhere" | "no_longer_needed";
+          created_at?: string;
+        };
+        Update: {
+          action?: "archived" | "deleted";
+          reason?: "found_via_app" | "found_elsewhere" | "no_longer_needed";
+        };
+        Relationships: [
+          {
+            foreignKeyName: "listing_closure_feedback_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

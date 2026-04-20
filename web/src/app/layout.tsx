@@ -28,20 +28,20 @@ export async function generateMetadata(): Promise<Metadata> {
     title: "FindMyRoom",
     description,
     icons: {
-      icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
-      shortcut: [{ url: "/favicon.svg", type: "image/svg+xml" }],
-      apple: [{ url: "/logo-icon.png" }],
+      icon: [{ url: "/favicon.svg?v=20260420", type: "image/svg+xml" }],
+      shortcut: [{ url: "/favicon.svg?v=20260420", type: "image/svg+xml" }],
+      apple: [{ url: "/logo-icon.png?v=20260420" }],
     },
     openGraph: {
       title: "FindMyRoom",
       description,
-      images: [{ url: "/findmyrooom-logo.png", width: 1650, height: 318, alt: "FindMyRoom" }],
+      images: [{ url: "/findmyrooom-logo.png?v=20260420", width: 1650, height: 318, alt: "FindMyRoom" }],
     },
     twitter: {
       card: "summary",
       title: "FindMyRoom",
       description,
-      images: ["/findmyrooom-logo.png"],
+      images: ["/findmyrooom-logo.png?v=20260420"],
     },
   };
 }

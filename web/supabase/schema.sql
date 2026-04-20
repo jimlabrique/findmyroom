@@ -182,6 +182,18 @@ create table if not exists public.listing_events (
 create index if not exists listing_events_listing_created_idx on public.listing_events (listing_id, created_at desc);
 create index if not exists listing_events_listing_type_idx on public.listing_events (listing_id, event_type);
 
+create table if not exists public.listing_closure_feedback (
+  id uuid primary key default gen_random_uuid(),
+  listing_id uuid not null,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  action text not null check (action in ('archived', 'deleted')),
+  reason text not null check (reason in ('found_via_app', 'found_elsewhere', 'no_longer_needed')),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists listing_closure_feedback_user_created_idx on public.listing_closure_feedback (user_id, created_at desc);
+create index if not exists listing_closure_feedback_listing_idx on public.listing_closure_feedback (listing_id);
+
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'listing-photos',
@@ -357,6 +369,35 @@ using (
     where l.id = listing_id
       and l.user_id = auth.uid()
   )
+  or public.current_app_role() in ('admin', 'super_admin')
+);
+
+alter table public.listing_closure_feedback enable row level security;
+
+drop policy if exists "Users can insert own listing closure feedback" on public.listing_closure_feedback;
+create policy "Users can insert own listing closure feedback"
+on public.listing_closure_feedback
+for insert
+to authenticated
+with check (
+  auth.uid() = user_id
+  and action in ('archived', 'deleted')
+  and reason in ('found_via_app', 'found_elsewhere', 'no_longer_needed')
+  and exists (
+    select 1
+    from public.listings l
+    where l.id = listing_id
+      and l.user_id = auth.uid()
+  )
+);
+
+drop policy if exists "Users can read own listing closure feedback" on public.listing_closure_feedback;
+create policy "Users can read own listing closure feedback"
+on public.listing_closure_feedback
+for select
+to authenticated
+using (
+  auth.uid() = user_id
   or public.current_app_role() in ('admin', 'super_admin')
 );
 
