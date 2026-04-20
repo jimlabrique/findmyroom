@@ -27,6 +27,8 @@ async function humanizeAuthError(errorCode: string | null) {
       return t("email_not_confirmed");
     case "invalid_credentials":
       return t("invalid_credentials");
+    case "account_already_exists":
+      return t("account_already_exists");
     case "auth_rate_limited":
       return t("auth_rate_limited");
     default:

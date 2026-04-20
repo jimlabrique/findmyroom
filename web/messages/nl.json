@@ -56,6 +56,7 @@
       "password_too_short": "Wachtwoord moet minstens 8 tekens hebben.",
       "email_not_confirmed": "Bevestig je e-mail voordat je inlogt.",
       "invalid_credentials": "Onjuist e-mailadres of wachtwoord.",
+      "account_already_exists": "Er bestaat al een account met dit e-mailadres. Log in of reset je wachtwoord.",
       "auth_rate_limited": "Te veel pogingen. Probeer binnen enkele seconden opnieuw."
     }
   },
@@ -214,7 +215,8 @@
     "dangerDescription": "Je account verwijderen wist permanent je toegang, advertenties en foto's.",
     "deleteAccount": "Mijn account verwijderen",
     "deleteAccountConfirm": "Je account definitief verwijderen? Dit kan niet ongedaan worden gemaakt.",
-    "accountDeleteNotConfigured": "Accountverwijdering is niet server-side geconfigureerd. Voeg SUPABASE_SERVICE_ROLE_KEY toe in de omgeving."
+    "accountDeleteNotConfigured": "Accountverwijdering is niet server-side geconfigureerd. Voeg SUPABASE_SERVICE_ROLE_KEY toe in de omgeving.",
+    "accountDeleteRpcMissing": "Accountverwijdering is niet geconfigureerd in de database. Voer de SQL-functie `delete_current_user_account` uit in Supabase."
   },
   "listingForm": {
     "mainInfo": "Basisinformatie",

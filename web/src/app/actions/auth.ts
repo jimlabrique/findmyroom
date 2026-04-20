@@ -110,6 +110,19 @@ function isInvalidCredentialsError(error: { message?: string; code?: string } | 
   );
 }
 
+function isAlreadyRegisteredError(error: { message?: string; code?: string } | null | undefined) {
+  if (!error) return false;
+  const message = `${error.message ?? ""}`.toLowerCase();
+  const code = `${error.code ?? ""}`.toLowerCase();
+  return message.includes("already registered") || code === "user_already_exists" || code === "email_exists";
+}
+
+function hasNoIdentitiesUser(signUpData: { user?: { identities?: unknown } | null; session?: unknown } | null | undefined) {
+  if (!signUpData?.user || signUpData.session) return false;
+  const identities = signUpData.user.identities;
+  return Array.isArray(identities) && identities.length === 0;
+}
+
 function requestLocale(requestHeaders: Headers): AppLocale {
   return normalizeLocale(requestHeaders.get(LOCALE_HEADER) ?? DEFAULT_LOCALE);
 }
@@ -237,7 +250,14 @@ export async function signUpWithEmailPassword(formData: FormData) {
   });
 
   if (error) {
+    if (isAlreadyRegisteredError(error)) {
+      redirectConnexionWithError(locale, "account_already_exists");
+    }
     redirectConnexionWithError(locale, error.code || error.message || "signup_failed");
+  }
+
+  if (hasNoIdentitiesUser(data)) {
+    redirectConnexionWithError(locale, "account_already_exists");
   }
 
   if (data.session) {

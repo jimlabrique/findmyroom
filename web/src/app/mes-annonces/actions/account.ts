@@ -1,16 +1,24 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import type { Database } from "@/lib/database.types";
 import { env } from "@/lib/env";
+import { DEFAULT_LOCALE, LOCALE_HEADER, normalizeLocale } from "@/lib/i18n/locales";
+import { withLocalePath } from "@/lib/i18n/pathname";
 import { assertTrustedFormRequest } from "@/lib/security/request";
 import { deleteListingPhotoUrls } from "@/app/mes-annonces/actions/shared";
 
 export async function deleteAccountAction() {
   await assertTrustedFormRequest();
-  const { supabase, user } = await requireUser("/mes-annonces");
+  const requestHeaders = await headers();
+  const locale = normalizeLocale(requestHeaders.get(LOCALE_HEADER) ?? DEFAULT_LOCALE);
+  const myListingsPath = withLocalePath("/mes-annonces", locale);
+  const connexionPath = withLocalePath("/connexion", locale);
+
+  const { supabase, user } = await requireUser(myListingsPath);
 
   const { data: listings, error: listingsError } = await supabase
     .from("listings")
@@ -18,7 +26,7 @@ export async function deleteAccountAction() {
     .eq("user_id", user.id);
 
   if (listingsError) {
-    redirect(`/mes-annonces?error=${encodeURIComponent(listingsError.message)}`);
+    redirect(`${myListingsPath}?error=${encodeURIComponent(listingsError.message)}`);
   }
 
   const allPhotoUrls = (listings ?? []).flatMap((listing) =>
@@ -39,9 +47,29 @@ export async function deleteAccountAction() {
     }
   }
 
+  // Preferred path: self-delete through SECURITY DEFINER RPC (works without service role in app env).
+  const rpcResult = await supabase.rpc("delete_current_user_account" as never);
+  if (!rpcResult.error) {
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Ignore sign-out failure after account deletion.
+    }
+    redirect(`${connexionPath}?account_deleted=1`);
+  }
+
+  const rpcMessage = `${rpcResult.error?.message ?? ""}`;
+  const rpcFunctionMissing =
+    /function .*delete_current_user_account/i.test(rpcMessage) ||
+    /could not find the function/i.test(rpcMessage) ||
+    /does not exist/i.test(rpcMessage);
+
   const serviceRoleKey = `${process.env.SUPABASE_SERVICE_ROLE_KEY ?? ""}`.trim();
   if (!serviceRoleKey) {
-    redirect("/mes-annonces?error=account_delete_not_configured");
+    if (rpcFunctionMissing) {
+      redirect(`${myListingsPath}?error=account_delete_rpc_missing`);
+    }
+    redirect(`${myListingsPath}?error=account_delete_not_configured`);
   }
 
   const adminSupabase = createClient<Database>(env.NEXT_PUBLIC_SUPABASE_URL, serviceRoleKey, {
@@ -53,7 +81,7 @@ export async function deleteAccountAction() {
 
   const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(user.id);
   if (deleteUserError) {
-    redirect(`/mes-annonces?error=${encodeURIComponent(deleteUserError.message)}`);
+    redirect(`${myListingsPath}?error=${encodeURIComponent(deleteUserError.message)}`);
   }
 
   try {
@@ -62,5 +90,5 @@ export async function deleteAccountAction() {
     // Ignore sign-out failure after account deletion.
   }
 
-  redirect("/connexion?account_deleted=1");
+  redirect(`${connexionPath}?account_deleted=1`);
 }

@@ -219,6 +219,26 @@ as $$
   limit 1;
 $$;
 
+create or replace function public.delete_current_user_account()
+returns void
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+declare
+  _uid uuid := auth.uid();
+begin
+  if _uid is null then
+    raise exception 'not_authenticated';
+  end if;
+
+  delete from auth.users where id = _uid;
+end;
+$$;
+
+revoke all on function public.delete_current_user_account() from public;
+grant execute on function public.delete_current_user_account() to authenticated;
+
 drop trigger if exists app_users_touch_updated_at on public.app_users;
 create trigger app_users_touch_updated_at
 before update on public.app_users

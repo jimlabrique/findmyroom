@@ -35,7 +35,12 @@ export default async function MyListingsPage({ searchParams }: MyListingsPagePro
   const updated = query.updated === "1";
   const deleted = query.deleted === "1";
   const errorCode = typeof query.error === "string" ? query.error : null;
-  const error = errorCode === "account_delete_not_configured" ? t("accountDeleteNotConfigured") : humanizeMyListingsError(errorCode);
+  const error =
+    errorCode === "account_delete_not_configured"
+      ? t("accountDeleteNotConfigured")
+      : errorCode === "account_delete_rpc_missing"
+        ? t("accountDeleteRpcMissing")
+        : humanizeMyListingsError(errorCode);
 
   const listings = await getOwnerListings(user.id);
   const metricsByListingId = await getOwnerListingMetrics(listings.map((listing) => listing.id));

@@ -56,6 +56,7 @@
       "password_too_short": "Le mot de passe doit contenir au moins 8 caractères.",
       "email_not_confirmed": "Confirme ton email avant de te connecter.",
       "invalid_credentials": "Email ou mot de passe incorrect.",
+      "account_already_exists": "Un compte existe déjà avec cette adresse email. Connecte-toi ou réinitialise ton mot de passe.",
       "auth_rate_limited": "Trop de tentatives. Réessaie dans quelques secondes."
     }
   },
@@ -214,7 +215,8 @@
     "dangerDescription": "Supprimer ton compte efface définitivement ton accès, tes annonces et tes photos.",
     "deleteAccount": "Supprimer mon compte",
     "deleteAccountConfirm": "Supprimer ton compte définitivement ? Cette action est irréversible.",
-    "accountDeleteNotConfigured": "Suppression de compte non configurée côté serveur. Ajoute SUPABASE_SERVICE_ROLE_KEY dans l'environnement."
+    "accountDeleteNotConfigured": "Suppression de compte non configurée côté serveur. Ajoute SUPABASE_SERVICE_ROLE_KEY dans l'environnement.",
+    "accountDeleteRpcMissing": "Suppression de compte non configurée côté base. Exécute la fonction SQL `delete_current_user_account` dans Supabase."
   },
   "listingForm": {
     "mainInfo": "Infos principales",

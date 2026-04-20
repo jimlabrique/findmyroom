@@ -56,6 +56,7 @@
       "password_too_short": "Password must be at least 8 characters.",
       "email_not_confirmed": "Confirm your email before signing in.",
       "invalid_credentials": "Invalid email or password.",
+      "account_already_exists": "An account already exists with this email. Sign in or reset your password.",
       "auth_rate_limited": "Too many attempts. Try again in a few seconds."
     }
   },
@@ -214,7 +215,8 @@
     "dangerDescription": "Deleting your account permanently removes your access, listings and photos.",
     "deleteAccount": "Delete my account",
     "deleteAccountConfirm": "Delete your account permanently? This action cannot be undone.",
-    "accountDeleteNotConfigured": "Account deletion is not configured server-side. Add SUPABASE_SERVICE_ROLE_KEY in the environment."
+    "accountDeleteNotConfigured": "Account deletion is not configured server-side. Add SUPABASE_SERVICE_ROLE_KEY in the environment.",
+    "accountDeleteRpcMissing": "Account deletion is not configured in the database. Run the `delete_current_user_account` SQL function in Supabase."
   },
   "listingForm": {
     "mainInfo": "Main information",
