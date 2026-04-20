@@ -56,8 +56,12 @@ function readSmtpConfig(): SmtpConfig | null {
   const portRaw = process.env.SMTP_PORT?.trim() ?? "";
   const user = process.env.SMTP_USER?.trim() ?? "";
   const pass = process.env.SMTP_PASS?.trim() ?? "";
-  const from = process.env.SMTP_FROM?.trim() ?? "";
+  const fromRaw = process.env.SMTP_FROM?.trim() ?? "";
   const secureRaw = process.env.SMTP_SECURE?.trim().toLowerCase() ?? "";
+  const from =
+    !fromRaw || /coloc\s*market/i.test(fromRaw)
+      ? `FindMyRoom <${user}>`
+      : fromRaw.replace(/coloc\s*market/gi, "FindMyRoom");
 
   const port = Number.parseInt(portRaw || "587", 10);
   const secure = secureRaw === "1" || secureRaw === "true";
