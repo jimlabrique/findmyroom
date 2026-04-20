@@ -3,6 +3,7 @@ import { Lato } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import { getSystemReadiness } from "@/lib/system-readiness";
 import type { AppLocale } from "@/lib/i18n/locales";
 import "./globals.css";
@@ -70,6 +71,7 @@ export default async function RootLayout({
               </div>
             ) : null}
             <main className="flex-1 py-8">{children}</main>
+            <SiteFooter locale={locale as AppLocale} />
           </div>
         </NextIntlClientProvider>
       </body>

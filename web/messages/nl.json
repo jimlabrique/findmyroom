@@ -21,6 +21,12 @@
       "reset": "Reset",
       "voirAnnonce": "Bekijk advertentie",
       "retourRecherche": "Terug naar zoeken"
+    },
+    "footer": {
+      "terms": "Gebruiksvoorwaarden",
+      "privacy": "Privacybeleid",
+      "contact": "Contact",
+      "publisher": "Labrique Publishing • Brussel • {year}"
     }
   },
   "auth": {

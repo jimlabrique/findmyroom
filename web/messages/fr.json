@@ -21,6 +21,12 @@
       "reset": "Réinitialiser",
       "voirAnnonce": "Voir l'annonce",
       "retourRecherche": "Retour à la recherche"
+    },
+    "footer": {
+      "terms": "CGU",
+      "privacy": "Politique de confidentialité",
+      "contact": "Contact",
+      "publisher": "Labrique Publishing • Bruxelles • {year}"
     }
   },
   "auth": {
