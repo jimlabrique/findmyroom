@@ -116,6 +116,9 @@
       "available": "Dispo {date}"
     }
   },
+  "layout": {
+    "setupIncomplete": "Setup incomplet: {issues}"
+  },
   "detail": {
     "created": "Annonce publiée. Elle est maintenant visible dans la recherche.",
     "emailSent": "Demande envoyée à l'annonceur.",
@@ -152,6 +155,7 @@
     "housingTitle": "Description du logement",
     "studioInfoTitle": "Infos complémentaires",
     "flatshareInfoTitle": "Ambiance de la coloc",
+    "similarListingsIn": "Annonces similaires à {city}",
     "roomLabel": "Chambre {index}",
     "monthsSuffix": "{count} mois",
     "pricePerMonthSuffix": "{value} EUR/mois"

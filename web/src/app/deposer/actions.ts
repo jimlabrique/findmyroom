@@ -42,6 +42,8 @@ import {
   TRANSPORT_MODE_OPTIONS,
   VIBE_TAG_OPTIONS,
 } from "@/lib/listing-form-options";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
+import { withLocalePath } from "@/lib/i18n/pathname";
 import { assertTrustedFormRequest } from "@/lib/security/request";
 
 function isMissingPhotoCaptionsColumn(message: string) {
@@ -150,7 +152,11 @@ function parseRoomDetails(formData: FormData, availableRooms: number): ListingRo
 
 export async function createListingAction(formData: FormData) {
   await assertTrustedFormRequest();
-  const { supabase, user } = await requireUser("/deposer");
+  const locale = await getRequestLocale();
+  const deposerPath = withLocalePath("/deposer", locale);
+  const redirectDeposerError = (errorCode: string): never =>
+    redirect(`${deposerPath}?error=${encodeURIComponent(errorCode)}`);
+  const { supabase, user } = await requireUser(deposerPath);
 
   const listingTypeRaw = `${formData.get("listing_type") ?? ""}`.trim();
   const listingType = parseOptionalEnumValue(
@@ -189,10 +195,10 @@ export async function createListingAction(formData: FormData) {
   ) ?? "negotiable") as AnimalsPolicy;
 
   if (!Number.isFinite(availableRooms) || availableRooms <= 0) {
-    redirect("/deposer?error=missing_required_fields");
+    redirectDeposerError("missing_required_fields");
   }
   if (!Number.isFinite(totalRooms) || totalRooms <= 0 || totalRooms < availableRooms) {
-    redirect("/deposer?error=total_rooms_invalid");
+    redirectDeposerError("total_rooms_invalid");
   }
 
   let roomDetails: ListingRoomDetail[] = [];
@@ -200,7 +206,7 @@ export async function createListingAction(formData: FormData) {
     roomDetails = parseRoomDetails(formData, availableRooms);
   } catch (error) {
     const message = error instanceof Error ? error.message : "room_details_invalid";
-    redirect(`/deposer?error=${encodeURIComponent(message)}`);
+    redirectDeposerError(message);
   }
   const charges = parseOptionalInt(formData.get("charges_eur"));
   const minDurationMonths = parseOptionalInt(formData.get("min_duration_months"));
@@ -258,41 +264,42 @@ export async function createListingAction(formData: FormData) {
   let uploadedPhotos: ListingPhoto[] = [];
 
   if (!listingType) {
-    redirect("/deposer?error=listing_type_required");
+    redirectDeposerError("listing_type_required");
   }
+  const resolvedListingType = listingType ?? redirectDeposerError("listing_type_required");
   if (!BRUSSELS_COMMUNES.includes(city as (typeof BRUSSELS_COMMUNES)[number])) {
-    redirect("/deposer?error=commune_required");
+    redirectDeposerError("commune_required");
   }
   if (
     isOtherNeighborhood &&
     (!neighborhoodCustom || isOtherNeighborhoodValue(neighborhoodCustom) || neighborhoodCustom === OTHER_NEIGHBORHOOD_VALUE)
   ) {
-    redirect("/deposer?error=neighborhood_custom_required");
+    redirectDeposerError("neighborhood_custom_required");
   }
   if (!isOtherNeighborhood && !isValidNeighborhoodForCommune(city, neighborhood)) {
-    redirect("/deposer?error=neighborhood_required");
+    redirectDeposerError("neighborhood_required");
   }
 
   if (!neighborhood || !availableFrom || !title) {
-    redirect("/deposer?error=missing_required_fields");
+    redirectDeposerError("missing_required_fields");
   }
 
   if (!isStudio && !flatshareVibe) {
-    redirect("/deposer?error=vibe_required");
+    redirectDeposerError("vibe_required");
   }
 
   if (rawWhatsapp && !contactPhone) {
-    redirect("/deposer?error=contact_phone_required");
+    redirectDeposerError("contact_phone_required");
   }
 
   if (!contactEmail) {
-    redirect("/deposer?error=account_email_required");
+    redirectDeposerError("account_email_required");
   }
 
   try {
     const photoDrafts = extractNewListingPhotoDrafts(formData);
     if (!photoDrafts.length) {
-      redirect("/deposer?error=photo_required");
+      redirectDeposerError("photo_required");
     }
     uploadedPhotos = await uploadListingPhotoFiles({
       supabase,
@@ -301,11 +308,11 @@ export async function createListingAction(formData: FormData) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "photo_upload_failed";
-    redirect(`/deposer?error=${encodeURIComponent(message)}`);
+    redirectDeposerError(message);
   }
 
   if (!uploadedPhotos.length) {
-    redirect("/deposer?error=photo_required");
+    redirectDeposerError("photo_required");
   }
 
   const { urls: photoUrls, captions: photoCaptions } = splitPhotosForStorage(uploadedPhotos);
@@ -317,7 +324,7 @@ export async function createListingAction(formData: FormData) {
     user_id: user.id,
     slug,
     title,
-    listing_type: listingType,
+    listing_type: resolvedListingType,
     rent_eur: Math.min(...roomDetails.map((room) => room.price_eur)),
     city,
     available_rooms: availableRooms,
@@ -343,15 +350,15 @@ export async function createListingAction(formData: FormData) {
   });
 
   if (error && isMissingPhotoCaptionsColumn(error.message)) {
-    redirect("/deposer?error=schema_missing_photo_captions");
+    redirectDeposerError("schema_missing_photo_captions");
   }
   if (error && isMissingStructuredListingColumns(error.message)) {
-    redirect("/deposer?error=schema_missing_listing_fields");
+    redirectDeposerError("schema_missing_listing_fields");
   }
 
   if (error) {
-    redirect(`/deposer?error=${encodeURIComponent(error.message)}`);
+    redirectDeposerError(error.message);
   }
 
-  redirect(`/annonces/${slug}?created=1`);
+  redirect(`${withLocalePath(`/annonces/${slug}`, locale)}?created=1`);
 }

@@ -5,15 +5,20 @@ import { requireUser } from "@/lib/auth";
 import { assertTrustedFormRequest } from "@/lib/security/request";
 import { deleteListingPhotoUrls, isMissingPhotoCaptionsColumn, isMissingStructuredListingColumns } from "@/app/mes-annonces/actions/shared";
 import { buildListingUpdatePayload } from "@/app/mes-annonces/actions/shared";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
+import { withLocalePath } from "@/lib/i18n/pathname";
 
 export async function updateListingAction(formData: FormData) {
   await assertTrustedFormRequest();
+  const locale = await getRequestLocale();
+  const myListingsPath = withLocalePath("/mes-annonces", locale);
   const listingId = `${formData.get("listing_id") ?? ""}`.trim();
+  const editListingPath = withLocalePath(`/mes-annonces/${listingId}/editer`, locale);
   if (!listingId) {
-    redirect("/mes-annonces?error=missing_listing_id");
+    redirect(`${myListingsPath}?error=missing_listing_id`);
   }
 
-  const { supabase, user } = await requireUser(`/mes-annonces/${listingId}/editer`);
+  const { supabase, user } = await requireUser(editListingPath);
 
   try {
     const payload = await buildListingUpdatePayload({
@@ -31,13 +36,13 @@ export async function updateListingAction(formData: FormData) {
       .eq("user_id", user.id);
 
     if (error && isMissingPhotoCaptionsColumn(error.message)) {
-      redirect(`/mes-annonces/${listingId}/editer?error=schema_missing_photo_captions`);
+      redirect(`${editListingPath}?error=schema_missing_photo_captions`);
     }
     if (error && isMissingStructuredListingColumns(error.message)) {
-      redirect(`/mes-annonces/${listingId}/editer?error=schema_missing_listing_fields`);
+      redirect(`${editListingPath}?error=schema_missing_listing_fields`);
     }
     if (error) {
-      redirect(`/mes-annonces/${listingId}/editer?error=${encodeURIComponent(error.message)}`);
+      redirect(`${editListingPath}?error=${encodeURIComponent(error.message)}`);
     }
 
     if (payload.removedPhotoUrls.length) {
@@ -53,8 +58,8 @@ export async function updateListingAction(formData: FormData) {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "unknown_error";
-    redirect(`/mes-annonces/${listingId}/editer?error=${encodeURIComponent(message)}`);
+    redirect(`${editListingPath}?error=${encodeURIComponent(message)}`);
   }
 
-  redirect("/mes-annonces?updated=1");
+  redirect(`${myListingsPath}?updated=1`);
 }

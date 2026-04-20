@@ -4,15 +4,19 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { assertTrustedFormRequest } from "@/lib/security/request";
 import { deleteListingPhotoUrls } from "@/app/mes-annonces/actions/shared";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
+import { withLocalePath } from "@/lib/i18n/pathname";
 
 export async function deleteListingAction(formData: FormData) {
   await assertTrustedFormRequest();
+  const locale = await getRequestLocale();
+  const myListingsPath = withLocalePath("/mes-annonces", locale);
   const listingId = `${formData.get("listing_id") ?? ""}`.trim();
   if (!listingId) {
-    redirect("/mes-annonces?error=missing_listing_id");
+    redirect(`${myListingsPath}?error=missing_listing_id`);
   }
 
-  const { supabase, user } = await requireUser("/mes-annonces");
+  const { supabase, user } = await requireUser(myListingsPath);
   const { data: listing, error: listingError } = await supabase
     .from("listings")
     .select("photo_urls")
@@ -21,11 +25,11 @@ export async function deleteListingAction(formData: FormData) {
     .maybeSingle();
 
   if (listingError) {
-    redirect(`/mes-annonces?error=${encodeURIComponent(listingError.message)}`);
+    redirect(`${myListingsPath}?error=${encodeURIComponent(listingError.message)}`);
   }
 
   if (!listing) {
-    redirect("/mes-annonces?error=listing_not_found");
+    redirect(`${myListingsPath}?error=listing_not_found`);
   }
 
   const photoUrls = Array.isArray(listing.photo_urls)
@@ -34,7 +38,7 @@ export async function deleteListingAction(formData: FormData) {
 
   const { error: deleteError } = await supabase.from("listings").delete().eq("id", listingId).eq("user_id", user.id);
   if (deleteError) {
-    redirect(`/mes-annonces?error=${encodeURIComponent(deleteError.message)}`);
+    redirect(`${myListingsPath}?error=${encodeURIComponent(deleteError.message)}`);
   }
 
   if (photoUrls.length) {
@@ -49,5 +53,5 @@ export async function deleteListingAction(formData: FormData) {
     }
   }
 
-  redirect("/mes-annonces?deleted=1");
+  redirect(`${myListingsPath}?deleted=1`);
 }

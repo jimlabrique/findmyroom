@@ -388,7 +388,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
 
       {similarListings.length ? (
         <section className="space-y-4">
-          <h2 className="font-serif text-2xl text-stone-900">Annonces similaires à {listing.city}</h2>
+          <h2 className="font-serif text-2xl text-stone-900">{t("similarListingsIn", { city: listing.city })}</h2>
           <div className="grid-listings">
             {similarListings.map((item) => (
               <ListingCard key={item.id} listing={item} />

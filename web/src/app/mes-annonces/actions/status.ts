@@ -4,17 +4,21 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { assertTrustedFormRequest } from "@/lib/security/request";
 import { allowedStatuses, isMissingExpiresAtColumn, plusDaysIsoDate, todayIsoDate } from "@/app/mes-annonces/actions/shared";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
+import { withLocalePath } from "@/lib/i18n/pathname";
 
 export async function updateListingStatusAction(formData: FormData) {
   await assertTrustedFormRequest();
+  const locale = await getRequestLocale();
+  const myListingsPath = withLocalePath("/mes-annonces", locale);
   const listingId = `${formData.get("listing_id") ?? ""}`.trim();
   const status = `${formData.get("status") ?? ""}`.trim();
 
   if (!listingId || !allowedStatuses.has(status)) {
-    redirect("/mes-annonces?error=invalid_status_request");
+    redirect(`${myListingsPath}?error=invalid_status_request`);
   }
 
-  const { supabase, user } = await requireUser("/mes-annonces");
+  const { supabase, user } = await requireUser(myListingsPath);
   const statusValue = status as "active" | "paused" | "archived";
 
   const updatePayload: { status: "active" | "paused" | "archived"; expires_at?: string } = {
@@ -30,7 +34,7 @@ export async function updateListingStatusAction(formData: FormData) {
       .single();
 
     if (listingError && !isMissingExpiresAtColumn(listingError.message)) {
-      redirect(`/mes-annonces?error=${encodeURIComponent(listingError.message)}`);
+      redirect(`${myListingsPath}?error=${encodeURIComponent(listingError.message)}`);
     }
 
     if (!listingError && listingData && listingData.expires_at < todayIsoDate()) {
@@ -54,8 +58,8 @@ export async function updateListingStatusAction(formData: FormData) {
   }
 
   if (error) {
-    redirect(`/mes-annonces?error=${encodeURIComponent(error.message)}`);
+    redirect(`${myListingsPath}?error=${encodeURIComponent(error.message)}`);
   }
 
-  redirect("/mes-annonces?updated=1");
+  redirect(`${myListingsPath}?updated=1`);
 }

@@ -116,6 +116,9 @@
       "available": "Beschikbaar {date}"
     }
   },
+  "layout": {
+    "setupIncomplete": "Onvolledige setup: {issues}"
+  },
   "detail": {
     "created": "Advertentie gepubliceerd. Ze is nu zichtbaar in de zoekresultaten.",
     "emailSent": "Aanvraag verzonden naar de adverteerder.",
@@ -152,6 +155,7 @@
     "housingTitle": "Beschrijving van de woning",
     "studioInfoTitle": "Extra informatie",
     "flatshareInfoTitle": "Sfeer van de cohousing",
+    "similarListingsIn": "Gelijkaardige advertenties in {city}",
     "roomLabel": "Kamer {index}",
     "monthsSuffix": "{count} maand(en)",
     "pricePerMonthSuffix": "{value} EUR/maand"

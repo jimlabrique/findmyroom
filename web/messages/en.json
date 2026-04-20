@@ -116,6 +116,9 @@
       "available": "Available {date}"
     }
   },
+  "layout": {
+    "setupIncomplete": "Incomplete setup: {issues}"
+  },
   "detail": {
     "created": "Listing published. It is now visible in search.",
     "emailSent": "Request sent to the advertiser.",
@@ -152,6 +155,7 @@
     "housingTitle": "Property description",
     "studioInfoTitle": "Additional information",
     "flatshareInfoTitle": "Flatshare vibe",
+    "similarListingsIn": "Similar listings in {city}",
     "roomLabel": "Room {index}",
     "monthsSuffix": "{count} month(s)",
     "pricePerMonthSuffix": "{value} EUR/month"
