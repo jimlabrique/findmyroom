@@ -107,8 +107,13 @@ export async function POST(request: Request, { params }: EmailContactRouteProps)
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     console.error("[email_contact_send_failed]", message || error);
+    const lowerMessage = message.toLowerCase();
     const code =
-      /invalid login|badcredentials|username and password not accepted/i.test(message)
+      lowerMessage.includes("email_service_unavailable")
+        ? "email_service_unavailable"
+        : /invalid login|badcredentials|username and password not accepted|eauth|missing credentials for "plain"/i.test(
+              message,
+            )
         ? "email_auth_failed"
         : "email_send_failed";
     return NextResponse.redirect(new URL(`${localizedPath(`/annonces/${slug}`, request)}?error=${code}`, request.url));
