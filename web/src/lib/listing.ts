@@ -1,7 +1,6 @@
 import type { Database } from "@/lib/database.types";
 import {
   ANIMALS_POLICY_OPTIONS,
-  CURRENT_FLATMATES_OPTIONS,
   ROOM_BATHROOM_OPTIONS,
   ROOM_FURNISHING_OPTIONS,
   ROOM_OUTDOOR_OPTIONS,
@@ -68,11 +67,32 @@ const ROOM_BATHROOM_VALUES = optionValueSet(ROOM_BATHROOM_OPTIONS);
 const ROOM_OUTDOOR_VALUES = optionValueSet(ROOM_OUTDOOR_OPTIONS);
 const ROOM_VIEW_VALUES = optionValueSet(ROOM_VIEW_OPTIONS);
 const ANIMALS_POLICY_VALUES = optionValueSet(ANIMALS_POLICY_OPTIONS);
-const CURRENT_FLATMATES_LABELS: Map<string, string> = new Map([
-  ...CURRENT_FLATMATES_OPTIONS.map((item) => [item.value, item.label] as const),
-  ["majorite_filles", "Filles only"] as const,
-  ["majorite_garcons", "Garcons only"] as const,
-]);
+const CURRENT_FLATMATES_LABELS: Record<"fr" | "en" | "nl", Record<string, string>> = {
+  fr: {
+    mixte: "Mixte",
+    filles_only: "Filles only",
+    garcons_only: "Garçons only",
+    lgbt_only: "LGBT only",
+    majorite_filles: "Filles only",
+    majorite_garcons: "Garçons only",
+  },
+  en: {
+    mixte: "Mixed",
+    filles_only: "Women only",
+    garcons_only: "Men only",
+    lgbt_only: "LGBT only",
+    majorite_filles: "Women only",
+    majorite_garcons: "Men only",
+  },
+  nl: {
+    mixte: "Gemengd",
+    filles_only: "Alleen vrouwen",
+    garcons_only: "Alleen mannen",
+    lgbt_only: "LGBT only",
+    majorite_filles: "Alleen vrouwen",
+    majorite_garcons: "Alleen mannen",
+  },
+};
 
 export function listingRoomDetailsFromRow(listing: Partial<Pick<Listing, "room_details">>): ListingRoomDetail[] {
   if (!Array.isArray(listing.room_details)) {
@@ -114,42 +134,56 @@ export function listingRoomDetailsFromRow(listing: Partial<Pick<Listing, "room_d
   return parsed.sort((a, b) => a.index - b.index);
 }
 
-export function listingPriceRangeLabel(listing: Pick<Listing, "rent_eur" | "room_details">) {
+export function listingPriceRangeLabel(listing: Pick<Listing, "rent_eur" | "room_details">, locale: "fr" | "en" | "nl" = "fr") {
+  const perMonthLabel = locale === "en" ? "EUR/month" : locale === "nl" ? "EUR/maand" : "EUR/mois";
   const roomDetails = listingRoomDetailsFromRow(listing);
   if (!roomDetails.length) {
-    return `${listing.rent_eur} EUR/mois`;
+    return `${listing.rent_eur} ${perMonthLabel}`;
   }
 
   const prices = roomDetails.map((room) => room.price_eur);
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
   if (minPrice === maxPrice) {
-    return `${minPrice} EUR/mois`;
+    return `${minPrice} ${perMonthLabel}`;
   }
-  return `${minPrice}-${maxPrice} EUR/mois`;
+  return `${minPrice}-${maxPrice} ${perMonthLabel}`;
 }
 
-export function listingRoomsSummary(listing: Pick<Listing, "available_rooms" | "total_rooms" | "listing_type">) {
+export function listingRoomsSummary(
+  listing: Pick<Listing, "available_rooms" | "total_rooms" | "listing_type">,
+  locale: "fr" | "en" | "nl" = "fr",
+) {
   if (listing.listing_type === "studio") {
+    if (locale === "en") return "Studio for 1 person";
+    if (locale === "nl") return "Studio voor 1 persoon";
     return "Studio 1 personne";
   }
   if (listing.total_rooms > listing.available_rooms) {
+    if (locale === "en") return `${listing.available_rooms} available / ${listing.total_rooms} rooms`;
+    if (locale === "nl") return `${listing.available_rooms} beschikbaar / ${listing.total_rooms} kamers`;
     return `${listing.available_rooms} dispo / ${listing.total_rooms} chambres`;
   }
+  if (locale === "en") return `${listing.available_rooms} room(s)`;
+  if (locale === "nl") return `${listing.available_rooms} kamer(s)`;
   return `${listing.available_rooms} chambre(s)`;
 }
 
-export function listingAnimalsPolicyLabel(policy: string | null | undefined) {
+export function listingAnimalsPolicyLabel(policy: string | null | undefined, locale: "fr" | "en" | "nl" = "fr") {
   if (!policy || !ANIMALS_POLICY_VALUES.has(policy)) {
     return null;
   }
-  const labels = new Map(ANIMALS_POLICY_OPTIONS.map((item) => [item.value, item.label]));
-  return labels.get(policy as AnimalsPolicy) ?? null;
+  const labels: Record<"fr" | "en" | "nl", Record<AnimalsPolicy, string>> = {
+    fr: { yes: "Oui", no: "Non", negotiable: "À discuter" },
+    en: { yes: "Yes", no: "No", negotiable: "Negotiable" },
+    nl: { yes: "Ja", no: "Nee", negotiable: "Bespreekbaar" },
+  };
+  return labels[locale][policy as AnimalsPolicy] ?? null;
 }
 
-export function listingCurrentFlatmatesLabel(value: string | null | undefined) {
+export function listingCurrentFlatmatesLabel(value: string | null | undefined, locale: "fr" | "en" | "nl" = "fr") {
   if (!value) return null;
-  return CURRENT_FLATMATES_LABELS.get(value) ?? null;
+  return CURRENT_FLATMATES_LABELS[locale][value] ?? null;
 }
 
 export function listingPhotosFromRow(
@@ -190,40 +224,58 @@ export function normalizeWhatsapp(value: FormDataEntryValue | null) {
 
 export function getListingContactOptions(
   listing: Pick<Listing, "contact_whatsapp" | "contact_email" | "title" | "city">,
+  locale: "fr" | "en" | "nl" = "fr",
 ): ListingContactOption[] {
   const options: ListingContactOption[] = [];
 
   if (listing.contact_whatsapp) {
     const digitsOnly = listing.contact_whatsapp.replace(/[^\d]/g, "");
     if (digitsOnly) {
+      const intro =
+        locale === "en"
+          ? `Hello, I am interested in your listing "${listing.title}" in ${listing.city}.`
+          : locale === "nl"
+            ? `Hallo, ik ben geïnteresseerd in je advertentie "${listing.title}" in ${listing.city}.`
+            : `Bonjour, je suis intéressé par votre annonce "${listing.title}" à ${listing.city}.`;
       const text = encodeURIComponent(
-        `Bonjour, je suis intéressé par votre annonce "${listing.title}" à ${listing.city}.`,
+        intro,
       );
       options.push({
         method: "phone",
         href: `https://wa.me/${digitsOnly}?text=${text}`,
-        label: "Écrire sur WhatsApp",
+        label: locale === "en" ? "Message on WhatsApp" : locale === "nl" ? "Bericht via WhatsApp" : "Écrire sur WhatsApp",
         channelLabel: "WhatsApp",
       });
     }
   }
 
   if (listing.contact_email) {
-    const subject = encodeURIComponent(`Annonce coloc: ${listing.title}`);
-    const body = encodeURIComponent(`Bonjour,\n\nJe suis intéressé par votre annonce à ${listing.city}.\n`);
+    const subject = encodeURIComponent(
+      locale === "en" ? `Flatshare listing: ${listing.title}` : locale === "nl" ? `Cohousing advertentie: ${listing.title}` : `Annonce coloc: ${listing.title}`,
+    );
+    const body = encodeURIComponent(
+      locale === "en"
+        ? `Hello,\n\nI am interested in your listing in ${listing.city}.\n`
+        : locale === "nl"
+          ? `Hallo,\n\nIk ben geïnteresseerd in je advertentie in ${listing.city}.\n`
+          : `Bonjour,\n\nJe suis intéressé par votre annonce à ${listing.city}.\n`,
+    );
     options.push({
       method: "email",
       href: `mailto:${listing.contact_email}?subject=${subject}&body=${body}`,
-      label: "Envoyer un email",
-      channelLabel: "Email",
+      label: locale === "en" ? "Send an email" : locale === "nl" ? "E-mail sturen" : "Envoyer un email",
+      channelLabel: locale === "en" ? "Email" : locale === "nl" ? "E-mail" : "Email",
     });
   }
 
   return options;
 }
 
-export function makeContactHref(listing: Pick<Listing, "contact_whatsapp" | "contact_email" | "title" | "city">) {
-  return getListingContactOptions(listing)[0]?.href ?? "#";
+export function makeContactHref(
+  listing: Pick<Listing, "contact_whatsapp" | "contact_email" | "title" | "city">,
+  locale: "fr" | "en" | "nl" = "fr",
+) {
+  return getListingContactOptions(listing, locale)[0]?.href ?? "#";
 }
 
 export function isListingExpired(listing: Pick<Listing, "expires_at">) {
@@ -237,7 +289,15 @@ export function listingStatusLabel(listing: Pick<Listing, "status" | "expires_at
   return listing.status;
 }
 
-export function listingTypeLabel(type: string | null | undefined) {
+export function listingTypeLabel(type: string | null | undefined, locale: "fr" | "en" | "nl" = "fr") {
+  if (locale === "en") {
+    if (type === "studio") return "Studio";
+    return "Shared flat";
+  }
+  if (locale === "nl") {
+    if (type === "studio") return "Studio";
+    return "Cohousing";
+  }
   if (type === "studio") return "Studio";
   return "Colocation";
 }

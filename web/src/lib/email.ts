@@ -1,4 +1,6 @@
 import nodemailer from "nodemailer";
+import type { AppLocale } from "@/lib/i18n/locales";
+import { withLocalePath } from "@/lib/i18n/pathname";
 
 type SmtpConfig = {
   host: string;
@@ -99,6 +101,73 @@ function getTransporter() {
   return cachedTransporter;
 }
 
+type ContactEmailCopy = {
+  subjectPrefix: string;
+  preheader: string;
+  candidate: string;
+  message: string;
+  listingLabel: string;
+  listingLinkLabel: string;
+  listingPhotoLabel: string;
+  nameLabel: string;
+  emailLabel: string;
+  replyButton: string;
+  listingButton: string;
+  footer: string;
+};
+
+const CONTACT_EMAIL_COPY: Record<AppLocale, ContactEmailCopy> = {
+  fr: {
+    subjectPrefix: "Nouveau message candidat",
+    preheader: "Nouveau contact annonce",
+    candidate: "Candidat",
+    message: "Message",
+    listingLabel: "Annonce",
+    listingLinkLabel: "Lien annonce",
+    listingPhotoLabel: "Photo annonce",
+    nameLabel: "Nom",
+    emailLabel: "Email",
+    replyButton: "Répondre au candidat",
+    listingButton: "Voir l'annonce",
+    footer: "Ce message a été envoyé depuis le formulaire de contact de ton annonce sur FindMyRoom.",
+  },
+  en: {
+    subjectPrefix: "New candidate message",
+    preheader: "New listing contact",
+    candidate: "Candidate",
+    message: "Message",
+    listingLabel: "Listing",
+    listingLinkLabel: "Listing link",
+    listingPhotoLabel: "Listing photo",
+    nameLabel: "Name",
+    emailLabel: "Email",
+    replyButton: "Reply to candidate",
+    listingButton: "View listing",
+    footer: "This message was sent from your FindMyRoom listing contact form.",
+  },
+  nl: {
+    subjectPrefix: "Nieuw bericht van kandidaat",
+    preheader: "Nieuw contact op advertentie",
+    candidate: "Kandidaat",
+    message: "Bericht",
+    listingLabel: "Advertentie",
+    listingLinkLabel: "Advertentielink",
+    listingPhotoLabel: "Advertentiefoto",
+    nameLabel: "Naam",
+    emailLabel: "E-mail",
+    replyButton: "Antwoorden aan kandidaat",
+    listingButton: "Advertentie bekijken",
+    footer: "Dit bericht werd verzonden via het contactformulier van je FindMyRoom-advertentie.",
+  },
+};
+
+function normalizeLocale(value: string | null | undefined): AppLocale {
+  if (value === "fr" || value === "en" || value === "nl") {
+    return value;
+  }
+  return "fr";
+}
+
 export async function sendListingContactEmail({
   to,
   senderFullName,
@@ -107,6 +176,7 @@ export async function sendListingContactEmail({
   listingCity,
   listingSlug,
   listingPhotoUrl,
+  locale,
   message,
 }: {
   to: string;
@@ -116,6 +186,7 @@ export async function sendListingContactEmail({
   listingCity: string;
   listingSlug?: string | null;
   listingPhotoUrl?: string | null;
+  locale?: AppLocale | null;
   message: string;
 }) {
   const config = readSmtpConfig();
@@ -124,9 +195,11 @@ export async function sendListingContactEmail({
     throw new Error("email_service_unavailable");
   }
 
-  const subject = `Nouveau message candidat: ${listingTitle}`;
+  const normalizedLocale = normalizeLocale(locale);
+  const copy = CONTACT_EMAIL_COPY[normalizedLocale];
+  const subject = `${copy.subjectPrefix}: ${listingTitle}`;
   const siteUrl = resolvePublicSiteUrl();
-  const listingUrl = listingSlug ? `${siteUrl}/annonces/${encodeURIComponent(listingSlug)}` : null;
+  const listingUrl = listingSlug ? `${siteUrl}${withLocalePath(`/annonces/${encodeURIComponent(listingSlug)}`, normalizedLocale)}` : null;
   const replyToHref = `mailto:${encodeURIComponent(senderEmail)}?subject=${encodeURIComponent(`Re: ${listingTitle}`)}`;
   const safeSenderFullName = escapeHtml(senderFullName);
   const safeSenderEmail = escapeHtml(senderEmail);
@@ -137,22 +210,22 @@ export async function sendListingContactEmail({
     typeof listingPhotoUrl === "string" && listingPhotoUrl.trim().length > 0 ? escapeHtml(listingPhotoUrl.trim()) : null;
 
   const text = [
-    "FindMyRoom - Nouveau message candidat",
+    `FindMyRoom - ${copy.subjectPrefix}`,
     "",
-    `Annonce: ${listingTitle} (${listingCity})`,
-    listingUrl ? `Lien annonce: ${listingUrl}` : "",
-    safeListingPhotoUrl ? `Photo annonce: ${safeListingPhotoUrl}` : "",
+    `${copy.listingLabel}: ${listingTitle} (${listingCity})`,
+    listingUrl ? `${copy.listingLinkLabel}: ${listingUrl}` : "",
+    safeListingPhotoUrl ? `${copy.listingPhotoLabel}: ${safeListingPhotoUrl}` : "",
     "",
-    `Nom: ${senderFullName}`,
-    `Email: ${senderEmail}`,
+    `${copy.nameLabel}: ${senderFullName}`,
+    `${copy.emailLabel}: ${senderEmail}`,
     "",
-    "Message:",
+    `${copy.message}:`,
     message,
   ].join("\n");
 
   const html = `
 <!doctype html>
-<html lang="fr">
+<html lang="${normalizedLocale}">
   <body style="margin:0;padding:0;background:#f7f3eb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:32px 12px;">
       <tr>
@@ -171,7 +244,7 @@ export async function sendListingContactEmail({
             <tr>
               <td style="padding:8px 32px 0 32px;">
                 <p style="margin:0 0 10px 0;font-size:12px;line-height:1;letter-spacing:1.5px;text-transform:uppercase;color:#9a8f84;font-weight:700;">
-                  Nouveau contact annonce
+                  ${copy.preheader}
                 </p>
                 <h1 style="margin:0 0 16px 0;font-size:36px;line-height:1.1;color:#1f2937;font-weight:800;">
                   ${safeListingTitle}
@@ -200,7 +273,7 @@ export async function sendListingContactEmail({
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #efe5de;border-radius:12px;background:#fcfaf8;">
                   <tr>
                     <td style="padding:14px 16px;">
-                      <p style="margin:0 0 6px 0;font-size:13px;color:#8b847b;">Candidat</p>
+                      <p style="margin:0 0 6px 0;font-size:13px;color:#8b847b;">${copy.candidate}</p>
                       <p style="margin:0;font-size:16px;line-height:1.5;color:#1f2937;"><strong>${safeSenderFullName}</strong></p>
                       <p style="margin:2px 0 0 0;font-size:14px;line-height:1.5;color:#57534e;">${safeSenderEmail}</p>
                     </td>
@@ -210,7 +283,7 @@ export async function sendListingContactEmail({
             </tr>
             <tr>
               <td style="padding:20px 32px 0 32px;">
-                <p style="margin:0 0 10px 0;font-size:14px;line-height:1.5;color:#8b847b;">Message</p>
+                <p style="margin:0 0 10px 0;font-size:14px;line-height:1.5;color:#8b847b;">${copy.message}</p>
                 <div style="font-size:16px;line-height:1.6;color:#1f2937;">${safeMessageHtml}</div>
               </td>
             </tr>
@@ -220,7 +293,7 @@ export async function sendListingContactEmail({
                   href="${replyToHref}"
                   style="display:inline-block;background:#ee7768;color:#ffffff;text-decoration:none;font-weight:700;font-size:18px;line-height:1;padding:14px 20px;border-radius:12px;"
                 >
-                  Répondre au candidat
+                  ${copy.replyButton}
                 </a>
                 ${
                   listingUrl
@@ -228,7 +301,7 @@ export async function sendListingContactEmail({
                   href="${listingUrl}"
                   style="display:inline-block;margin-left:10px;background:#fff;border:1px solid #dfd5c9;color:#5b5249;text-decoration:none;font-weight:600;font-size:16px;line-height:1;padding:14px 18px;border-radius:12px;"
                 >
-                  Voir l'annonce
+                  ${copy.listingButton}
                 </a>`
                     : ""
                 }
@@ -237,7 +310,7 @@ export async function sendListingContactEmail({
             <tr>
               <td style="padding:22px 32px 30px 32px;">
                 <p style="margin:0;font-size:12px;line-height:1.5;color:#8b847b;">
-                  Ce message a été envoyé depuis le formulaire de contact de ton annonce sur FindMyRoom.
+                  ${copy.footer}
                 </p>
               </td>
             </tr>

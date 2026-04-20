@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireAdmin, requireSuperAdmin } from "@/lib/auth";
+import { assertTrustedFormRequest } from "@/lib/security/request";
 
 const allowedStatuses = new Set(["active", "paused", "archived"]);
 const allowedManagedRoles = new Set(["user", "admin"]);
@@ -21,6 +22,7 @@ function redirectWithError(code: string): never {
 }
 
 export async function adminModerateListingStatusAction(formData: FormData) {
+  await assertTrustedFormRequest();
   const listingId = `${formData.get("listing_id") ?? ""}`.trim();
   const nextStatus = `${formData.get("status") ?? ""}`.trim();
   if (!listingId || !allowedStatuses.has(nextStatus)) {
@@ -56,6 +58,7 @@ export async function adminModerateListingStatusAction(formData: FormData) {
 }
 
 export async function adminSetUserRoleAction(formData: FormData) {
+  await assertTrustedFormRequest();
   const targetUserId = `${formData.get("target_user_id") ?? ""}`.trim();
   const nextRoleRaw = `${formData.get("role") ?? ""}`.trim();
   if (!targetUserId || !allowedManagedRoles.has(nextRoleRaw)) {

@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
+import type { AppLocale } from "@/lib/i18n/locales";
+import { withLocalePath } from "@/lib/i18n/pathname";
 import { listingPriceRangeLabel, listingRoomsSummary, listingTypeLabel, type Listing } from "@/lib/listing";
 import { ListingCardCarousel } from "@/components/listing-card-carousel";
 
@@ -19,15 +22,20 @@ type ListingCardProps = {
   >;
 };
 
-export function ListingCard({ listing }: ListingCardProps) {
-  const createdAtLabel = new Intl.DateTimeFormat("fr-BE", { dateStyle: "short" }).format(new Date(listing.created_at));
+export async function ListingCard({ listing }: ListingCardProps) {
+  const locale = (await getLocale()) as AppLocale;
+  const tCommon = await getTranslations("common.actions");
+  const tCard = await getTranslations("listings.card");
+  const dateLocale = locale === "en" ? "en-GB" : locale === "nl" ? "nl-BE" : "fr-BE";
+  const createdAtLabel = new Intl.DateTimeFormat(dateLocale, { dateStyle: "short" }).format(new Date(listing.created_at));
+  const detailsHref = withLocalePath(`/annonces/${listing.slug}`, locale);
 
   return (
     <article className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:shadow-md sm:grid sm:grid-cols-[340px_1fr]">
       <ListingCardCarousel
         photos={listing.photo_urls}
         title={listing.title}
-        href={`/annonces/${listing.slug}`}
+        href={detailsHref}
       />
 
       <div className="flex h-full flex-col justify-between gap-4 p-4 sm:p-5">
@@ -36,23 +44,23 @@ export function ListingCard({ listing }: ListingCardProps) {
           <div className="flex flex-col items-end gap-1">
             <span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-medium text-stone-700">{createdAtLabel}</span>
             <span className="rounded-full bg-[#fff1ee] px-2 py-1 text-xs font-medium text-[#ba4d40]">
-              {listingTypeLabel(listing.listing_type)}
+              {listingTypeLabel(listing.listing_type, locale)}
             </span>
           </div>
         </div>
 
         <div className="grid gap-2 text-sm text-stone-700 sm:grid-cols-2">
           <p className="font-medium">{listing.city}</p>
-          <p className="sm:text-right">{listingPriceRangeLabel(listing)}</p>
-          <p>{listingRoomsSummary(listing)}</p>
-          <p className="sm:text-right">Dispo {listing.available_from}</p>
+          <p className="sm:text-right">{listingPriceRangeLabel(listing, locale)}</p>
+          <p>{listingRoomsSummary(listing, locale)}</p>
+          <p className="sm:text-right">{tCard("available", { date: listing.available_from })}</p>
         </div>
 
         <Link
-          href={`/annonces/${listing.slug}`}
+          href={detailsHref}
           className="btn btn-primary w-fit text-sm"
         >
-          Voir l&apos;annonce
+          {tCommon("voirAnnonce")}
         </Link>
       </div>
     </article>

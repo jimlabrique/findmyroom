@@ -4,6 +4,14 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
+import { consumeRateLimitByIdentity, consumeRateLimitSlot } from "@/lib/rate-limit";
+import { DEFAULT_LOCALE, LOCALE_HEADER, normalizeLocale, type AppLocale } from "@/lib/i18n/locales";
+import { withLocalePath } from "@/lib/i18n/pathname";
+import { assertTrustedFormRequest, getRequestIpFromHeaders } from "@/lib/security/request";
+
+const SIGNIN_RATE_LIMIT_MS = 20_000;
+const SIGNUP_RATE_LIMIT_MS = 30_000;
+const GOOGLE_RATE_LIMIT_MS = 20_000;
 
 function isLocalHostname(hostname: string) {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname.startsWith("192.168.");
@@ -65,7 +73,7 @@ function resolveRequestOrigin(requestHeaders: Headers) {
 
 function readNextPath(formData: FormData) {
   const nextPath = `${formData.get("next") ?? "/"}`.trim();
-  if (!nextPath.startsWith("/")) {
+  if (!nextPath.startsWith("/") || nextPath.startsWith("//")) {
     redirect("/connexion?error=invalid_next");
   }
   return nextPath;
@@ -102,17 +110,75 @@ function isInvalidCredentialsError(error: { message?: string; code?: string } | 
   );
 }
 
+function requestLocale(requestHeaders: Headers): AppLocale {
+  return normalizeLocale(requestHeaders.get(LOCALE_HEADER) ?? DEFAULT_LOCALE);
+}
+
+function localizePath(path: string, locale: AppLocale) {
+  return withLocalePath(path, locale);
+}
+
+function redirectConnexionWithError(locale: AppLocale, errorCode: string) {
+  const path = localizePath("/connexion", locale);
+  redirect(`${path}?error=${encodeURIComponent(errorCode)}`);
+}
+
+async function enforceRateLimit({
+  prefix,
+  email,
+  requestHeaders,
+  windowMs,
+  locale,
+}: {
+  prefix: string;
+  email?: string;
+  requestHeaders: Headers;
+  windowMs: number;
+  locale: AppLocale;
+}) {
+  const ip = getRequestIpFromHeaders(requestHeaders);
+  const ipLimit = await consumeRateLimitSlot({
+    key: `${prefix}:ip:${ip}`,
+    windowMs,
+  });
+  if (ipLimit.limited) {
+    redirectConnexionWithError(locale, "auth_rate_limited");
+  }
+
+  if (email) {
+    const emailLimit = await consumeRateLimitByIdentity({
+      prefix: `${prefix}:email`,
+      identity: email,
+      windowMs,
+    });
+    if (emailLimit.limited) {
+      redirectConnexionWithError(locale, "auth_rate_limited");
+    }
+  }
+}
+
 export async function signInWithGoogle(formData: FormData) {
-  readNextPath(formData);
+  await assertTrustedFormRequest();
+  const nextPath = readNextPath(formData);
   const requestHeaders = await headers();
+  const locale = requestLocale(requestHeaders);
+  await enforceRateLimit({
+    prefix: "auth_google",
+    requestHeaders,
+    windowMs: GOOGLE_RATE_LIMIT_MS,
+    locale,
+  });
+
   const origin = resolveRequestOrigin(requestHeaders);
-  const redirectTo = `${origin}/auth/callback`;
+  const localizedNextPath = localizePath(nextPath, locale);
+  const callbackUrl = new URL("/auth/callback", origin);
+  callbackUrl.searchParams.set("next", localizedNextPath);
 
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo,
+      redirectTo: callbackUrl.toString(),
       queryParams: {
         access_type: "offline",
         prompt: "consent",
@@ -120,60 +186,89 @@ export async function signInWithGoogle(formData: FormData) {
     },
   });
 
-  if (error || !data.url) {
-    redirect("/connexion?error=google_oauth_failed");
+  const oauthUrl = data?.url ?? null;
+  if (error || !oauthUrl) {
+    redirectConnexionWithError(locale, "google_oauth_failed");
+    return;
   }
 
-  redirect(data.url);
+  redirect(oauthUrl);
 }
 
 export async function signUpWithEmailPassword(formData: FormData) {
+  await assertTrustedFormRequest();
   readNextPath(formData);
   const email = readEmail(formData);
   const password = readPassword(formData);
+  const requestHeaders = await headers();
+  const locale = requestLocale(requestHeaders);
 
   if (!isValidEmailAddress(email)) {
-    redirect("/connexion?error=invalid_email");
+    redirectConnexionWithError(locale, "invalid_email");
   }
   if (password.length < 8) {
-    redirect("/connexion?error=password_too_short");
+    redirectConnexionWithError(locale, "password_too_short");
   }
 
-  const requestHeaders = await headers();
+  await enforceRateLimit({
+    prefix: "auth_signup",
+    email,
+    requestHeaders,
+    windowMs: SIGNUP_RATE_LIMIT_MS,
+    locale,
+  });
+
   const origin = resolveRequestOrigin(requestHeaders);
-  const emailRedirectTo = `${origin}/connexion?confirmed=1`;
+  const emailRedirectUrl = new URL("/connexion", origin);
+  emailRedirectUrl.searchParams.set("confirmed", "1");
+  emailRedirectUrl.searchParams.set("locale", locale);
+  emailRedirectUrl.searchParams.set("next", localizePath("/annonces", locale));
 
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo,
+      emailRedirectTo: emailRedirectUrl.toString(),
+      data: {
+        locale,
+      },
     },
   });
 
   if (error) {
-    redirect(`/connexion?error=${encodeURIComponent(error.code || error.message || "signup_failed")}`);
+    redirectConnexionWithError(locale, error.code || error.message || "signup_failed");
   }
 
   if (data.session) {
-    redirect("/annonces");
+    redirect(localizePath("/annonces", locale));
   }
 
-  redirect("/connexion?check_email=1");
+  redirect(`${localizePath("/connexion", locale)}?check_email=1&mode=signup`);
 }
 
 export async function signInWithPassword(formData: FormData) {
+  await assertTrustedFormRequest();
   const nextPath = readNextPath(formData);
   const email = readEmail(formData);
   const password = readPassword(formData);
+  const requestHeaders = await headers();
+  const locale = requestLocale(requestHeaders);
 
   if (!isValidEmailAddress(email)) {
-    redirect("/connexion?error=invalid_email");
+    redirectConnexionWithError(locale, "invalid_email");
   }
   if (!password) {
-    redirect("/connexion?error=missing_password");
+    redirectConnexionWithError(locale, "missing_password");
   }
+
+  await enforceRateLimit({
+    prefix: "auth_signin",
+    email,
+    requestHeaders,
+    windowMs: SIGNIN_RATE_LIMIT_MS,
+    locale,
+  });
 
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.auth.signInWithPassword({
@@ -182,20 +277,23 @@ export async function signInWithPassword(formData: FormData) {
   });
 
   if (isEmailNotConfirmedError(error)) {
-    redirect("/connexion?error=email_not_confirmed");
+    redirectConnexionWithError(locale, "email_not_confirmed");
   }
   if (isInvalidCredentialsError(error)) {
-    redirect("/connexion?error=invalid_credentials");
+    redirectConnexionWithError(locale, "invalid_credentials");
   }
   if (error) {
-    redirect(`/connexion?error=${encodeURIComponent(error.code || error.message || "signin_failed")}`);
+    redirectConnexionWithError(locale, error.code || error.message || "signin_failed");
   }
 
-  redirect(nextPath);
+  const localizedNext = localizePath(nextPath, locale);
+  redirect(localizedNext);
 }
 
 export async function signOut() {
+  const requestHeaders = await headers();
+  const locale = requestLocale(requestHeaders);
   const supabase = await createServerSupabaseClient();
   await supabase.auth.signOut();
-  redirect("/");
+  redirect(localizePath("/annonces", locale));
 }

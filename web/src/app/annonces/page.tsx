@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ListingCard } from "@/components/listing-card";
 import { SearchCommuneNeighborhoodFields } from "@/components/search-commune-neighborhood-fields";
 import { searchListings } from "@/lib/data/listings";
+import type { AppLocale } from "@/lib/i18n/locales";
+import { withLocalePath } from "@/lib/i18n/pathname";
 import { BRUSSELS_COMMUNES } from "@/lib/listing-form-options";
 
 type ListingsPageProps = {
@@ -22,6 +25,9 @@ function readPositiveNumber(input: string | string[] | undefined) {
 export const dynamic = "force-dynamic";
 
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
+  const locale = (await getLocale()) as AppLocale;
+  const t = await getTranslations("listings.search");
+  const tCommon = await getTranslations("common.actions");
   const query = await searchParams;
   const textQuery = readString(query.q);
   const city = readString(query.city) || "Bruxelles";
@@ -87,12 +93,12 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6 xl:items-end">
             <div className="sm:col-span-2 xl:col-span-2">
               <label htmlFor="q" className="label">
-                Recherche
+                {t("query")}
               </label>
               <input
                 id="q"
                 name="q"
-                placeholder="Mot-clé (quartier, vibe, équipement)"
+                placeholder={t("queryPlaceholder")}
                 className="input"
                 defaultValue={textQuery}
               />
@@ -106,44 +112,44 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
 
             <div>
               <label htmlFor="type" className="label">
-                Type
+                {t("type")}
               </label>
               <select id="type" name="type" className="input" defaultValue={selectedType}>
-                <option value="all">Tous</option>
-                <option value="colocation">Colocation</option>
-                <option value="studio">Studio</option>
+                <option value="all">{t("allTypes")}</option>
+                <option value="colocation">{t("colocation")}</option>
+                <option value="studio">{t("studio")}</option>
               </select>
             </div>
 
             <div>
               <label htmlFor="available_from" className="label">
-                Disponible le
+                {t("availableFrom")}
               </label>
               <input id="available_from" name="available_from" type="date" className="input" defaultValue={availableFrom || ""} />
             </div>
 
             <div>
               <label htmlFor="sort" className="label">
-                Tri
+                {t("sort")}
               </label>
               <select id="sort" name="sort" className="input" defaultValue={sort}>
-                <option value="latest">Plus récentes</option>
-                <option value="available_asc">Dispo la plus proche</option>
-                <option value="price_asc">Prix croissant</option>
-                <option value="price_desc">Prix décroissant</option>
+                <option value="latest">{t("sortLatest")}</option>
+                <option value="available_asc">{t("sortAvailable")}</option>
+                <option value="price_asc">{t("sortPriceAsc")}</option>
+                <option value="price_desc">{t("sortPriceDesc")}</option>
               </select>
             </div>
 
             <div>
               <label htmlFor="max_rent" className="label">
-                Loyer max (EUR)
+                {t("maxRent")}
               </label>
               <input
                 id="max_rent"
                 name="max_rent"
                 type="number"
                 min={0}
-                placeholder="Max"
+                placeholder={t("maxRentPlaceholder")}
                 className="input"
                 defaultValue={maxRent ?? ""}
               />
@@ -151,15 +157,15 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
 
             <details className="peer sm:col-span-2 xl:col-span-1 xl:self-end" open={hasAdvancedFilters}>
               <summary className="btn btn-ghost inline-flex w-full cursor-pointer list-none justify-center">
-                Filtres avancés
+                {t("advancedFilters")}
               </summary>
             </details>
 
             <div className="flex w-full items-end gap-2 xl:self-end">
               <button type="submit" className="btn btn-primary min-w-0 flex-1">
-                Filtrer
+                {tCommon("filtrer")}
               </button>
-              <Link href="/annonces" className="btn btn-ghost h-[42px] w-[42px] p-0" aria-label="Réinitialiser les filtres">
+              <Link href={withLocalePath("/annonces", locale)} className="btn btn-ghost h-[42px] w-[42px] p-0" aria-label={tCommon("reset")}>
                 <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M3 12a9 9 0 1 0 3-6.7" />
                   <path d="M3 4v4h4" />
@@ -171,10 +177,10 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <label htmlFor="min_rooms" className="label">
-                    Chambres minimum
+                    {t("minRooms")}
                   </label>
                   <select id="min_rooms" name="min_rooms" className="input" defaultValue={minRooms?.toString() ?? ""}>
-                    <option value="">Sans minimum</option>
+                    <option value="">{t("noMinRooms")}</option>
                     <option value="1">1+</option>
                     <option value="2">2+</option>
                     <option value="3">3+</option>
@@ -183,26 +189,26 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
 
                 <div>
                   <label htmlFor="lease_type" className="label">
-                    Type de bail
+                    {t("leaseType")}
                   </label>
                   <select id="lease_type" name="lease_type" className="input" defaultValue={leaseType}>
-                    <option value="">Tous</option>
-                    <option value="1 an">Bail 1 an</option>
-                    <option value="court">Bail court</option>
-                    <option value="sous">Sous-location</option>
+                    <option value="">{t("allLeaseTypes")}</option>
+                    <option value="1 an">{t("leaseTypeYear")}</option>
+                    <option value="court">{t("leaseTypeShort")}</option>
+                    <option value="sous">{t("leaseTypeSublet")}</option>
                   </select>
                 </div>
 
                 <div>
                   <label htmlFor="max_min_duration_months" className="label">
-                    Durée min max (mois)
+                    {t("maxMinDuration")}
                   </label>
                   <input
                     id="max_min_duration_months"
                     name="max_min_duration_months"
                     type="number"
                     min={1}
-                    placeholder="Ex: 6"
+                    placeholder={t("maxMinDurationPlaceholder")}
                     className="input"
                     defaultValue={maxMinDuration ?? ""}
                   />
@@ -210,10 +216,10 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
 
                 <div>
                   <label htmlFor="contact" className="label">
-                    Contact
+                    {t("contact")}
                   </label>
                   <select id="contact" name="contact" className="input" defaultValue={contact ?? ""}>
-                    <option value="">Tous</option>
+                    <option value="">{t("allContacts")}</option>
                     <option value="phone">WhatsApp</option>
                     <option value="email">Email</option>
                   </select>
@@ -221,36 +227,36 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
 
                 <div>
                   <label htmlFor="animals_policy" className="label">
-                    Animaux
+                    {t("animals")}
                   </label>
                   <select id="animals_policy" name="animals_policy" className="input" defaultValue={animalsPolicy ?? ""}>
-                    <option value="">Tous</option>
-                    <option value="yes">Animaux oui</option>
-                    <option value="no">Animaux non</option>
-                    <option value="negotiable">Animaux à discuter</option>
+                    <option value="">{t("allAnimals")}</option>
+                    <option value="yes">{t("animalsYes")}</option>
+                    <option value="no">{t("animalsNo")}</option>
+                    <option value="negotiable">{t("animalsNegotiable")}</option>
                   </select>
                 </div>
 
                 <div>
                   <label htmlFor="room_furnishing" className="label">
-                    Meublé
+                    {t("furnishing")}
                   </label>
                   <select id="room_furnishing" name="room_furnishing" className="input" defaultValue={roomFurnishing ?? ""}>
-                    <option value="">Toutes</option>
-                    <option value="furnished">Meublé</option>
-                    <option value="unfurnished">Non meublé</option>
-                    <option value="partially_furnished">Partiellement meublé</option>
+                    <option value="">{t("allFurnishing")}</option>
+                    <option value="furnished">{t("furnished")}</option>
+                    <option value="unfurnished">{t("unfurnished")}</option>
+                    <option value="partially_furnished">{t("partiallyFurnished")}</option>
                   </select>
                 </div>
 
                 <div>
                   <label htmlFor="room_bathroom" className="label">
-                    Salle de bain
+                    {t("bathroom")}
                   </label>
                   <select id="room_bathroom" name="room_bathroom" className="input" defaultValue={roomBathroom ?? ""}>
-                    <option value="">Toutes</option>
-                    <option value="private">SDB privative</option>
-                    <option value="shared">SDB partagée</option>
+                    <option value="">{t("allBathrooms")}</option>
+                    <option value="private">{t("privateBathroom")}</option>
+                    <option value="shared">{t("sharedBathroom")}</option>
                   </select>
                 </div>
               </div>
@@ -260,7 +266,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       </section>
 
       <section className="space-y-4">
-        <p className="text-sm text-stone-600">{listings.length} résultat(s)</p>
+        <p className="text-sm text-stone-600">{t("results", { count: listings.length })}</p>
         {listings.length ? (
           <div className="grid-listings">
             {listings.map((listing) => (
@@ -269,7 +275,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
           </div>
         ) : (
           <div className="panel p-6 text-stone-700">
-            Aucun résultat. Élargis la ville ou le budget et relance.
+            {t("empty")}
           </div>
         )}
       </section>

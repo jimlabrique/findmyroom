@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 import { deleteListingPhotoAction, updateListingAction } from "@/app/mes-annonces/actions";
 import { requireUser } from "@/lib/auth";
 import { getListingByIdForOwner } from "@/lib/data/listings";
@@ -11,6 +12,8 @@ import {
 import { PhotoFields } from "@/components/photo-fields";
 import { humanizeAppError } from "@/lib/errors";
 import { CreateListingBasics } from "@/components/create-listing-basics";
+import type { AppLocale } from "@/lib/i18n/locales";
+import { withLocalePath } from "@/lib/i18n/pathname";
 import {
   ANIMALS_POLICY_OPTIONS,
   AREA_CONTEXT_OPTIONS,
@@ -79,19 +82,23 @@ function extractExtraHousingDetails(source: string) {
 export const dynamic = "force-dynamic";
 
 export default async function EditListingPage({ params, searchParams }: EditListingPageProps) {
+  const locale = (await getLocale()) as AppLocale;
+  const tEdit = await getTranslations("edit");
+  const tForm = await getTranslations("listingForm");
+  const tMyListings = await getTranslations("myListings");
   const { id } = await params;
-  const { user } = await requireUser(`/mes-annonces/${id}/editer`);
+  const { user } = await requireUser(withLocalePath(`/mes-annonces/${id}/editer`, locale));
   const listing = await getListingByIdForOwner(id, user.id);
   const query = await searchParams;
   const errorCode = typeof query.error === "string" ? query.error : null;
-  const error = humanizeAppError(errorCode);
+  const error = humanizeAppError(errorCode, locale);
 
   if (!listing) {
     notFound();
   }
 
   const existingPhotos = listingPhotosFromRow(listing);
-  const accountEmail = user.email ?? "Email du compte indisponible";
+  const accountEmail = user.email ?? "—";
 
   const roomDetails = listingRoomDetailsFromRow(listing);
   const roomDrafts =
@@ -162,13 +169,13 @@ export default async function EditListingPage({ params, searchParams }: EditList
   return (
     <div className="container-page max-w-3xl space-y-6">
       <header className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Édition</p>
-        <h1 className="font-serif text-4xl text-stone-900">Modifier l&apos;annonce</h1>
+        <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">{tEdit("tag")}</p>
+        <h1 className="font-serif text-4xl text-stone-900">{tEdit("title")}</h1>
       </header>
 
       {error ? (
         <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          Erreur: {error}
+          {tMyListings("errorPrefix")}: {error}
         </p>
       ) : null}
 
@@ -176,7 +183,7 @@ export default async function EditListingPage({ params, searchParams }: EditList
         <input type="hidden" name="listing_id" value={listing.id} />
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-stone-900">Infos principales</h2>
+          <h2 className="text-lg font-semibold text-stone-900">{tForm("mainInfo")}</h2>
           <CreateListingBasics
             initialValues={{
               listingType,
@@ -193,23 +200,29 @@ export default async function EditListingPage({ params, searchParams }: EditList
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-stone-900">Conditions</h2>
+          <h2 className="text-lg font-semibold text-stone-900">{tForm("conditions")}</h2>
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label className="label" htmlFor="charges_eur">
-                Charges
+                {tForm("charges")}
               </label>
               <input id="charges_eur" name="charges_eur" type="number" min={0} className="input" defaultValue={listing.charges_eur ?? ""} />
             </div>
             <div>
               <label className="label" htmlFor="lease_type">
-                Type de bail
+                {tForm("leaseType")}
               </label>
-              <input id="lease_type" name="lease_type" className="input" placeholder="Bail 1 an" defaultValue={listing.lease_type ?? ""} />
+              <input
+                id="lease_type"
+                name="lease_type"
+                className="input"
+                placeholder={tForm("leaseTypePlaceholder")}
+                defaultValue={listing.lease_type ?? ""}
+              />
             </div>
             <div>
               <label className="label" htmlFor="min_duration_months">
-                Durée min (mois)
+                {tForm("minimumDuration")}
               </label>
               <input
                 id="min_duration_months"
@@ -224,10 +237,10 @@ export default async function EditListingPage({ params, searchParams }: EditList
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-stone-900">Description du logement</h2>
+          <h2 className="text-lg font-semibold text-stone-900">{tForm("housingDescription")}</h2>
           <div className="space-y-4">
             <div>
-              <p className="label m-0">Proche des transports en commun</p>
+              <p className="label m-0">{tForm("transportNearby")}</p>
               <div className="mt-2 flex flex-wrap gap-4 text-sm text-stone-700">
                 {TRANSPORT_MODE_OPTIONS.map((option) => (
                   <label key={option.value} className="inline-flex items-center gap-2">
@@ -240,19 +253,19 @@ export default async function EditListingPage({ params, searchParams }: EditList
 
             <div>
               <label className="label" htmlFor="transport_lines">
-                Lignes (bus, tram, métro)
+                {tForm("transportLines")}
               </label>
               <input
                 id="transport_lines"
                 name="transport_lines"
                 className="input"
-                placeholder="Ex: 2, 6, 81, 95"
+                placeholder={tForm("transportLinesPlaceholder")}
                 defaultValue={transportLines}
               />
             </div>
 
             <div>
-              <p className="label m-0">Environnement</p>
+              <p className="label m-0">{tForm("environment")}</p>
               <div className="mt-2 grid gap-2 sm:grid-cols-2 text-sm text-stone-700">
                 {AREA_CONTEXT_OPTIONS.map((option) => (
                   <label key={option.value} className="inline-flex items-center gap-2">
@@ -265,14 +278,14 @@ export default async function EditListingPage({ params, searchParams }: EditList
 
             <div>
               <label className="label" htmlFor="housing_description_extra">
-                Infos complémentaires
+                {tForm("extraInfo")}
               </label>
               <textarea
                 id="housing_description_extra"
                 name="housing_description_extra"
                 rows={4}
                 className="input"
-                placeholder="Ce que les candidats doivent savoir sur le bien"
+                placeholder={tForm("extraInfoPlaceholder")}
                 defaultValue={housingDescriptionExtra}
               />
             </div>
@@ -280,12 +293,12 @@ export default async function EditListingPage({ params, searchParams }: EditList
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-stone-900">Ambiance et profil du bien</h2>
+          <h2 className="text-lg font-semibold text-stone-900">{tForm("vibeAndProfile")}</h2>
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="animals_policy">
-                  Animaux autorisés
+                  {tForm("animalsAllowed")}
                 </label>
                 <select
                   id="animals_policy"
@@ -303,7 +316,7 @@ export default async function EditListingPage({ params, searchParams }: EditList
               </div>
               <div>
                 <label className="label" htmlFor="current_flatmates">
-                  Type de coloc
+                  {tForm("flatshareType")}
                 </label>
                 <select id="current_flatmates" name="current_flatmates" className="input" defaultValue={listing.current_flatmates ?? "mixte"}>
                   {CURRENT_FLATMATES_OPTIONS.map((option) => (
@@ -315,7 +328,7 @@ export default async function EditListingPage({ params, searchParams }: EditList
               </div>
               <div>
                 <label className="label" htmlFor="candidate_gender_preference">
-                  Profil recherché
+                  {tForm("profileSearched")}
                 </label>
                 <select
                   id="candidate_gender_preference"
@@ -342,14 +355,14 @@ export default async function EditListingPage({ params, searchParams }: EditList
             </div>
             <div>
               <label className="label" htmlFor="flatshare_vibe_other">
-                Autre
+                {tForm("other")}
               </label>
               <textarea
                 id="flatshare_vibe_other"
                 name="flatshare_vibe_other"
                 rows={3}
                 className="input"
-                placeholder="Ajoute des détails libres si besoin"
+                placeholder={tForm("otherPlaceholder")}
                 defaultValue={flatshareVibeOther}
               />
             </div>
@@ -357,7 +370,7 @@ export default async function EditListingPage({ params, searchParams }: EditList
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-stone-900">Photos et contact</h2>
+          <h2 className="text-lg font-semibold text-stone-900">{tForm("photosAndContact")}</h2>
           <div className="space-y-4">
             <PhotoFields
               mode="edit"
@@ -366,25 +379,25 @@ export default async function EditListingPage({ params, searchParams }: EditList
               deletePhotoAction={deleteListingPhotoAction}
             />
             <div className="space-y-2">
-              <p className="label m-0">Email de contact (automatique)</p>
+              <p className="label m-0">{tForm("contactEmailAuto")}</p>
               <p className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-700">
                 {accountEmail}
               </p>
-              <p className="text-xs text-stone-500">Les candidats peuvent toujours te contacter par email sur cette adresse.</p>
+              <p className="text-xs text-stone-500">{tForm("contactEmailHelp")}</p>
             </div>
             <div>
               <label className="label" htmlFor="contact_whatsapp">
-                Numéro WhatsApp (optionnel)
+                {tForm("whatsappOptional")}
               </label>
               <input id="contact_whatsapp" name="contact_whatsapp" className="input" defaultValue={listing.contact_whatsapp ?? ""} />
-              <p className="mt-1 text-xs text-stone-500">Laisse vide si tu ne veux pas être contacté sur WhatsApp.</p>
+              <p className="mt-1 text-xs text-stone-500">{tForm("whatsappHelp")}</p>
             </div>
           </div>
         </section>
 
         <div className="flex justify-end">
           <button type="submit" className="btn btn-primary">
-            Sauvegarder
+            {tEdit("save")}
           </button>
         </div>
       </form>

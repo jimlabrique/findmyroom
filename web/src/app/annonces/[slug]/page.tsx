@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { getListingBySlug, searchListings } from "@/lib/data/listings";
 import { trackListingEvent } from "@/lib/data/listing-events";
@@ -13,7 +14,8 @@ import {
   listingRoomsSummary,
   listingTypeLabel,
 } from "@/lib/listing";
-import { ROOM_BATHROOM_OPTIONS, ROOM_FURNISHING_OPTIONS, ROOM_OUTDOOR_OPTIONS, ROOM_VIEW_OPTIONS } from "@/lib/listing-form-options";
+import type { AppLocale } from "@/lib/i18n/locales";
+import { withLocalePath } from "@/lib/i18n/pathname";
 import { ListingCard } from "@/components/listing-card";
 
 type ListingDetailPageProps = {
@@ -24,6 +26,11 @@ type ListingDetailPageProps = {
 export const dynamic = "force-dynamic";
 
 export default async function ListingDetailPage({ params, searchParams }: ListingDetailPageProps) {
+  const locale = (await getLocale()) as AppLocale;
+  const t = await getTranslations("detail");
+  const tErrors = await getTranslations("errors");
+  const tCommon = await getTranslations("common.actions");
+  const tAuth = await getTranslations("auth");
   const { slug } = await params;
   const query = await searchParams;
   const listing = await getListingBySlug(slug);
@@ -39,36 +46,109 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
   const retryAfterSeconds = Number.isFinite(retryAfterRaw) ? Math.max(1, retryAfterRaw) : 30;
   const errorMessage =
     errorCode === "contact_missing"
-      ? "Ce logement n'a pas encore de contact configuré."
+      ? tErrors("contact_missing")
       : errorCode === "contact_method_invalid"
-        ? "Ce moyen de contact n'est pas disponible pour cette annonce."
+        ? tErrors("contact_method_invalid")
         : errorCode === "email_form_missing"
-          ? "Complete tous les champs du formulaire email."
+          ? tErrors("email_form_missing")
         : errorCode === "email_form_invalid"
-          ? "Adresse email invalide."
+          ? tErrors("email_form_invalid")
           : errorCode === "email_form_invalid_method"
-            ? "Le formulaire email doit être envoyé depuis le bouton."
+            ? tErrors("email_form_invalid_method")
+            : errorCode === "untrusted_origin"
+              ? tErrors("untrusted_origin")
             : errorCode === "email_service_unavailable"
-              ? "Envoi email non configuré côté serveur. Ajoute les variables SMTP."
+              ? tErrors("email_service_unavailable")
               : errorCode === "email_auth_failed"
-                ? "Connexion SMTP refusée. Vérifie SMTP_USER/SMTP_PASS (mot de passe d'application)."
+                ? tErrors("email_auth_failed")
                 : errorCode === "email_rate_limited"
-                  ? `Attends ${retryAfterSeconds}s avant de renvoyer un email.`
+                  ? tErrors("email_rate_limited", { seconds: retryAfterSeconds })
               : errorCode === "email_send_failed"
-                ? "Impossible d'envoyer l'email pour le moment."
+                ? tErrors("email_send_failed")
         : null;
-  const contactOptions = getListingContactOptions(listing);
+  const contactOptions = getListingContactOptions(listing, locale);
   const phoneContactOption = contactOptions.find((option) => option.method === "phone");
   const hasEmailContact = contactOptions.some((option) => option.method === "email");
   const photos = listingPhotosFromRow(listing);
   const roomDetails = listingRoomDetailsFromRow(listing);
-  const animalsPolicy = listingAnimalsPolicyLabel(listing.animals_policy);
-  const flatmatesLabel = listingCurrentFlatmatesLabel(listing.current_flatmates);
+  const animalsPolicy = listingAnimalsPolicyLabel(listing.animals_policy, locale);
+  const flatmatesLabel = listingCurrentFlatmatesLabel(listing.current_flatmates, locale);
   const candidatePreferenceLabel = listingCandidatePreferenceFromFlatshareVibe(listing.flatshare_vibe);
-  const furnishingLabels = new Map(ROOM_FURNISHING_OPTIONS.map((option) => [option.value, option.label]));
-  const bathroomLabels = new Map(ROOM_BATHROOM_OPTIONS.map((option) => [option.value, option.label]));
-  const outdoorLabels = new Map(ROOM_OUTDOOR_OPTIONS.map((option) => [option.value, option.label]));
-  const viewLabels = new Map(ROOM_VIEW_OPTIONS.map((option) => [option.value, option.label]));
+  const furnishingLabels =
+    locale === "en"
+      ? new Map([
+          ["furnished", "Furnished"],
+          ["unfurnished", "Unfurnished"],
+          ["partially_furnished", "Partially furnished"],
+        ])
+      : locale === "nl"
+        ? new Map([
+            ["furnished", "Gemeubileerd"],
+            ["unfurnished", "Niet gemeubileerd"],
+            ["partially_furnished", "Deels gemeubileerd"],
+          ])
+        : new Map([
+            ["furnished", "Meublé"],
+            ["unfurnished", "Non meublé"],
+            ["partially_furnished", "Partiellement meublé"],
+          ]);
+  const bathroomLabels =
+    locale === "en"
+      ? new Map([
+          ["private", "Private"],
+          ["shared", "Shared"],
+        ])
+      : locale === "nl"
+        ? new Map([
+            ["private", "Privé"],
+            ["shared", "Gedeeld"],
+          ])
+        : new Map([
+            ["private", "Privative"],
+            ["shared", "Partagée"],
+          ]);
+  const outdoorLabels =
+    locale === "en"
+      ? new Map([
+          ["none", "None"],
+          ["balcony", "Balcony"],
+          ["terrace", "Terrace"],
+          ["garden", "Garden"],
+        ])
+      : locale === "nl"
+        ? new Map([
+            ["none", "Geen"],
+            ["balcony", "Balkon"],
+            ["terrace", "Terras"],
+            ["garden", "Tuin"],
+          ])
+        : new Map([
+            ["none", "Aucun"],
+            ["balcony", "Balcon"],
+            ["terrace", "Terrasse"],
+            ["garden", "Jardin"],
+          ]);
+  const viewLabels =
+    locale === "en"
+      ? new Map([
+          ["garden", "Garden"],
+          ["courtyard", "Courtyard"],
+          ["street", "Street"],
+          ["other", "Other"],
+        ])
+      : locale === "nl"
+        ? new Map([
+            ["garden", "Tuin"],
+            ["courtyard", "Binnenplaats"],
+            ["street", "Straat"],
+            ["other", "Andere"],
+          ])
+        : new Map([
+            ["garden", "Jardin"],
+            ["courtyard", "Cour"],
+            ["street", "Rue"],
+            ["other", "Autre"],
+          ]);
   const similarListings = (await searchListings({ city: listing.city, sort: "latest" }))
     .filter((item) => item.id !== listing.id)
     .slice(0, 3);
@@ -83,16 +163,18 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
     <div className="container-page space-y-6">
       {created ? (
         <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          Annonce publiée. Elle est maintenant visible dans la recherche.
+          {t("created")}
         </p>
       ) : null}
       {emailSent ? (
         <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          Demande envoyée à l&apos;annonceur.
+          {t("emailSent")}
         </p>
       ) : null}
       {errorMessage ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">Erreur: {errorMessage}</p>
+        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {tAuth("errorPrefix")}: {errorMessage}
+        </p>
       ) : null}
 
       <section className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
@@ -118,72 +200,73 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
           </div>
 
           <article className="panel space-y-4 p-5">
-            <h1 className="font-serif text-3xl text-stone-900">{listing.title}</h1>
-            <div className="grid gap-3 text-sm text-stone-700 sm:grid-cols-2">
-              <p>
-                <span className="font-semibold">Commune:</span> {listing.city}
-              </p>
-              <p>
-                <span className="font-semibold">Type:</span> {listingTypeLabel(listing.listing_type)}
-              </p>
-              <p>
-                <span className="font-semibold">Loyer:</span> {listingPriceRangeLabel(listing)}
-              </p>
-              <p>
-                <span className="font-semibold">Chambres:</span> {listingRoomsSummary(listing)}
-              </p>
-              <p>
-                <span className="font-semibold">Disponibilité:</span> {listing.available_from}
-              </p>
-              {animalsPolicy ? (
+              <h1 className="font-serif text-3xl text-stone-900">{listing.title}</h1>
+              <div className="grid gap-3 text-sm text-stone-700 sm:grid-cols-2">
                 <p>
-                  <span className="font-semibold">Animaux:</span> {animalsPolicy}
+                  <span className="font-semibold">{t("labels.commune")}:</span> {listing.city}
                 </p>
-              ) : null}
-              {flatmatesLabel ? (
                 <p>
-                  <span className="font-semibold">Type de coloc:</span> {flatmatesLabel}
+                  <span className="font-semibold">{t("labels.type")}:</span> {listingTypeLabel(listing.listing_type, locale)}
                 </p>
-              ) : null}
-              {candidatePreferenceLabel ? (
                 <p>
-                  <span className="font-semibold">Profil recherché:</span> {candidatePreferenceLabel}
+                  <span className="font-semibold">{t("labels.rent")}:</span> {listingPriceRangeLabel(listing, locale)}
                 </p>
-              ) : null}
-              {listing.charges_eur !== null ? (
                 <p>
-                  <span className="font-semibold">Charges:</span> {listing.charges_eur} EUR
+                  <span className="font-semibold">{t("labels.rooms")}:</span> {listingRoomsSummary(listing, locale)}
                 </p>
-              ) : null}
-              {listing.min_duration_months !== null ? (
                 <p>
-                  <span className="font-semibold">Durée min:</span> {listing.min_duration_months} mois
+                  <span className="font-semibold">{t("labels.availability")}:</span> {listing.available_from}
                 </p>
-              ) : null}
-            </div>
+                {animalsPolicy ? (
+                  <p>
+                    <span className="font-semibold">{t("labels.animals")}:</span> {animalsPolicy}
+                  </p>
+                ) : null}
+                {flatmatesLabel ? (
+                  <p>
+                    <span className="font-semibold">{t("labels.flatshareType")}:</span> {flatmatesLabel}
+                  </p>
+                ) : null}
+                {candidatePreferenceLabel ? (
+                  <p>
+                    <span className="font-semibold">{t("labels.profile")}:</span> {candidatePreferenceLabel}
+                  </p>
+                ) : null}
+                {listing.charges_eur !== null ? (
+                  <p>
+                    <span className="font-semibold">{t("labels.charges")}:</span> {listing.charges_eur} EUR
+                  </p>
+                ) : null}
+                {listing.min_duration_months !== null ? (
+                  <p>
+                    <span className="font-semibold">{t("labels.minimumDuration")}:</span>{" "}
+                    {t("monthsSuffix", { count: listing.min_duration_months })}
+                  </p>
+                ) : null}
+              </div>
 
             {roomDetails.length ? (
               <div className="space-y-2">
-                <h2 className="text-lg font-semibold text-stone-900">Détails des chambres disponibles</h2>
+                <h2 className="text-lg font-semibold text-stone-900">{t("roomTableTitle")}</h2>
                 <div className="overflow-x-auto rounded-xl border border-stone-200">
                   <table className="min-w-full text-sm">
                     <thead className="bg-stone-50 text-left text-stone-600">
                       <tr>
-                        <th className="px-3 py-2 font-medium">Chambre</th>
-                        <th className="px-3 py-2 font-medium">Taille</th>
-                        <th className="px-3 py-2 font-medium">Prix</th>
-                        <th className="px-3 py-2 font-medium">Meublé</th>
-                        <th className="px-3 py-2 font-medium">SDB</th>
-                        <th className="px-3 py-2 font-medium">Extérieur</th>
-                        <th className="px-3 py-2 font-medium">Vue</th>
+                        <th className="px-3 py-2 font-medium">{t("roomHeaderRoom")}</th>
+                        <th className="px-3 py-2 font-medium">{t("roomHeaderSize")}</th>
+                        <th className="px-3 py-2 font-medium">{t("roomHeaderPrice")}</th>
+                        <th className="px-3 py-2 font-medium">{t("roomHeaderFurnishing")}</th>
+                        <th className="px-3 py-2 font-medium">{t("roomHeaderBathroom")}</th>
+                        <th className="px-3 py-2 font-medium">{t("roomHeaderOutdoor")}</th>
+                        <th className="px-3 py-2 font-medium">{t("roomHeaderView")}</th>
                       </tr>
                     </thead>
                     <tbody className="text-stone-800">
                       {roomDetails.map((room) => (
                         <tr key={`room-${room.index}`} className="border-t border-stone-100">
-                          <td className="px-3 py-2">Chambre {room.index}</td>
+                          <td className="px-3 py-2">{t("roomLabel", { index: room.index })}</td>
                           <td className="px-3 py-2">{room.size_sqm}m2</td>
-                          <td className="px-3 py-2">{room.price_eur} EUR/mois</td>
+                          <td className="px-3 py-2">{t("pricePerMonthSuffix", { value: room.price_eur })}</td>
                           <td className="px-3 py-2">{furnishingLabels.get(room.furnishing) ?? room.furnishing}</td>
                           <td className="px-3 py-2">{bathroomLabels.get(room.bathroom) ?? room.bathroom}</td>
                           <td className="px-3 py-2">{outdoorLabels.get(room.outdoor) ?? room.outdoor}</td>
@@ -197,13 +280,13 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
             ) : null}
 
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-stone-900">Description du logement</h2>
+              <h2 className="text-lg font-semibold text-stone-900">{t("housingTitle")}</h2>
               <p className="whitespace-pre-line text-stone-700">{listing.housing_description}</p>
             </div>
 
             <div className="space-y-2">
               <h2 className="text-lg font-semibold text-stone-900">
-                {listing.listing_type === "studio" ? "Infos complémentaires" : "Ambiance de la coloc"}
+                {listing.listing_type === "studio" ? t("studioInfoTitle") : t("flatshareInfoTitle")}
               </h2>
               <p className="whitespace-pre-line text-stone-700">{listing.flatshare_vibe}</p>
             </div>
@@ -211,14 +294,14 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
         </div>
 
         <aside className="panel h-fit space-y-4 p-5 lg:sticky lg:top-8">
-          <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Contact</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">{t("contactTitle")}</p>
           <p className="text-sm text-stone-700">
-            Contacte directement l&apos;annonceur pour organiser un échange ou une visite.
+            {t("contactDescription")}
           </p>
           <div className="space-y-3">
             {phoneContactOption ? (
               <a
-                href={`/annonces/${listing.slug}/contacter?method=phone`}
+                href={withLocalePath(`/annonces/${listing.slug}/contacter?method=phone`, locale)}
                 target="_blank"
                 rel="noreferrer"
                 className="btn btn-primary w-full"
@@ -229,23 +312,23 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
 
             {hasEmailContact ? (
               <form
-                action={`/annonces/${listing.slug}/contacter/email`}
+                action={withLocalePath(`/annonces/${listing.slug}/contacter/email`, locale)}
                 method="post"
                 className="space-y-2 rounded-xl border border-stone-200 bg-stone-50 p-3"
               >
-                <p className="text-sm font-semibold text-stone-900">Envoyer un email</p>
+                <p className="text-sm font-semibold text-stone-900">{t("sendEmail")}</p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <input
                     name="first_name"
                     className="input"
-                    placeholder="Prénom"
+                    placeholder={t("firstName")}
                     required
                     maxLength={80}
                   />
                   <input
                     name="last_name"
                     className="input"
-                    placeholder="Nom"
+                    placeholder={t("lastName")}
                     required
                     maxLength={80}
                   />
@@ -254,14 +337,14 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
                   type="email"
                   name="sender_email"
                   className="input"
-                  placeholder="Ton email"
+                  placeholder={t("yourEmail")}
                   required
                   maxLength={200}
                 />
                 <textarea
                   name="message"
                   className="input"
-                  placeholder="Ton message"
+                  placeholder={t("yourMessage")}
                   rows={4}
                   required
                   maxLength={2000}
@@ -287,16 +370,18 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
                   />
                 </div>
                 <button type="submit" className="btn btn-ghost w-full">
-                  Envoyer par email
+                  {t("sendByEmail")}
                 </button>
               </form>
             ) : null}
           </div>
           <p className="text-xs text-stone-500">
-            Moyens disponibles: {contactOptions.map((option) => option.channelLabel).join(", ") || "Aucun"}
+            {t("availableChannels", {
+              channels: contactOptions.map((option) => option.channelLabel).join(", ") || t("noChannel"),
+            })}
           </p>
-          <Link href="/annonces" className="btn btn-ghost w-full">
-            Retour à la recherche
+          <Link href={withLocalePath("/annonces", locale)} className="btn btn-ghost w-full">
+            {tCommon("retourRecherche")}
           </Link>
         </aside>
       </section>

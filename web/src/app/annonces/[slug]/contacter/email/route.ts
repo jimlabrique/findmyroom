@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { getListingBySlug } from "@/lib/data/listings";
 import { trackListingEvent } from "@/lib/data/listing-events";
+import { DEFAULT_LOCALE, LOCALE_HEADER, normalizeLocale } from "@/lib/i18n/locales";
+import { withLocalePath } from "@/lib/i18n/pathname";
 import { getListingContactOptions } from "@/lib/listing";
 import { sendListingContactEmail } from "@/lib/email";
 import { consumeRateLimitSlot } from "@/lib/rate-limit";
+import { getRequestIpFromHeaders, isTrustedRequestHeaders } from "@/lib/security/request";
 
 type EmailContactRouteProps = {
   params: Promise<{ slug: string }>;
@@ -19,36 +22,35 @@ function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-function getRequestIp(request: Request) {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    const first = forwarded.split(",")[0]?.trim();
-    if (first) return first;
-  }
+function requestLocale(request: Request) {
+  return normalizeLocale(request.headers.get(LOCALE_HEADER) ?? DEFAULT_LOCALE);
+}
 
-  const realIp = request.headers.get("x-real-ip")?.trim();
-  if (realIp) return realIp;
-
-  return "unknown";
+function localizedPath(path: string, request: Request) {
+  return withLocalePath(path, requestLocale(request));
 }
 
 export async function GET(request: Request, { params }: EmailContactRouteProps) {
   const { slug } = await params;
-  return NextResponse.redirect(new URL(`/annonces/${slug}?error=email_form_invalid_method`, request.url));
+  return NextResponse.redirect(new URL(`${localizedPath(`/annonces/${slug}`, request)}?error=email_form_invalid_method`, request.url));
 }
 
 export async function POST(request: Request, { params }: EmailContactRouteProps) {
+  if (!isTrustedRequestHeaders(request.headers)) {
+    return NextResponse.redirect(new URL(`${localizedPath("/annonces", request)}?error=untrusted_origin`, request.url));
+  }
+
   const { slug } = await params;
   const listing = await getListingBySlug(slug);
 
   if (!listing) {
-    return NextResponse.redirect(new URL("/annonces?error=listing_not_found", request.url));
+    return NextResponse.redirect(new URL(`${localizedPath("/annonces", request)}?error=listing_not_found`, request.url));
   }
 
-  const options = getListingContactOptions(listing);
+  const options = getListingContactOptions(listing, requestLocale(request));
   const emailOption = options.find((option) => option.method === "email");
   if (!emailOption) {
-    return NextResponse.redirect(new URL(`/annonces/${slug}?error=contact_missing`, request.url));
+    return NextResponse.redirect(new URL(`${localizedPath(`/annonces/${slug}`, request)}?error=contact_missing`, request.url));
   }
 
   const formData = await request.formData();
@@ -59,26 +61,29 @@ export async function POST(request: Request, { params }: EmailContactRouteProps)
   const honeypot = cleanField(`${formData.get("website") ?? ""}`);
 
   if (honeypot) {
-    console.warn("[email_contact_spam_blocked]", { slug, ip: getRequestIp(request) });
-    return NextResponse.redirect(new URL(`/annonces/${slug}?email_sent=1`, request.url));
+    console.warn("[email_contact_spam_blocked]", { slug, ip: getRequestIpFromHeaders(request.headers) });
+    return NextResponse.redirect(new URL(`${localizedPath(`/annonces/${slug}`, request)}?email_sent=1`, request.url));
   }
 
   if (!firstName || !lastName || !senderEmail || !message) {
-    return NextResponse.redirect(new URL(`/annonces/${slug}?error=email_form_missing`, request.url));
+    return NextResponse.redirect(new URL(`${localizedPath(`/annonces/${slug}`, request)}?error=email_form_missing`, request.url));
   }
 
   if (!isValidEmail(senderEmail)) {
-    return NextResponse.redirect(new URL(`/annonces/${slug}?error=email_form_invalid`, request.url));
+    return NextResponse.redirect(new URL(`${localizedPath(`/annonces/${slug}`, request)}?error=email_form_invalid`, request.url));
   }
 
-  const clientIp = getRequestIp(request);
-  const limit = consumeRateLimitSlot({
+  const clientIp = getRequestIpFromHeaders(request.headers);
+  const limit = await consumeRateLimitSlot({
     key: `email_contact:${clientIp}`,
     windowMs: EMAIL_CONTACT_RATE_LIMIT_MS,
   });
   if (limit.limited) {
     return NextResponse.redirect(
-      new URL(`/annonces/${slug}?error=email_rate_limited&retry_after=${limit.retryAfterSeconds}`, request.url),
+      new URL(
+        `${localizedPath(`/annonces/${slug}`, request)}?error=email_rate_limited&retry_after=${limit.retryAfterSeconds}`,
+        request.url,
+      ),
     );
   }
 
@@ -96,6 +101,7 @@ export async function POST(request: Request, { params }: EmailContactRouteProps)
       listingCity: listing.city,
       listingSlug: listing.slug,
       listingPhotoUrl,
+      locale: requestLocale(request),
       message,
     });
   } catch (error) {
@@ -105,7 +111,7 @@ export async function POST(request: Request, { params }: EmailContactRouteProps)
       /invalid login|badcredentials|username and password not accepted/i.test(message)
         ? "email_auth_failed"
         : "email_send_failed";
-    return NextResponse.redirect(new URL(`/annonces/${slug}?error=${code}`, request.url));
+    return NextResponse.redirect(new URL(`${localizedPath(`/annonces/${slug}`, request)}?error=${code}`, request.url));
   }
 
   await trackListingEvent({
@@ -114,5 +120,5 @@ export async function POST(request: Request, { params }: EmailContactRouteProps)
     source: "listing_detail_contact_email_sent",
   });
 
-  return NextResponse.redirect(new URL(`/annonces/${slug}?email_sent=1`, request.url));
+  return NextResponse.redirect(new URL(`${localizedPath(`/annonces/${slug}`, request)}?email_sent=1`, request.url));
 }

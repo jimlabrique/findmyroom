@@ -1,4 +1,4 @@
-# Findmyroom V1 (Next.js + Supabase)
+# FindMyRoom V1 (Next.js + Supabase)
 
 Marketplace d'annonces de colocation:
 - publier
@@ -11,7 +11,8 @@ Marketplace d'annonces de colocation:
 
 - Next.js App Router
 - Supabase (DB + auth)
-- Google login via Supabase OAuth
+- Google login + email/password via Supabase Auth
+- i18n FR/EN/NL (URLs préfixées `/{locale}`)
 
 ## Setup local
 
@@ -43,6 +44,14 @@ npm install
 npm run dev
 ```
 
+Checks qualité:
+
+```bash
+npm run check:max-lines
+npm run lint
+npm run build
+```
+
 ## Envoi email direct (formulaire contact)
 
 Pour envoyer l'email directement sans ouvrir le client mail local:
@@ -51,13 +60,23 @@ Pour envoyer l'email directement sans ouvrir le client mail local:
 
 ## Routes V1
 
-- `/` homepage
-- `/annonces` recherche + filtres
-- `/annonces/[slug]` detail annonce
-- `/connexion` auth Google
-- `/deposer` creation annonce (auth)
-- `/mes-annonces` gestion annonces (auth)
-- `/mes-annonces/[id]/editer` edition annonce (auth)
+- `/{locale}/annonces` recherche + filtres
+- `/{locale}/annonces/[slug]` détail annonce
+- `/{locale}/connexion` auth
+- `/{locale}/deposer` création annonce (auth)
+- `/{locale}/mes-annonces` gestion annonces (auth)
+- `/{locale}/mes-annonces/[id]/editer` édition annonce (auth)
+
+Locales supportées:
+- `fr`
+- `en`
+- `nl`
+
+## Mobile (Capacitor)
+
+- Config Capacitor: `capacitor.config.ts`
+- Android shell: `web/android`
+- Guide de setup: `docs/mobile-capacitor-guide.md`
 
 ## Hors scope volontaire en V1
 

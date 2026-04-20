@@ -42,6 +42,7 @@ import {
   TRANSPORT_MODE_OPTIONS,
   VIBE_TAG_OPTIONS,
 } from "@/lib/listing-form-options";
+import { assertTrustedFormRequest } from "@/lib/security/request";
 
 function isMissingPhotoCaptionsColumn(message: string) {
   return /photo_captions/i.test(message) && /column/i.test(message);
@@ -148,6 +149,7 @@ function parseRoomDetails(formData: FormData, availableRooms: number): ListingRo
 }
 
 export async function createListingAction(formData: FormData) {
+  await assertTrustedFormRequest();
   const { supabase, user } = await requireUser("/deposer");
 
   const listingTypeRaw = `${formData.get("listing_type") ?? ""}`.trim();

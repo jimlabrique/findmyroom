@@ -1,0 +1,60 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { requireUser } from "@/lib/auth";
+import { assertTrustedFormRequest } from "@/lib/security/request";
+import { deleteListingPhotoUrls, isMissingPhotoCaptionsColumn, isMissingStructuredListingColumns } from "@/app/mes-annonces/actions/shared";
+import { buildListingUpdatePayload } from "@/app/mes-annonces/actions/shared";
+
+export async function updateListingAction(formData: FormData) {
+  await assertTrustedFormRequest();
+  const listingId = `${formData.get("listing_id") ?? ""}`.trim();
+  if (!listingId) {
+    redirect("/mes-annonces?error=missing_listing_id");
+  }
+
+  const { supabase, user } = await requireUser(`/mes-annonces/${listingId}/editer`);
+
+  try {
+    const payload = await buildListingUpdatePayload({
+      formData,
+      listingId,
+      userId: user.id,
+      email: user.email ?? null,
+      supabase,
+    });
+
+    const { error } = await supabase
+      .from("listings")
+      .update(payload.updatePayload)
+      .eq("id", payload.listingId)
+      .eq("user_id", user.id);
+
+    if (error && isMissingPhotoCaptionsColumn(error.message)) {
+      redirect(`/mes-annonces/${listingId}/editer?error=schema_missing_photo_captions`);
+    }
+    if (error && isMissingStructuredListingColumns(error.message)) {
+      redirect(`/mes-annonces/${listingId}/editer?error=schema_missing_listing_fields`);
+    }
+    if (error) {
+      redirect(`/mes-annonces/${listingId}/editer?error=${encodeURIComponent(error.message)}`);
+    }
+
+    if (payload.removedPhotoUrls.length) {
+      try {
+        await deleteListingPhotoUrls({
+          supabase,
+          userId: user.id,
+          urls: payload.removedPhotoUrls,
+        });
+      } catch {
+        // Listing stays updated even if storage cleanup fails.
+      }
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "unknown_error";
+    redirect(`/mes-annonces/${listingId}/editer?error=${encodeURIComponent(message)}`);
+  }
+
+  redirect("/mes-annonces?updated=1");
+}

@@ -2,6 +2,7 @@
 
 import { startTransition, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { ListingPhoto } from "@/lib/listing";
 
 type PhotoFieldsProps = {
@@ -29,6 +30,7 @@ const MAX_NEW_PHOTOS = 10;
 
 export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoAction }: PhotoFieldsProps) {
   const router = useRouter();
+  const t = useTranslations("photoFields");
   const slotCounterRef = useRef(1);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const latestSlotsRef = useRef<UploadSlot[]>([{ id: "slot-0", photos: [] }]);
@@ -88,7 +90,7 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
       if (fileInput) {
         fileInput.value = "";
       }
-      setPhotoError(`Maximum ${MAX_NEW_PHOTOS} photos.`);
+      setPhotoError(t("maxPhotosError", { count: MAX_NEW_PHOTOS }));
       return;
     }
 
@@ -163,7 +165,7 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
     <div className="space-y-5">
       {mode === "edit" ? (
         <div className="space-y-3">
-          <p className="label">Photos actuelles</p>
+          <p className="label">{t("currentPhotos")}</p>
           {existingPhotos.length ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {existingPhotos.map((photo, index) => (
@@ -171,21 +173,21 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photo.url}
-                    alt={photo.caption || `Photo ${index + 1}`}
+                    alt={photo.caption || t("photoAlt", { index: index + 1 })}
                     className="aspect-[4/3] w-full rounded-md object-cover"
                   />
                   <input type="hidden" name="existing_photo_urls" value={photo.url} />
 
                   <div className="mt-2 space-y-2">
                     <label className="label" htmlFor={`existing-caption-${index}`}>
-                      Legende
+                      {t("caption")}
                     </label>
                     <input
                       id={`existing-caption-${index}`}
                       name="existing_photo_captions"
                       className="input"
                       defaultValue={photo.caption}
-                      placeholder="Chambre 1 - 10m2"
+                      placeholder={t("captionPlaceholder")}
                       required
                     />
 
@@ -196,7 +198,7 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
                         onClick={() => handleDeletePhoto(photo.url)}
                         disabled={deletingPhotoUrl === photo.url}
                       >
-                        {deletingPhotoUrl === photo.url ? "Suppression..." : "Supprimer cette photo"}
+                        {deletingPhotoUrl === photo.url ? t("deleteInProgress") : t("deletePhoto")}
                       </button>
                     ) : null}
                   </div>
@@ -204,7 +206,7 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
               ))}
             </div>
           ) : (
-            <p className="text-sm text-stone-600">Aucune photo actuellement.</p>
+            <p className="text-sm text-stone-600">{t("noCurrentPhotos")}</p>
           )}
         </div>
       ) : null}
@@ -212,7 +214,7 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
       <div className="space-y-3">
         {deleteError ? (
           <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            Erreur suppression photo: {deleteError}
+            {t("deleteErrorPrefix")}: {deleteError}
           </p>
         ) : null}
 
@@ -221,10 +223,8 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
         ) : null}
 
         <div className="space-y-1">
-          <p className="label m-0">{mode === "create" ? "Ajouter les photos" : "Ajouter de nouvelles photos"}</p>
-          <p className="text-xs text-stone-500">
-            Clique sur un cadre pour ajouter des images. Tu peux aussi en sélectionner plusieurs d&apos;un coup.
-          </p>
+          <p className="label m-0">{mode === "create" ? t("addPhotosCreate") : t("addPhotosEdit")}</p>
+          <p className="text-xs text-stone-500">{t("addPhotosHelp")}</p>
         </div>
 
         <div className="space-y-3">
@@ -252,8 +252,8 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
                   className="flex min-h-28 cursor-pointer items-center justify-center rounded-lg border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-center text-sm font-medium text-stone-700 hover:bg-stone-100"
                 >
                   {hasSelection
-                    ? `${slot.photos.length} photo(s) sélectionnée(s) - cliquer pour remplacer`
-                    : "+ Ajouter une ou plusieurs photos"}
+                    ? t("slotSelected", { count: slot.photos.length })
+                    : t("slotEmpty")}
                 </label>
 
                 {hasSelection ? (
@@ -265,13 +265,13 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
                           <img src={photo.previewUrl} alt={photo.fileName} className="aspect-[4/3] w-full rounded-md object-cover" />
                           <p className="mt-2 truncate text-xs text-stone-600">{photo.fileName}</p>
                           <label className="label mt-2" htmlFor={`photo-caption-${slot.id}-${photo.id}`}>
-                            Légende
+                            {t("caption")}
                           </label>
                           <input
                             id={`photo-caption-${slot.id}-${photo.id}`}
                             name="photo_captions"
                             className="input"
-                            placeholder={`Photo ${photoIndex + 1} - exemple: Chambre ${photoIndex + 1} - 10m2`}
+                            placeholder={t("newCaptionPlaceholder", { index: photoIndex + 1 })}
                             value={photo.caption}
                             onChange={(event) => onCaptionChange(slot.id, photo.id, event.currentTarget.value)}
                             required
@@ -281,7 +281,7 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
                     </div>
 
                     <button type="button" className="btn btn-ghost" onClick={() => clearSlot(slot.id)}>
-                      Vider ce cadre
+                      {t("clearSlot")}
                     </button>
                   </div>
                 ) : null}
@@ -290,7 +290,7 @@ export function PhotoFields({ mode, existingPhotos = [], listingId, deletePhotoA
           })}
         </div>
 
-        <p className="text-xs text-stone-500">Formats acceptés: JPG, PNG, WEBP, GIF. 10 photos max.</p>
+        <p className="text-xs text-stone-500">{t("formatsHelp", { count: MAX_NEW_PHOTOS })}</p>
       </div>
     </div>
   );

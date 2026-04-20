@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 
 type ListingCardCarouselProps = {
   photos: string[];
@@ -9,9 +10,10 @@ type ListingCardCarouselProps = {
   href: string;
 };
 
-const FALLBACK_PHOTO = "https://placehold.co/1200x800?text=Colocation";
+const FALLBACK_PHOTO = "/logo.png";
 
 export function ListingCardCarousel({ photos, title, href }: ListingCardCarouselProps) {
+  const t = useTranslations("listings.search");
   const normalizedPhotos = useMemo(() => {
     const clean = photos.map((photo) => photo.trim()).filter((photo) => photo.length > 0);
     return clean.length ? clean : [FALLBACK_PHOTO];
@@ -42,7 +44,7 @@ export function ListingCardCarousel({ photos, title, href }: ListingCardCarousel
             type="button"
             onClick={showPreviousPhoto}
             className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-lg font-semibold text-stone-800 shadow-sm hover:bg-white"
-            aria-label="Photo precedente"
+            aria-label={t("previousPhoto")}
           >
             ‹
           </button>
@@ -50,7 +52,7 @@ export function ListingCardCarousel({ photos, title, href }: ListingCardCarousel
             type="button"
             onClick={showNextPhoto}
             className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-lg font-semibold text-stone-800 shadow-sm hover:bg-white"
-            aria-label="Photo suivante"
+            aria-label={t("nextPhoto")}
           >
             ›
           </button>

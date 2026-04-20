@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   BRUSSELS_COMMUNES,
   getNeighborhoodsForCommune,
@@ -21,6 +22,7 @@ export function SearchCommuneNeighborhoodFields({
   initialNeighborhood,
   customCity,
 }: SearchCommuneNeighborhoodFieldsProps) {
+  const t = useTranslations("listings.search");
   const [city, setCity] = useState(initialCity || ALL_BRUSSELS_VALUE);
   const [neighborhood, setNeighborhood] = useState(initialNeighborhood);
 
@@ -38,10 +40,10 @@ export function SearchCommuneNeighborhoodFields({
     <>
       <div className="sm:col-span-2 xl:col-span-2">
         <label htmlFor="city" className="label">
-          Commune
+          {t("commune")}
         </label>
         <select id="city" name="city" className="input" value={city} onChange={(event) => handleCityChange(event.currentTarget.value)}>
-          <option value={ALL_BRUSSELS_VALUE}>Toutes les communes de Bruxelles</option>
+          <option value={ALL_BRUSSELS_VALUE}>{t("allBrusselsCommunes")}</option>
           {customCity ? <option value={customCity}>{customCity}</option> : null}
           {BRUSSELS_COMMUNES.map((commune) => (
             <option key={commune} value={commune}>
@@ -53,7 +55,7 @@ export function SearchCommuneNeighborhoodFields({
 
       <div className="sm:col-span-2 xl:col-span-2">
         <label htmlFor="neighborhood" className="label">
-          Quartier
+          {t("neighborhood")}
         </label>
         <select
           id="neighborhood"
@@ -63,7 +65,7 @@ export function SearchCommuneNeighborhoodFields({
           onChange={(event) => setNeighborhood(event.currentTarget.value)}
           disabled={!neighborhoodOptions.length}
         >
-          <option value="">{neighborhoodOptions.length ? "Tous les quartiers" : "Choisis d'abord une commune"}</option>
+          <option value="">{neighborhoodOptions.length ? t("allNeighborhoods") : t("chooseCommuneFirst")}</option>
           {!neighborhoodOptions.includes(neighborhood) &&
           neighborhood &&
           neighborhood !== OTHER_NEIGHBORHOOD_VALUE ? (
