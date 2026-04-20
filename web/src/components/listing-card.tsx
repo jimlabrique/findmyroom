@@ -3,8 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import type { AppLocale } from "@/lib/i18n/locales";
 import { withLocalePath } from "@/lib/i18n/pathname";
 import {
-  listingCandidatePreferenceFromFlatshareVibe,
-  listingCandidatePreferenceValueFromFlatshareVibe,
+  listingCandidatePreferenceSummaryLabel,
   listingDisplayTitle,
   listingPriceRangeLabel,
   listingRoomsSummary,
@@ -42,11 +41,7 @@ export async function ListingCard({ listing }: ListingCardProps) {
   const detailsHref = withLocalePath(`/annonces/${listing.slug}`, locale);
   const displayTitle = listingDisplayTitle(listing, locale);
   const displayCity = getLocalizedCommuneLabel(listing.city, locale);
-  const candidatePreferenceValue = listingCandidatePreferenceValueFromFlatshareVibe(listing.flatshare_vibe);
-  const candidatePreferenceLabel =
-    candidatePreferenceValue === "fille_only" || candidatePreferenceValue === "garcon_only"
-      ? listingCandidatePreferenceFromFlatshareVibe(listing.flatshare_vibe, locale)
-      : null;
+  const candidatePreferenceLabel = listingCandidatePreferenceSummaryLabel(listing.flatshare_vibe, locale);
 
   return (
     <article className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:shadow-md sm:grid sm:grid-cols-[340px_1fr]">

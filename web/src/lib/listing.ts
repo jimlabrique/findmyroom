@@ -644,3 +644,21 @@ export function listingCandidatePreferenceValueFromFlatshareVibe(
   }
   return null;
 }
+
+export function listingCandidatePreferenceSummaryLabel(
+  flatshareVibe: string | null | undefined,
+  locale: "fr" | "en" | "nl" = "fr",
+) {
+  const value = listingCandidatePreferenceValueFromFlatshareVibe(flatshareVibe);
+  if (value === "fille_only") {
+    if (locale === "en") return "Woman wanted";
+    if (locale === "nl") return "Vrouw gezocht";
+    return "Fille recherchée";
+  }
+  if (value === "garcon_only") {
+    if (locale === "en") return "Man wanted";
+    if (locale === "nl") return "Man gezocht";
+    return "Garçon recherché";
+  }
+  return null;
+}
