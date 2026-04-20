@@ -5,9 +5,12 @@ import { getListingBySlug, searchListings } from "@/lib/data/listings";
 import { trackListingEvent } from "@/lib/data/listing-events";
 import {
   getListingContactOptions,
+  listingDisplayTitle,
   listingAnimalsPolicyLabel,
   listingCandidatePreferenceFromFlatshareVibe,
   listingCurrentFlatmatesLabel,
+  localizeFlatshareVibeText,
+  localizeHousingDescriptionText,
   listingPhotosFromRow,
   listingPriceRangeLabel,
   listingRoomDetailsFromRow,
@@ -17,6 +20,7 @@ import {
 import type { AppLocale } from "@/lib/i18n/locales";
 import { withLocalePath } from "@/lib/i18n/pathname";
 import { ListingCard } from "@/components/listing-card";
+import { getLocalizedCommuneLabel } from "@/lib/listing-form-options";
 
 type ListingDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -73,7 +77,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
   const roomDetails = listingRoomDetailsFromRow(listing);
   const animalsPolicy = listingAnimalsPolicyLabel(listing.animals_policy, locale);
   const flatmatesLabel = listingCurrentFlatmatesLabel(listing.current_flatmates, locale);
-  const candidatePreferenceLabel = listingCandidatePreferenceFromFlatshareVibe(listing.flatshare_vibe);
+  const candidatePreferenceLabel = listingCandidatePreferenceFromFlatshareVibe(listing.flatshare_vibe, locale);
   const furnishingLabels =
     locale === "en"
       ? new Map([
@@ -152,6 +156,10 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
   const similarListings = (await searchListings({ city: listing.city, sort: "latest" }))
     .filter((item) => item.id !== listing.id)
     .slice(0, 3);
+  const displayTitle = listingDisplayTitle(listing, locale);
+  const displayCity = getLocalizedCommuneLabel(listing.city, locale);
+  const localizedHousingDescription = localizeHousingDescriptionText(listing.housing_description, locale, listing.city);
+  const localizedFlatshareVibe = localizeFlatshareVibeText(listing.flatshare_vibe, locale);
 
   await trackListingEvent({
     listingId: listing.id,
@@ -186,7 +194,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photo.url}
-                    alt={photo.caption || `${listing.title} - photo ${index + 1}`}
+                    alt={photo.caption || `${displayTitle} - photo ${index + 1}`}
                     className={`h-full w-full rounded-lg object-cover ${
                       index === 0 ? "aspect-[16/10]" : "aspect-[4/3]"
                     }`}
@@ -200,10 +208,10 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
           </div>
 
           <article className="panel space-y-4 p-5">
-              <h1 className="font-serif text-3xl text-stone-900">{listing.title}</h1>
+              <h1 className="font-serif text-3xl text-stone-900">{displayTitle}</h1>
               <div className="grid gap-3 text-sm text-stone-700 sm:grid-cols-2">
                 <p>
-                  <span className="font-semibold">{t("labels.commune")}:</span> {listing.city}
+                  <span className="font-semibold">{t("labels.commune")}:</span> {displayCity}
                 </p>
                 <p>
                   <span className="font-semibold">{t("labels.type")}:</span> {listingTypeLabel(listing.listing_type, locale)}
@@ -281,14 +289,14 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
 
             <div className="space-y-2">
               <h2 className="text-lg font-semibold text-stone-900">{t("housingTitle")}</h2>
-              <p className="whitespace-pre-line text-stone-700">{listing.housing_description}</p>
+              <p className="whitespace-pre-line text-stone-700">{localizedHousingDescription}</p>
             </div>
 
             <div className="space-y-2">
               <h2 className="text-lg font-semibold text-stone-900">
                 {listing.listing_type === "studio" ? t("studioInfoTitle") : t("flatshareInfoTitle")}
               </h2>
-              <p className="whitespace-pre-line text-stone-700">{listing.flatshare_vibe}</p>
+              <p className="whitespace-pre-line text-stone-700">{localizedFlatshareVibe}</p>
             </div>
           </article>
         </div>
@@ -388,7 +396,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
 
       {similarListings.length ? (
         <section className="space-y-4">
-          <h2 className="font-serif text-2xl text-stone-900">{t("similarListingsIn", { city: listing.city })}</h2>
+          <h2 className="font-serif text-2xl text-stone-900">{t("similarListingsIn", { city: displayCity })}</h2>
           <div className="grid-listings">
             {similarListings.map((item) => (
               <ListingCard key={item.id} listing={item} />

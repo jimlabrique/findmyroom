@@ -13,6 +13,7 @@ import {
   VIBE_TAG_OPTIONS,
 } from "@/lib/listing-form-options";
 import type { AnimalsPolicy, ListingRoomDetail } from "@/lib/listing";
+import type { AppLocale } from "@/lib/i18n/locales";
 
 function cleanText(value: string | null | undefined) {
   return `${value ?? ""}`.trim();
@@ -36,7 +37,13 @@ export function sanitizeOptionValues(values: string[], allowedValues: readonly s
   );
 }
 
-function formatRoomCountLabel(roomCount: number) {
+function formatRoomCountLabel(roomCount: number, locale: AppLocale = "fr") {
+  if (locale === "en") {
+    return roomCount <= 1 ? "1 room" : `${roomCount} rooms`;
+  }
+  if (locale === "nl") {
+    return roomCount <= 1 ? "1 kamer" : `${roomCount} kamers`;
+  }
   return roomCount <= 1 ? "1 chambre" : `${roomCount} chambres`;
 }
 
@@ -46,9 +53,11 @@ function normalizeRoomSizes(values: Array<number | string>) {
     .filter((value) => Number.isFinite(value) && value > 0);
 }
 
-export function formatRoomSizesLabel(values: Array<number | string>) {
+export function formatRoomSizesLabel(values: Array<number | string>, locale: AppLocale = "fr") {
   const sizes = normalizeRoomSizes(values);
   if (!sizes.length) {
+    if (locale === "en") return "size to confirm";
+    if (locale === "nl") return "grootte te bevestigen";
     return "taille à préciser";
   }
   return sizes.map((size) => `${size}m2`).join(", ");
@@ -60,17 +69,21 @@ export function buildAutoListingTitle({
   roomCount,
   roomSizesSqm,
   neighborhood,
+  locale = "fr",
 }: {
   listingType: "colocation" | "studio";
   commune: string;
   roomCount: number;
   roomSizesSqm: Array<number | string>;
   neighborhood: string;
+  locale?: AppLocale;
 }) {
-  const cleanCommune = cleanText(commune) || "Commune";
-  const cleanNeighborhood = cleanText(neighborhood) || "Quartier à préciser";
-  const roomCountLabel = listingType === "studio" ? "Studio" : formatRoomCountLabel(Math.max(1, roomCount));
-  const roomSizesLabel = formatRoomSizesLabel(roomSizesSqm);
+  const cleanCommune = cleanText(commune) || (locale === "en" ? "Municipality" : locale === "nl" ? "Gemeente" : "Commune");
+  const cleanNeighborhood =
+    cleanText(neighborhood) || (locale === "en" ? "Neighborhood to confirm" : locale === "nl" ? "Wijk te bevestigen" : "Quartier à préciser");
+  const roomCountLabel =
+    listingType === "studio" ? "Studio" : formatRoomCountLabel(Math.max(1, roomCount), locale);
+  const roomSizesLabel = formatRoomSizesLabel(roomSizesSqm, locale);
   return `${cleanCommune} - ${roomCountLabel} - ${roomSizesLabel} - ${cleanNeighborhood}`;
 }
 

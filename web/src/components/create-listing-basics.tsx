@@ -1,11 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useLocale } from "next-intl";
 import { buildAutoListingTitle } from "@/lib/listing-composer";
 import {
   BRUSSELS_COMMUNES,
   COMMON_SPACES_COLOCATION_OPTIONS,
   COMMON_SPACES_STUDIO_OPTIONS,
+  getCanonicalCommuneLabel,
+  getCanonicalNeighborhoodLabel,
+  getLocalizedCommuneLabel,
+  getLocalizedNeighborhoodLabel,
   getNeighborhoodsForCommune,
   isValidNeighborhoodForCommune,
   OTHER_NEIGHBORHOOD_VALUE,
@@ -14,6 +19,7 @@ import { CoreFields } from "@/components/create-listing-basics/core-fields";
 import { RoomDetailsFields } from "@/components/create-listing-basics/room-details-fields";
 import { CommonSpacesFields } from "@/components/create-listing-basics/common-spaces-fields";
 import type { RoomDraft } from "@/components/create-listing-basics/types";
+import type { AppLocale } from "@/lib/i18n/locales";
 
 const MIN_ROOMS = 1;
 const MAX_ROOMS = 10;
@@ -73,13 +79,15 @@ function getAllowedCommonSpaceValues(type: "colocation" | "studio"): Set<string>
 }
 
 export function CreateListingBasics({ initialValues }: CreateListingBasicsProps) {
+  const locale = useLocale() as AppLocale;
+  const canonicalInitialCommune = getCanonicalCommuneLabel(initialValues?.commune ?? "");
   const initialListingType = initialValues?.listingType === "studio" ? "studio" : "colocation";
   const initialCommune =
-    initialValues?.commune && BRUSSELS_COMMUNES.includes(initialValues.commune as (typeof BRUSSELS_COMMUNES)[number])
-      ? initialValues.commune
+    canonicalInitialCommune && BRUSSELS_COMMUNES.includes(canonicalInitialCommune as (typeof BRUSSELS_COMMUNES)[number])
+      ? canonicalInitialCommune
       : "Bruxelles-Ville";
   const initialCommuneNeighborhoods = getNeighborhoodsForCommune(initialCommune);
-  const initialNeighborhoodRaw = `${initialValues?.neighborhood ?? ""}`.trim();
+  const initialNeighborhoodRaw = getCanonicalNeighborhoodLabel(initialCommune, `${initialValues?.neighborhood ?? ""}`.trim());
   const initialHasCustomNeighborhood = Boolean(initialNeighborhoodRaw) && !isValidNeighborhoodForCommune(initialCommune, initialNeighborhoodRaw);
   const initialNeighborhood = initialHasCustomNeighborhood ? OTHER_NEIGHBORHOOD_VALUE : initialNeighborhoodRaw || initialCommuneNeighborhoods[0] || "";
   const initialCustomNeighborhood = initialHasCustomNeighborhood ? initialNeighborhoodRaw : "";
@@ -116,12 +124,13 @@ export function CreateListingBasics({ initialValues }: CreateListingBasicsProps)
     () =>
       buildAutoListingTitle({
         listingType,
-        commune,
+        commune: getLocalizedCommuneLabel(commune, locale),
         roomCount: availableRooms,
         roomSizesSqm: roomDrafts.map((room) => room.size_sqm),
-        neighborhood: effectiveNeighborhood,
+        neighborhood: getLocalizedNeighborhoodLabel(commune, effectiveNeighborhood, locale),
+        locale,
       }),
-    [listingType, commune, availableRooms, roomDrafts, effectiveNeighborhood],
+    [listingType, commune, availableRooms, roomDrafts, effectiveNeighborhood, locale],
   );
 
   function updateRoomDraft(index: number, key: keyof RoomDraft, value: string) {

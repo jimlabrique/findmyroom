@@ -1,0 +1,1996 @@
+{
+  "municipalities": [
+    {
+      "id": "ixelles",
+      "labels": {
+        "fr": "Ixelles",
+        "nl": "Elsene",
+        "en": "Ixelles"
+      },
+      "aliases": [
+        "Ixelles",
+        "Elsene"
+      ]
+    },
+    {
+      "id": "saint-gilles",
+      "labels": {
+        "fr": "Saint-Gilles",
+        "nl": "Sint-Gillis",
+        "en": "Saint-Gilles"
+      },
+      "aliases": [
+        "Saint-Gilles",
+        "Sint-Gillis"
+      ]
+    },
+    {
+      "id": "bruxelles-ville",
+      "labels": {
+        "fr": "Bruxelles-Ville",
+        "nl": "Stad Brussel",
+        "en": "Brussels City"
+      },
+      "aliases": [
+        "Bruxelles-Ville",
+        "Ville de Bruxelles",
+        "Stad Brussel",
+        "Brussels City",
+        "Brussels"
+      ]
+    },
+    {
+      "id": "etterbeek",
+      "labels": {
+        "fr": "Etterbeek",
+        "nl": "Etterbeek",
+        "en": "Etterbeek"
+      },
+      "aliases": [
+        "Etterbeek"
+      ]
+    },
+    {
+      "id": "schaerbeek",
+      "labels": {
+        "fr": "Schaerbeek",
+        "nl": "Schaarbeek",
+        "en": "Schaerbeek"
+      },
+      "aliases": [
+        "Schaerbeek",
+        "Schaarbeek"
+      ]
+    },
+    {
+      "id": "forest",
+      "labels": {
+        "fr": "Forest",
+        "nl": "Vorst",
+        "en": "Forest"
+      },
+      "aliases": [
+        "Forest",
+        "Vorst"
+      ]
+    },
+    {
+      "id": "uccle",
+      "labels": {
+        "fr": "Uccle",
+        "nl": "Ukkel",
+        "en": "Uccle"
+      },
+      "aliases": [
+        "Uccle",
+        "Ukkel"
+      ]
+    },
+    {
+      "id": "woluwe-saint-lambert",
+      "labels": {
+        "fr": "Woluwe-Saint-Lambert",
+        "nl": "Sint-Lambrechts-Woluwe",
+        "en": "Woluwe-Saint-Lambert"
+      },
+      "aliases": [
+        "Woluwe-Saint-Lambert",
+        "Sint-Lambrechts-Woluwe",
+        "Woluwe Saint-Lambert"
+      ]
+    },
+    {
+      "id": "woluwe-saint-pierre",
+      "labels": {
+        "fr": "Woluwe-Saint-Pierre",
+        "nl": "Sint-Pieters-Woluwe",
+        "en": "Woluwe-Saint-Pierre"
+      },
+      "aliases": [
+        "Woluwe-Saint-Pierre",
+        "Sint-Pieters-Woluwe",
+        "Woluwe Saint-Pierre"
+      ]
+    },
+    {
+      "id": "auderghem",
+      "labels": {
+        "fr": "Auderghem",
+        "nl": "Oudergem",
+        "en": "Auderghem"
+      },
+      "aliases": [
+        "Auderghem",
+        "Oudergem"
+      ]
+    },
+    {
+      "id": "watermael-boitsfort",
+      "labels": {
+        "fr": "Watermael-Boitsfort",
+        "nl": "Watermaal-Bosvoorde",
+        "en": "Watermael-Boitsfort"
+      },
+      "aliases": [
+        "Watermael-Boitsfort",
+        "Watermaal-Bosvoorde",
+        "Boitsfort",
+        "Watermael"
+      ]
+    },
+    {
+      "id": "anderlecht",
+      "labels": {
+        "fr": "Anderlecht",
+        "nl": "Anderlecht",
+        "en": "Anderlecht"
+      },
+      "aliases": [
+        "Anderlecht"
+      ]
+    },
+    {
+      "id": "molenbeek-saint-jean",
+      "labels": {
+        "fr": "Molenbeek-Saint-Jean",
+        "nl": "Sint-Jans-Molenbeek",
+        "en": "Molenbeek-Saint-Jean"
+      },
+      "aliases": [
+        "Molenbeek-Saint-Jean",
+        "Sint-Jans-Molenbeek",
+        "Molenbeek"
+      ]
+    },
+    {
+      "id": "jette",
+      "labels": {
+        "fr": "Jette",
+        "nl": "Jette",
+        "en": "Jette"
+      },
+      "aliases": [
+        "Jette"
+      ]
+    },
+    {
+      "id": "evere",
+      "labels": {
+        "fr": "Evere",
+        "nl": "Evere",
+        "en": "Evere"
+      },
+      "aliases": [
+        "Evere"
+      ]
+    },
+    {
+      "id": "saint-josse-ten-noode",
+      "labels": {
+        "fr": "Saint-Josse-ten-Noode",
+        "nl": "Sint-Joost-ten-Node",
+        "en": "Saint-Josse-ten-Noode"
+      },
+      "aliases": [
+        "Saint-Josse-ten-Noode",
+        "Sint-Joost-ten-Node",
+        "Saint-Josse",
+        "Saint Josse"
+      ]
+    },
+    {
+      "id": "koekelberg",
+      "labels": {
+        "fr": "Koekelberg",
+        "nl": "Koekelberg",
+        "en": "Koekelberg"
+      },
+      "aliases": [
+        "Koekelberg"
+      ]
+    },
+    {
+      "id": "ganshoren",
+      "labels": {
+        "fr": "Ganshoren",
+        "nl": "Ganshoren",
+        "en": "Ganshoren"
+      },
+      "aliases": [
+        "Ganshoren"
+      ]
+    },
+    {
+      "id": "berchem-sainte-agathe",
+      "labels": {
+        "fr": "Berchem-Sainte-Agathe",
+        "nl": "Sint-Agatha-Berchem",
+        "en": "Berchem-Sainte-Agathe"
+      },
+      "aliases": [
+        "Berchem-Sainte-Agathe",
+        "Sint-Agatha-Berchem",
+        "Berchem"
+      ]
+    }
+  ],
+  "districts": [
+    {
+      "id": "flagey",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Flagey",
+        "nl": "Flagey",
+        "en": "Flagey"
+      },
+      "aliases": [
+        "Flagey"
+      ]
+    },
+    {
+      "id": "etangs-dixelles",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Etangs d'Ixelles",
+        "nl": "Vijvers van Elsene",
+        "en": "Ixelles Ponds"
+      },
+      "aliases": [
+        "Etangs d'Ixelles",
+        "Étangs d'Ixelles",
+        "Vijvers van Elsene",
+        "Ixelles Ponds",
+        "Ponds of Ixelles"
+      ]
+    },
+    {
+      "id": "chatelain",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Chatelain",
+        "nl": "Kastelein",
+        "en": "Chatelain"
+      },
+      "aliases": [
+        "Chatelain",
+        "Châtelain",
+        "Kastelein"
+      ]
+    },
+    {
+      "id": "bailli",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Bailli",
+        "nl": "Baljuw",
+        "en": "Bailli"
+      },
+      "aliases": [
+        "Bailli",
+        "Baljuw"
+      ]
+    },
+    {
+      "id": "brugmann",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Brugmann",
+        "nl": "Brugmann",
+        "en": "Brugmann"
+      },
+      "aliases": [
+        "Brugmann"
+      ]
+    },
+    {
+      "id": "cimetiere-dixelles",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Cimetiere d'Ixelles",
+        "nl": "Begraafplaats van Elsene",
+        "en": "Ixelles Cemetery"
+      },
+      "aliases": [
+        "Cimetiere d'Ixelles",
+        "Cimetière d'Ixelles",
+        "Begraafplaats van Elsene",
+        "Ixelles Cemetery"
+      ]
+    },
+    {
+      "id": "ulb-solbosch",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "ULB Solbosch",
+        "nl": "ULB Solbosch",
+        "en": "ULB Solbosch"
+      },
+      "aliases": [
+        "ULB Solbosch",
+        "Solbosch",
+        "ULB"
+      ]
+    },
+    {
+      "id": "ulb-plaine",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "ULB Plaine",
+        "nl": "ULB Plaine",
+        "en": "ULB Plaine"
+      },
+      "aliases": [
+        "ULB Plaine",
+        "Plaine",
+        "ULB"
+      ]
+    },
+    {
+      "id": "porte-de-namur",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Porte de Namur",
+        "nl": "Naamsepoort",
+        "en": "Namur Gate"
+      },
+      "aliases": [
+        "Porte de Namur",
+        "Naamsepoort",
+        "Namur Gate"
+      ]
+    },
+    {
+      "id": "toison-dor",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Toison d'Or",
+        "nl": "Gulden Vlieslaan",
+        "en": "Toison d'Or"
+      },
+      "aliases": [
+        "Toison d'Or",
+        "Toison d’Or",
+        "Gulden Vlies",
+        "Gulden Vlieslaan"
+      ]
+    },
+    {
+      "id": "matonge",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Matonge",
+        "nl": "Matonge",
+        "en": "Matonge"
+      },
+      "aliases": [
+        "Matonge"
+      ]
+    },
+    {
+      "id": "saint-boniface",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Saint-Boniface",
+        "nl": "Sint-Bonifaas",
+        "en": "Saint Boniface"
+      },
+      "aliases": [
+        "Saint-Boniface",
+        "Saint Boniface",
+        "Sint-Bonifaas"
+      ]
+    },
+    {
+      "id": "fernand-cocq",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Fernand Cocq",
+        "nl": "Fernand Cocq",
+        "en": "Fernand Cocq"
+      },
+      "aliases": [
+        "Fernand Cocq",
+        "Place Fernand Cocq"
+      ]
+    },
+    {
+      "id": "vleurgat",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Vleurgat",
+        "nl": "Vleurgat",
+        "en": "Vleurgat"
+      },
+      "aliases": [
+        "Vleurgat"
+      ]
+    },
+    {
+      "id": "tenbosch",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Tenbosch",
+        "nl": "Tenbosch",
+        "en": "Tenbosch"
+      },
+      "aliases": [
+        "Tenbosch",
+        "Parc Tenbosch"
+      ]
+    },
+    {
+      "id": "malibran",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Malibran",
+        "nl": "Malibran",
+        "en": "Malibran"
+      },
+      "aliases": [
+        "Malibran"
+      ]
+    },
+    {
+      "id": "boondael",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Boondael",
+        "nl": "Boondaal",
+        "en": "Boondael"
+      },
+      "aliases": [
+        "Boondael",
+        "Boondaal"
+      ]
+    },
+    {
+      "id": "la-cambre",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "La Cambre",
+        "nl": "Ter Kameren",
+        "en": "La Cambre"
+      },
+      "aliases": [
+        "La Cambre",
+        "Ter Kameren"
+      ]
+    },
+    {
+      "id": "abbaye-de-la-cambre",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Abbaye de la Cambre",
+        "nl": "Abdij Ter Kameren",
+        "en": "La Cambre Abbey"
+      },
+      "aliases": [
+        "Abbaye de la Cambre",
+        "Abdij Ter Kameren",
+        "La Cambre Abbey"
+      ]
+    },
+    {
+      "id": "berkendael",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Berkendael",
+        "nl": "Berkendael",
+        "en": "Berkendael"
+      },
+      "aliases": [
+        "Berkendael"
+      ]
+    },
+    {
+      "id": "louise",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Louise",
+        "nl": "Louiza",
+        "en": "Louise"
+      },
+      "aliases": [
+        "Louise",
+        "Louiza",
+        "Avenue Louise"
+      ]
+    },
+    {
+      "id": "luxembourg",
+      "municipalityId": "ixelles",
+      "labels": {
+        "fr": "Luxembourg",
+        "nl": "Luxemburg",
+        "en": "Luxembourg"
+      },
+      "aliases": [
+        "Luxembourg",
+        "Luxemburg",
+        "Place du Luxembourg",
+        "Luxembourg Square"
+      ]
+    },
+    {
+      "id": "parvis-de-saint-gilles",
+      "municipalityId": "saint-gilles",
+      "labels": {
+        "fr": "Parvis de Saint-Gilles",
+        "nl": "Sint-Gillisvoorplein",
+        "en": "Saint-Gilles Parvis"
+      },
+      "aliases": [
+        "Parvis de Saint-Gilles",
+        "Sint-Gillisvoorplein",
+        "Saint-Gilles Parvis"
+      ]
+    },
+    {
+      "id": "barriere-de-saint-gilles",
+      "municipalityId": "saint-gilles",
+      "labels": {
+        "fr": "Barriere de Saint-Gilles",
+        "nl": "Bareel van Sint-Gillis",
+        "en": "Saint-Gilles Barrier"
+      },
+      "aliases": [
+        "Barriere de Saint-Gilles",
+        "Barrière de Saint-Gilles",
+        "Bareel van Sint-Gillis",
+        "Saint-Gilles Barrier"
+      ]
+    },
+    {
+      "id": "ma-campagne",
+      "municipalityId": "saint-gilles",
+      "labels": {
+        "fr": "Ma Campagne",
+        "nl": "Ma Campagne",
+        "en": "Ma Campagne"
+      },
+      "aliases": [
+        "Ma Campagne"
+      ]
+    },
+    {
+      "id": "hotel-des-monnaies",
+      "municipalityId": "saint-gilles",
+      "labels": {
+        "fr": "Hotel des Monnaies",
+        "nl": "Munthof",
+        "en": "Hotel des Monnaies"
+      },
+      "aliases": [
+        "Hotel des Monnaies",
+        "Hôtel des Monnaies",
+        "Munthof"
+      ]
+    },
+    {
+      "id": "janson",
+      "municipalityId": "saint-gilles",
+      "labels": {
+        "fr": "Janson",
+        "nl": "Janson",
+        "en": "Janson"
+      },
+      "aliases": [
+        "Janson",
+        "Place Janson"
+      ]
+    },
+    {
+      "id": "morichar",
+      "municipalityId": "saint-gilles",
+      "labels": {
+        "fr": "Morichar",
+        "nl": "Morichar",
+        "en": "Morichar"
+      },
+      "aliases": [
+        "Morichar",
+        "Parc Pierre Paulus",
+        "Place Morichar"
+      ]
+    },
+    {
+      "id": "chaussee-de-waterloo",
+      "municipalityId": "saint-gilles",
+      "labels": {
+        "fr": "Chaussee de Waterloo",
+        "nl": "Waterloosesteenweg",
+        "en": "Waterloo Road"
+      },
+      "aliases": [
+        "Chaussee de Waterloo",
+        "Chaussée de Waterloo",
+        "Waterloosesteenweg",
+        "Waterloo Road"
+      ]
+    },
+    {
+      "id": "porte-de-hal",
+      "municipalityId": "saint-gilles",
+      "labels": {
+        "fr": "Porte de Hal",
+        "nl": "Hallepoort",
+        "en": "Halle Gate"
+      },
+      "aliases": [
+        "Porte de Hal",
+        "Hallepoort",
+        "Halle Gate"
+      ]
+    },
+    {
+      "id": "louise",
+      "municipalityId": "saint-gilles",
+      "labels": {
+        "fr": "Louise",
+        "nl": "Louiza",
+        "en": "Louise"
+      },
+      "aliases": [
+        "Louise",
+        "Louiza",
+        "Avenue Louise"
+      ]
+    },
+    {
+      "id": "centre",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Centre",
+        "nl": "Centrum",
+        "en": "City Centre"
+      },
+      "aliases": [
+        "Centre",
+        "Centrum",
+        "City Centre",
+        "Downtown"
+      ]
+    },
+    {
+      "id": "grand-place",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Grand-Place",
+        "nl": "Grote Markt",
+        "en": "Grand Place"
+      },
+      "aliases": [
+        "Grand-Place",
+        "Grote Markt",
+        "Grand Place"
+      ]
+    },
+    {
+      "id": "de-brouckere",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "De Brouckere",
+        "nl": "De Brouckere",
+        "en": "De Brouckere"
+      },
+      "aliases": [
+        "De Brouckere",
+        "Place De Brouckere"
+      ]
+    },
+    {
+      "id": "sainte-catherine",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Sainte-Catherine",
+        "nl": "Sint-Katelijne",
+        "en": "Sainte-Catherine"
+      },
+      "aliases": [
+        "Sainte-Catherine",
+        "Saint Catherine",
+        "Sint-Katelijne"
+      ]
+    },
+    {
+      "id": "dansaert",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Dansaert",
+        "nl": "Dansaert",
+        "en": "Dansaert"
+      },
+      "aliases": [
+        "Dansaert"
+      ]
+    },
+    {
+      "id": "sablon",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Sablon",
+        "nl": "Zavel",
+        "en": "Sablon"
+      },
+      "aliases": [
+        "Sablon",
+        "Zavel",
+        "Grand Sablon"
+      ]
+    },
+    {
+      "id": "marolles",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Marolles",
+        "nl": "Marollen",
+        "en": "Marolles"
+      },
+      "aliases": [
+        "Marolles",
+        "Marollen"
+      ]
+    },
+    {
+      "id": "mont-des-arts",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Mont des Arts",
+        "nl": "Kunstberg",
+        "en": "Mont des Arts"
+      },
+      "aliases": [
+        "Mont des Arts",
+        "Kunstberg"
+      ]
+    },
+    {
+      "id": "quartier-royal",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Quartier Royal",
+        "nl": "Koninklijke Wijk",
+        "en": "Royal Quarter"
+      },
+      "aliases": [
+        "Quartier Royal",
+        "Koninklijke Wijk",
+        "Royal Quarter"
+      ]
+    },
+    {
+      "id": "quartier-europeen",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Quartier Europeen",
+        "nl": "Europese Wijk",
+        "en": "European Quarter"
+      },
+      "aliases": [
+        "Quartier Europeen",
+        "Quartier Européen",
+        "Europese Wijk",
+        "European Quarter"
+      ]
+    },
+    {
+      "id": "schuman",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Schuman",
+        "nl": "Schuman",
+        "en": "Schuman"
+      },
+      "aliases": [
+        "Schuman",
+        "Rond-Point Schuman"
+      ]
+    },
+    {
+      "id": "madou",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Madou",
+        "nl": "Madou",
+        "en": "Madou"
+      },
+      "aliases": [
+        "Madou"
+      ]
+    },
+    {
+      "id": "yser",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Yser",
+        "nl": "IJzer",
+        "en": "Yser"
+      },
+      "aliases": [
+        "Yser",
+        "IJzer"
+      ]
+    },
+    {
+      "id": "anneessens",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Anneessens",
+        "nl": "Anneessens",
+        "en": "Anneessens"
+      },
+      "aliases": [
+        "Anneessens",
+        "Place Anneessens"
+      ]
+    },
+    {
+      "id": "canal",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Canal",
+        "nl": "Kanaal",
+        "en": "Canal"
+      },
+      "aliases": [
+        "Canal",
+        "Kanaal"
+      ]
+    },
+    {
+      "id": "tour-et-taxis",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Tour et Taxis",
+        "nl": "Thurn en Taxis",
+        "en": "Tour & Taxis"
+      },
+      "aliases": [
+        "Tour et Taxis",
+        "Thurn en Taxis",
+        "Tour & Taxis"
+      ]
+    },
+    {
+      "id": "laeken",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Laeken",
+        "nl": "Laken",
+        "en": "Laeken"
+      },
+      "aliases": [
+        "Laeken",
+        "Laken"
+      ]
+    },
+    {
+      "id": "neder-over-heembeek",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Neder-Over-Heembeek",
+        "nl": "Neder-Over-Heembeek",
+        "en": "Neder-Over-Heembeek"
+      },
+      "aliases": [
+        "Neder-Over-Heembeek"
+      ]
+    },
+    {
+      "id": "haren",
+      "municipalityId": "bruxelles-ville",
+      "labels": {
+        "fr": "Haren",
+        "nl": "Haren",
+        "en": "Haren"
+      },
+      "aliases": [
+        "Haren"
+      ]
+    },
+    {
+      "id": "jourdan",
+      "municipalityId": "etterbeek",
+      "labels": {
+        "fr": "Jourdan",
+        "nl": "Jourdan",
+        "en": "Jourdan"
+      },
+      "aliases": [
+        "Jourdan",
+        "Place Jourdan"
+      ]
+    },
+    {
+      "id": "saint-antoine",
+      "municipalityId": "etterbeek",
+      "labels": {
+        "fr": "Saint-Antoine",
+        "nl": "Sint-Antonius",
+        "en": "Saint Antoine"
+      },
+      "aliases": [
+        "Saint-Antoine",
+        "Saint Antoine",
+        "Sint-Antonius"
+      ]
+    },
+    {
+      "id": "la-chasse",
+      "municipalityId": "etterbeek",
+      "labels": {
+        "fr": "La Chasse",
+        "nl": "Jacht",
+        "en": "La Chasse"
+      },
+      "aliases": [
+        "La Chasse",
+        "Jacht"
+      ]
+    },
+    {
+      "id": "thieffry",
+      "municipalityId": "etterbeek",
+      "labels": {
+        "fr": "Thieffry",
+        "nl": "Thieffry",
+        "en": "Thieffry"
+      },
+      "aliases": [
+        "Thieffry"
+      ]
+    },
+    {
+      "id": "cinquantenaire",
+      "municipalityId": "etterbeek",
+      "labels": {
+        "fr": "Cinquantenaire",
+        "nl": "Jubelpark",
+        "en": "Cinquantenaire"
+      },
+      "aliases": [
+        "Cinquantenaire",
+        "Jubelpark"
+      ]
+    },
+    {
+      "id": "petillon",
+      "municipalityId": "etterbeek",
+      "labels": {
+        "fr": "Petillon",
+        "nl": "Pétillon",
+        "en": "Petillon"
+      },
+      "aliases": [
+        "Petillon",
+        "Pétillon"
+      ]
+    },
+    {
+      "id": "montgomery",
+      "municipalityId": "etterbeek",
+      "labels": {
+        "fr": "Montgomery",
+        "nl": "Montgomery",
+        "en": "Montgomery"
+      },
+      "aliases": [
+        "Montgomery"
+      ]
+    },
+    {
+      "id": "plasky",
+      "municipalityId": "schaerbeek",
+      "labels": {
+        "fr": "Plasky",
+        "nl": "Plasky",
+        "en": "Plasky"
+      },
+      "aliases": [
+        "Plasky"
+      ]
+    },
+    {
+      "id": "dailly",
+      "municipalityId": "schaerbeek",
+      "labels": {
+        "fr": "Dailly",
+        "nl": "Dailly",
+        "en": "Dailly"
+      },
+      "aliases": [
+        "Dailly",
+        "Place Dailly"
+      ]
+    },
+    {
+      "id": "meiser",
+      "municipalityId": "schaerbeek",
+      "labels": {
+        "fr": "Meiser",
+        "nl": "Meiser",
+        "en": "Meiser"
+      },
+      "aliases": [
+        "Meiser"
+      ]
+    },
+    {
+      "id": "helmet",
+      "municipalityId": "schaerbeek",
+      "labels": {
+        "fr": "Helmet",
+        "nl": "Helmet",
+        "en": "Helmet"
+      },
+      "aliases": [
+        "Helmet"
+      ]
+    },
+    {
+      "id": "josaphat",
+      "municipalityId": "schaerbeek",
+      "labels": {
+        "fr": "Josaphat",
+        "nl": "Josafat",
+        "en": "Josaphat"
+      },
+      "aliases": [
+        "Josaphat",
+        "Josafat",
+        "Parc Josaphat"
+      ]
+    },
+    {
+      "id": "diamant",
+      "municipalityId": "schaerbeek",
+      "labels": {
+        "fr": "Diamant",
+        "nl": "Diamant",
+        "en": "Diamant"
+      },
+      "aliases": [
+        "Diamant"
+      ]
+    },
+    {
+      "id": "colignon",
+      "municipalityId": "schaerbeek",
+      "labels": {
+        "fr": "Colignon",
+        "nl": "Colignon",
+        "en": "Colignon"
+      },
+      "aliases": [
+        "Colignon",
+        "Place Colignon"
+      ]
+    },
+    {
+      "id": "cage-aux-ours",
+      "municipalityId": "schaerbeek",
+      "labels": {
+        "fr": "Cage aux Ours",
+        "nl": "Berenkuil",
+        "en": "Cage aux Ours"
+      },
+      "aliases": [
+        "Cage aux Ours",
+        "Berenkuil"
+      ]
+    },
+    {
+      "id": "reyers",
+      "municipalityId": "schaerbeek",
+      "labels": {
+        "fr": "Reyers",
+        "nl": "Reyers",
+        "en": "Reyers"
+      },
+      "aliases": [
+        "Reyers"
+      ]
+    },
+    {
+      "id": "altitude-100",
+      "municipalityId": "forest",
+      "labels": {
+        "fr": "Altitude 100",
+        "nl": "Hoogte Honderd",
+        "en": "Altitude 100"
+      },
+      "aliases": [
+        "Altitude 100",
+        "Hoogte Honderd"
+      ]
+    },
+    {
+      "id": "wiels",
+      "municipalityId": "forest",
+      "labels": {
+        "fr": "Wiels",
+        "nl": "Wiels",
+        "en": "Wiels"
+      },
+      "aliases": [
+        "Wiels"
+      ]
+    },
+    {
+      "id": "saint-denis",
+      "municipalityId": "forest",
+      "labels": {
+        "fr": "Saint-Denis",
+        "nl": "Sint-Denijs",
+        "en": "Saint Denis"
+      },
+      "aliases": [
+        "Saint-Denis",
+        "Saint Denis",
+        "Sint-Denijs"
+      ]
+    },
+    {
+      "id": "forest-national",
+      "municipalityId": "forest",
+      "labels": {
+        "fr": "Forest National",
+        "nl": "Vorst Nationaal",
+        "en": "Forest National"
+      },
+      "aliases": [
+        "Forest National",
+        "Vorst Nationaal"
+      ]
+    },
+    {
+      "id": "bervoets",
+      "municipalityId": "forest",
+      "labels": {
+        "fr": "Bervoets",
+        "nl": "Bervoets",
+        "en": "Bervoets"
+      },
+      "aliases": [
+        "Bervoets"
+      ]
+    },
+    {
+      "id": "van-volxem",
+      "municipalityId": "forest",
+      "labels": {
+        "fr": "Van Volxem",
+        "nl": "Van Volxem",
+        "en": "Van Volxem"
+      },
+      "aliases": [
+        "Van Volxem"
+      ]
+    },
+    {
+      "id": "bascule",
+      "municipalityId": "uccle",
+      "labels": {
+        "fr": "Bascule",
+        "nl": "Terhulpensteenweg - Bascule",
+        "en": "Bascule"
+      },
+      "aliases": [
+        "Bascule"
+      ]
+    },
+    {
+      "id": "churchill",
+      "municipalityId": "uccle",
+      "labels": {
+        "fr": "Churchill",
+        "nl": "Churchill",
+        "en": "Churchill"
+      },
+      "aliases": [
+        "Churchill"
+      ]
+    },
+    {
+      "id": "fort-jaco",
+      "municipalityId": "uccle",
+      "labels": {
+        "fr": "Fort Jaco",
+        "nl": "Fort Jaco",
+        "en": "Fort Jaco"
+      },
+      "aliases": [
+        "Fort Jaco"
+      ]
+    },
+    {
+      "id": "observatoire",
+      "municipalityId": "uccle",
+      "labels": {
+        "fr": "Observatoire",
+        "nl": "Sterrenwacht",
+        "en": "Observatory"
+      },
+      "aliases": [
+        "Observatoire",
+        "Sterrenwacht",
+        "Observatory"
+      ]
+    },
+    {
+      "id": "saint-job",
+      "municipalityId": "uccle",
+      "labels": {
+        "fr": "Saint-Job",
+        "nl": "Sint-Job",
+        "en": "Saint Job"
+      },
+      "aliases": [
+        "Saint-Job",
+        "Saint Job",
+        "Sint-Job"
+      ]
+    },
+    {
+      "id": "calevoet",
+      "municipalityId": "uccle",
+      "labels": {
+        "fr": "Calevoet",
+        "nl": "Kalevoet",
+        "en": "Calevoet"
+      },
+      "aliases": [
+        "Calevoet",
+        "Kalevoet"
+      ]
+    },
+    {
+      "id": "prince-dorange",
+      "municipalityId": "uccle",
+      "labels": {
+        "fr": "Prince d'Orange",
+        "nl": "Prins van Oranje",
+        "en": "Prince of Orange"
+      },
+      "aliases": [
+        "Prince d'Orange",
+        "Prince d’Orange",
+        "Prins van Oranje",
+        "Prince of Orange"
+      ]
+    },
+    {
+      "id": "globe",
+      "municipalityId": "uccle",
+      "labels": {
+        "fr": "Globe",
+        "nl": "Globe",
+        "en": "Globe"
+      },
+      "aliases": [
+        "Globe"
+      ]
+    },
+    {
+      "id": "vivier-doie",
+      "municipalityId": "uccle",
+      "labels": {
+        "fr": "Vivier d'Oie",
+        "nl": "Diesdelle",
+        "en": "Vivier d'Oie"
+      },
+      "aliases": [
+        "Vivier d'Oie",
+        "Vivier d’Oie",
+        "Diesdelle"
+      ]
+    },
+    {
+      "id": "tomberg",
+      "municipalityId": "woluwe-saint-lambert",
+      "labels": {
+        "fr": "Tomberg",
+        "nl": "Tomberg",
+        "en": "Tomberg"
+      },
+      "aliases": [
+        "Tomberg"
+      ]
+    },
+    {
+      "id": "roodebeek",
+      "municipalityId": "woluwe-saint-lambert",
+      "labels": {
+        "fr": "Roodebeek",
+        "nl": "Roodebeek",
+        "en": "Roodebeek"
+      },
+      "aliases": [
+        "Roodebeek"
+      ]
+    },
+    {
+      "id": "georges-henri",
+      "municipalityId": "woluwe-saint-lambert",
+      "labels": {
+        "fr": "Georges Henri",
+        "nl": "Georges Henri",
+        "en": "Georges Henri"
+      },
+      "aliases": [
+        "Georges Henri"
+      ]
+    },
+    {
+      "id": "gribaumont",
+      "municipalityId": "woluwe-saint-lambert",
+      "labels": {
+        "fr": "Gribaumont",
+        "nl": "Gribaumont",
+        "en": "Gribaumont"
+      },
+      "aliases": [
+        "Gribaumont"
+      ]
+    },
+    {
+      "id": "kapelleveld",
+      "municipalityId": "woluwe-saint-lambert",
+      "labels": {
+        "fr": "Kapelleveld",
+        "nl": "Kapelleveld",
+        "en": "Kapelleveld"
+      },
+      "aliases": [
+        "Kapelleveld"
+      ]
+    },
+    {
+      "id": "alma",
+      "municipalityId": "woluwe-saint-lambert",
+      "labels": {
+        "fr": "Alma",
+        "nl": "Alma",
+        "en": "Alma"
+      },
+      "aliases": [
+        "Alma"
+      ]
+    },
+    {
+      "id": "vandervelde",
+      "municipalityId": "woluwe-saint-lambert",
+      "labels": {
+        "fr": "Vandervelde",
+        "nl": "Vandervelde",
+        "en": "Vandervelde"
+      },
+      "aliases": [
+        "Vandervelde"
+      ]
+    },
+    {
+      "id": "stockel",
+      "municipalityId": "woluwe-saint-pierre",
+      "labels": {
+        "fr": "Stockel",
+        "nl": "Stokkel",
+        "en": "Stockel"
+      },
+      "aliases": [
+        "Stockel",
+        "Stokkel"
+      ]
+    },
+    {
+      "id": "montgomery",
+      "municipalityId": "woluwe-saint-pierre",
+      "labels": {
+        "fr": "Montgomery",
+        "nl": "Montgomery",
+        "en": "Montgomery"
+      },
+      "aliases": [
+        "Montgomery"
+      ]
+    },
+    {
+      "id": "chant-doiseau",
+      "municipalityId": "woluwe-saint-pierre",
+      "labels": {
+        "fr": "Chant d'Oiseau",
+        "nl": "Vogelzang",
+        "en": "Birdsong"
+      },
+      "aliases": [
+        "Chant d'Oiseau",
+        "Chant d’Oiseau",
+        "Vogelzang",
+        "Birdsong"
+      ]
+    },
+    {
+      "id": "joli-bois",
+      "municipalityId": "woluwe-saint-pierre",
+      "labels": {
+        "fr": "Joli-Bois",
+        "nl": "Mooi-Bos",
+        "en": "Joli-Bois"
+      },
+      "aliases": [
+        "Joli-Bois",
+        "Mooi-Bos"
+      ]
+    },
+    {
+      "id": "parc-de-woluwe",
+      "municipalityId": "woluwe-saint-pierre",
+      "labels": {
+        "fr": "Parc de Woluwe",
+        "nl": "Woluwepark",
+        "en": "Woluwe Park"
+      },
+      "aliases": [
+        "Parc de Woluwe",
+        "Woluwepark",
+        "Woluwe Park"
+      ]
+    },
+    {
+      "id": "hankar",
+      "municipalityId": "auderghem",
+      "labels": {
+        "fr": "Hankar",
+        "nl": "Hankar",
+        "en": "Hankar"
+      },
+      "aliases": [
+        "Hankar"
+      ]
+    },
+    {
+      "id": "delta",
+      "municipalityId": "auderghem",
+      "labels": {
+        "fr": "Delta",
+        "nl": "Delta",
+        "en": "Delta"
+      },
+      "aliases": [
+        "Delta"
+      ]
+    },
+    {
+      "id": "chant-doiseau",
+      "municipalityId": "auderghem",
+      "labels": {
+        "fr": "Chant d'Oiseau",
+        "nl": "Vogelzang",
+        "en": "Birdsong"
+      },
+      "aliases": [
+        "Chant d'Oiseau",
+        "Chant d’Oiseau",
+        "Vogelzang",
+        "Birdsong"
+      ]
+    },
+    {
+      "id": "val-duchesse",
+      "municipalityId": "auderghem",
+      "labels": {
+        "fr": "Val Duchesse",
+        "nl": "Hertoginnedal",
+        "en": "Val Duchesse"
+      },
+      "aliases": [
+        "Val Duchesse",
+        "Hertoginnedal"
+      ]
+    },
+    {
+      "id": "transvaal",
+      "municipalityId": "auderghem",
+      "labels": {
+        "fr": "Transvaal",
+        "nl": "Transvaal",
+        "en": "Transvaal"
+      },
+      "aliases": [
+        "Transvaal"
+      ]
+    },
+    {
+      "id": "boitsfort",
+      "municipalityId": "watermael-boitsfort",
+      "labels": {
+        "fr": "Boitsfort",
+        "nl": "Bosvoorde",
+        "en": "Boitsfort"
+      },
+      "aliases": [
+        "Boitsfort",
+        "Bosvoorde"
+      ]
+    },
+    {
+      "id": "watermael",
+      "municipalityId": "watermael-boitsfort",
+      "labels": {
+        "fr": "Watermael",
+        "nl": "Watermaal",
+        "en": "Watermael"
+      },
+      "aliases": [
+        "Watermael",
+        "Watermaal"
+      ]
+    },
+    {
+      "id": "le-logis",
+      "municipalityId": "watermael-boitsfort",
+      "labels": {
+        "fr": "Le Logis",
+        "nl": "Le Logis",
+        "en": "Le Logis"
+      },
+      "aliases": [
+        "Le Logis"
+      ]
+    },
+    {
+      "id": "floreal",
+      "municipalityId": "watermael-boitsfort",
+      "labels": {
+        "fr": "Floreal",
+        "nl": "Floréal",
+        "en": "Floreal"
+      },
+      "aliases": [
+        "Floreal",
+        "Floréal"
+      ]
+    },
+    {
+      "id": "keym",
+      "municipalityId": "watermael-boitsfort",
+      "labels": {
+        "fr": "Keym",
+        "nl": "Keym",
+        "en": "Keym"
+      },
+      "aliases": [
+        "Keym"
+      ]
+    },
+    {
+      "id": "wiener",
+      "municipalityId": "watermael-boitsfort",
+      "labels": {
+        "fr": "Wiener",
+        "nl": "Wiener",
+        "en": "Wiener"
+      },
+      "aliases": [
+        "Wiener",
+        "Place Wiener"
+      ]
+    },
+    {
+      "id": "archiducs",
+      "municipalityId": "watermael-boitsfort",
+      "labels": {
+        "fr": "Archiducs",
+        "nl": "Aartshertogen",
+        "en": "Archiducs"
+      },
+      "aliases": [
+        "Archiducs",
+        "Aartshertogen"
+      ]
+    },
+    {
+      "id": "trois-tilleuls",
+      "municipalityId": "watermael-boitsfort",
+      "labels": {
+        "fr": "Trois Tilleuls",
+        "nl": "Drie Linden",
+        "en": "Three Lime Trees"
+      },
+      "aliases": [
+        "Trois Tilleuls",
+        "Drie Linden",
+        "Three Lime Trees"
+      ]
+    },
+    {
+      "id": "cureghem",
+      "municipalityId": "anderlecht",
+      "labels": {
+        "fr": "Cureghem",
+        "nl": "Kuregem",
+        "en": "Cureghem"
+      },
+      "aliases": [
+        "Cureghem",
+        "Kuregem"
+      ]
+    },
+    {
+      "id": "aumale",
+      "municipalityId": "anderlecht",
+      "labels": {
+        "fr": "Aumale",
+        "nl": "Aumale",
+        "en": "Aumale"
+      },
+      "aliases": [
+        "Aumale"
+      ]
+    },
+    {
+      "id": "saint-guidon",
+      "municipalityId": "anderlecht",
+      "labels": {
+        "fr": "Saint-Guidon",
+        "nl": "Sint-Guido",
+        "en": "Saint Guidon"
+      },
+      "aliases": [
+        "Saint-Guidon",
+        "Saint Guidon",
+        "Sint-Guido"
+      ]
+    },
+    {
+      "id": "veeweyde",
+      "municipalityId": "anderlecht",
+      "labels": {
+        "fr": "Veeweyde",
+        "nl": "Veeweide",
+        "en": "Veeweyde"
+      },
+      "aliases": [
+        "Veeweyde",
+        "Veeweide"
+      ]
+    },
+    {
+      "id": "la-roue",
+      "municipalityId": "anderlecht",
+      "labels": {
+        "fr": "La Roue",
+        "nl": "Het Rad",
+        "en": "La Roue"
+      },
+      "aliases": [
+        "La Roue",
+        "Het Rad"
+      ]
+    },
+    {
+      "id": "neerpede",
+      "municipalityId": "anderlecht",
+      "labels": {
+        "fr": "Neerpede",
+        "nl": "Neerpede",
+        "en": "Neerpede"
+      },
+      "aliases": [
+        "Neerpede"
+      ]
+    },
+    {
+      "id": "comte-de-flandre",
+      "municipalityId": "molenbeek-saint-jean",
+      "labels": {
+        "fr": "Comte de Flandre",
+        "nl": "Graaf van Vlaanderen",
+        "en": "Count of Flanders"
+      },
+      "aliases": [
+        "Comte de Flandre",
+        "Graaf van Vlaanderen",
+        "Count of Flanders"
+      ]
+    },
+    {
+      "id": "etangs-noirs",
+      "municipalityId": "molenbeek-saint-jean",
+      "labels": {
+        "fr": "Etangs Noirs",
+        "nl": "Zwarte Vijvers",
+        "en": "Black Ponds"
+      },
+      "aliases": [
+        "Etangs Noirs",
+        "Étangs Noirs",
+        "Zwarte Vijvers",
+        "Black Ponds"
+      ]
+    },
+    {
+      "id": "osseghem",
+      "municipalityId": "molenbeek-saint-jean",
+      "labels": {
+        "fr": "Osseghem",
+        "nl": "Ossegem",
+        "en": "Osseghem"
+      },
+      "aliases": [
+        "Osseghem",
+        "Ossegem"
+      ]
+    },
+    {
+      "id": "karreveld",
+      "municipalityId": "molenbeek-saint-jean",
+      "labels": {
+        "fr": "Karreveld",
+        "nl": "Karreveld",
+        "en": "Karreveld"
+      },
+      "aliases": [
+        "Karreveld"
+      ]
+    },
+    {
+      "id": "quartier-maritime",
+      "municipalityId": "molenbeek-saint-jean",
+      "labels": {
+        "fr": "Quartier Maritime",
+        "nl": "Maritieme Wijk",
+        "en": "Maritime Quarter"
+      },
+      "aliases": [
+        "Quartier Maritime",
+        "Maritieme Wijk",
+        "Maritime Quarter"
+      ]
+    },
+    {
+      "id": "beekkant",
+      "municipalityId": "molenbeek-saint-jean",
+      "labels": {
+        "fr": "Beekkant",
+        "nl": "Beekkant",
+        "en": "Beekkant"
+      },
+      "aliases": [
+        "Beekkant"
+      ]
+    },
+    {
+      "id": "dieleghem",
+      "municipalityId": "jette",
+      "labels": {
+        "fr": "Dieleghem",
+        "nl": "Dielegem",
+        "en": "Dieleghem"
+      },
+      "aliases": [
+        "Dieleghem",
+        "Dielegem"
+      ]
+    },
+    {
+      "id": "esseghem",
+      "municipalityId": "jette",
+      "labels": {
+        "fr": "Esseghem",
+        "nl": "Essegem",
+        "en": "Esseghem"
+      },
+      "aliases": [
+        "Esseghem",
+        "Essegem"
+      ]
+    },
+    {
+      "id": "place-cardinal-mercier",
+      "municipalityId": "jette",
+      "labels": {
+        "fr": "Place Cardinal Mercier",
+        "nl": "Kardinaal Mercierplein",
+        "en": "Cardinal Mercier Square"
+      },
+      "aliases": [
+        "Place Cardinal Mercier",
+        "Kardinaal Mercierplein",
+        "Cardinal Mercier Square"
+      ]
+    },
+    {
+      "id": "hopital-brugmann",
+      "municipalityId": "jette",
+      "labels": {
+        "fr": "Hopital Brugmann",
+        "nl": "Brugmannziekenhuis",
+        "en": "Brugmann Hospital"
+      },
+      "aliases": [
+        "Hopital Brugmann",
+        "Hôpital Brugmann",
+        "Brugmannziekenhuis",
+        "Brugmann Hospital"
+      ]
+    },
+    {
+      "id": "paduwa",
+      "municipalityId": "evere",
+      "labels": {
+        "fr": "Paduwa",
+        "nl": "Paduwa",
+        "en": "Paduwa"
+      },
+      "aliases": [
+        "Paduwa"
+      ]
+    },
+    {
+      "id": "bordet",
+      "municipalityId": "evere",
+      "labels": {
+        "fr": "Bordet",
+        "nl": "Bordet",
+        "en": "Bordet"
+      },
+      "aliases": [
+        "Bordet"
+      ]
+    },
+    {
+      "id": "geneve",
+      "municipalityId": "evere",
+      "labels": {
+        "fr": "Geneve",
+        "nl": "Genève",
+        "en": "Geneve"
+      },
+      "aliases": [
+        "Geneve",
+        "Genève",
+        "Place de Genève",
+        "Geneva Square"
+      ]
+    },
+    {
+      "id": "madou",
+      "municipalityId": "saint-josse-ten-noode",
+      "labels": {
+        "fr": "Madou",
+        "nl": "Madou",
+        "en": "Madou"
+      },
+      "aliases": [
+        "Madou"
+      ]
+    },
+    {
+      "id": "place-saint-josse",
+      "municipalityId": "saint-josse-ten-noode",
+      "labels": {
+        "fr": "Place Saint-Josse",
+        "nl": "Sint-Joostplein",
+        "en": "Saint-Josse Square"
+      },
+      "aliases": [
+        "Place Saint-Josse",
+        "Sint-Joostplein",
+        "Saint-Josse Square",
+        "Saint Josse Square"
+      ]
+    },
+    {
+      "id": "botanique",
+      "municipalityId": "saint-josse-ten-noode",
+      "labels": {
+        "fr": "Botanique",
+        "nl": "Kruidtuin",
+        "en": "Botanique"
+      },
+      "aliases": [
+        "Botanique",
+        "Kruidtuin",
+        "Botanic"
+      ]
+    },
+    {
+      "id": "basilique",
+      "municipalityId": "koekelberg",
+      "labels": {
+        "fr": "Basilique",
+        "nl": "Basiliek",
+        "en": "Basilica"
+      },
+      "aliases": [
+        "Basilique",
+        "Basiliek",
+        "Basilica"
+      ]
+    },
+    {
+      "id": "simonis",
+      "municipalityId": "koekelberg",
+      "labels": {
+        "fr": "Simonis",
+        "nl": "Simonis",
+        "en": "Simonis"
+      },
+      "aliases": [
+        "Simonis"
+      ]
+    },
+    {
+      "id": "place-du-miroir",
+      "municipalityId": "ganshoren",
+      "labels": {
+        "fr": "Place du Miroir",
+        "nl": "Spiegelplein",
+        "en": "Mirror Square"
+      },
+      "aliases": [
+        "Place du Miroir",
+        "Spiegelplein",
+        "Mirror Square"
+      ]
+    },
+    {
+      "id": "charles-quint",
+      "municipalityId": "ganshoren",
+      "labels": {
+        "fr": "Charles Quint",
+        "nl": "Keizer Karellaan",
+        "en": "Charles Quint"
+      },
+      "aliases": [
+        "Charles Quint",
+        "Keizer Karellaan"
+      ]
+    },
+    {
+      "id": "schweitzer",
+      "municipalityId": "berchem-sainte-agathe",
+      "labels": {
+        "fr": "Schweitzer",
+        "nl": "Schweitzer",
+        "en": "Schweitzer"
+      },
+      "aliases": [
+        "Schweitzer"
+      ]
+    },
+    {
+      "id": "hunderenveld",
+      "municipalityId": "berchem-sainte-agathe",
+      "labels": {
+        "fr": "Hunderenveld",
+        "nl": "Hunderenveld",
+        "en": "Hunderenveld"
+      },
+      "aliases": [
+        "Hunderenveld"
+      ]
+    }
+  ]
+}

@@ -1,13 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
-  BRUSSELS_COMMUNES,
+  getLocalizedCommuneLabel,
+  getLocalizedCommuneOptions,
+  getLocalizedNeighborhoodLabel,
   getNeighborhoodsForCommune,
-  OTHER_NEIGHBORHOOD_LABEL,
   OTHER_NEIGHBORHOOD_VALUE,
 } from "@/lib/listing-form-options";
+import type { AppLocale } from "@/lib/i18n/locales";
 
 type SearchCommuneNeighborhoodFieldsProps = {
   initialCity: string;
@@ -23,8 +25,11 @@ export function SearchCommuneNeighborhoodFields({
   customCity,
 }: SearchCommuneNeighborhoodFieldsProps) {
   const t = useTranslations("listings.search");
+  const tBasics = useTranslations("createBasics");
+  const locale = useLocale() as AppLocale;
   const [city, setCity] = useState(initialCity || ALL_BRUSSELS_VALUE);
   const [neighborhood, setNeighborhood] = useState(initialNeighborhood);
+  const communeOptions = getLocalizedCommuneOptions(locale);
 
   const neighborhoodOptions = useMemo(
     () => (city === ALL_BRUSSELS_VALUE ? [] : getNeighborhoodsForCommune(city)),
@@ -44,10 +49,10 @@ export function SearchCommuneNeighborhoodFields({
         </label>
         <select id="city" name="city" className="input" value={city} onChange={(event) => handleCityChange(event.currentTarget.value)}>
           <option value={ALL_BRUSSELS_VALUE}>{t("allBrusselsCommunes")}</option>
-          {customCity ? <option value={customCity}>{customCity}</option> : null}
-          {BRUSSELS_COMMUNES.map((commune) => (
-            <option key={commune} value={commune}>
-              {commune}
+          {customCity ? <option value={customCity}>{getLocalizedCommuneLabel(customCity, locale)}</option> : null}
+          {communeOptions.map((commune) => (
+            <option key={commune.value} value={commune.value}>
+              {commune.label}
             </option>
           ))}
         </select>
@@ -69,14 +74,14 @@ export function SearchCommuneNeighborhoodFields({
           {!neighborhoodOptions.includes(neighborhood) &&
           neighborhood &&
           neighborhood !== OTHER_NEIGHBORHOOD_VALUE ? (
-            <option value={neighborhood}>{neighborhood}</option>
+            <option value={neighborhood}>{getLocalizedNeighborhoodLabel(city, neighborhood, locale)}</option>
           ) : null}
           {neighborhoodOptions.map((option) => (
             <option key={option} value={option}>
-              {option}
+              {getLocalizedNeighborhoodLabel(city, option, locale)}
             </option>
           ))}
-          {neighborhoodOptions.length ? <option value={OTHER_NEIGHBORHOOD_VALUE}>{OTHER_NEIGHBORHOOD_LABEL}</option> : null}
+          {neighborhoodOptions.length ? <option value={OTHER_NEIGHBORHOOD_VALUE}>{tBasics("otherNeighborhood")}</option> : null}
         </select>
       </div>
     </>

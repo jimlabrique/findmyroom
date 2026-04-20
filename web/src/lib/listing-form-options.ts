@@ -1,24 +1,21 @@
-export const BRUSSELS_COMMUNES = [
-  "Ixelles",
-  "Saint-Gilles",
-  "Bruxelles-Ville",
-  "Etterbeek",
-  "Schaerbeek",
-  "Forest",
-  "Uccle",
-  "Woluwe-Saint-Lambert",
-  "Woluwe-Saint-Pierre",
-  "Auderghem",
-  "Watermael-Boitsfort",
-  "Anderlecht",
-  "Molenbeek-Saint-Jean",
-  "Jette",
-  "Evere",
-  "Saint-Josse-ten-Noode",
-  "Koekelberg",
-  "Ganshoren",
-  "Berchem-Sainte-Agathe",
-] as const;
+import locationsData from "@/lib/data/brussels-location-i18n.json";
+import type { AppLocale } from "@/lib/i18n/locales";
+
+type LocalizedLabels = Record<AppLocale, string>;
+type MunicipalityLocation = {
+  id: string;
+  labels: LocalizedLabels;
+  aliases?: string[];
+};
+type DistrictLocation = {
+  id: string;
+  municipalityId: string;
+  labels: LocalizedLabels;
+  aliases?: string[];
+};
+
+const MUNICIPALITIES = locationsData.municipalities as MunicipalityLocation[];
+const DISTRICTS = locationsData.districts as DistrictLocation[];
 
 export const LISTING_TYPE_OPTIONS = [
   { value: "colocation", label: "Colocation" },
@@ -27,102 +24,6 @@ export const LISTING_TYPE_OPTIONS = [
 
 export const OTHER_NEIGHBORHOOD_VALUE = "__other_neighborhood__";
 export const OTHER_NEIGHBORHOOD_LABEL = "Autre quartier";
-
-export const BRUSSELS_NEIGHBORHOODS_BY_COMMUNE: Record<string, readonly string[]> = {
-  Ixelles: [
-    "Flagey",
-    "Étangs d'Ixelles",
-    "Châtelain",
-    "Bailli",
-    "Brugmann",
-    "Cimetière d'Ixelles",
-    "ULB Solbosch",
-    "ULB Plaine",
-    "Porte de Namur",
-    "Toison d'Or",
-    "Matonge",
-    "Saint-Boniface",
-    "Fernand Cocq",
-    "Vleurgat",
-    "Tenbosch",
-    "Malibran",
-    "Boondael",
-    "La Cambre",
-    "Abbaye de la Cambre",
-    "Berkendael",
-    "Louise",
-    "Luxembourg",
-  ],
-  "Saint-Gilles": [
-    "Parvis de Saint-Gilles",
-    "Barrière de Saint-Gilles",
-    "Ma Campagne",
-    "Hôtel des Monnaies",
-    "Janson",
-    "Morichar",
-    "Chaussée de Waterloo",
-    "Porte de Hal",
-    "Louise",
-  ],
-  "Bruxelles-Ville": [
-    "Centre",
-    "Grand-Place",
-    "De Brouckere",
-    "Sainte-Catherine",
-    "Dansaert",
-    "Sablon",
-    "Marolles",
-    "Mont des Arts",
-    "Quartier Royal",
-    "Quartier Européen",
-    "Schuman",
-    "Madou",
-    "Yser",
-    "Anneessens",
-    "Canal",
-    "Tour et Taxis",
-    "Laeken",
-    "Neder-Over-Heembeek",
-    "Haren",
-  ],
-  Bruxelles: [
-    "Centre",
-    "Grand-Place",
-    "De Brouckere",
-    "Sainte-Catherine",
-    "Dansaert",
-    "Sablon",
-    "Marolles",
-    "Mont des Arts",
-    "Quartier Royal",
-    "Quartier Européen",
-    "Schuman",
-    "Madou",
-    "Yser",
-    "Anneessens",
-    "Canal",
-    "Tour et Taxis",
-    "Laeken",
-    "Neder-Over-Heembeek",
-    "Haren",
-  ],
-  Etterbeek: ["Jourdan", "Saint-Antoine", "La Chasse", "Thieffry", "Cinquantenaire", "Petillon", "Montgomery"],
-  Schaerbeek: ["Plasky", "Dailly", "Meiser", "Helmet", "Josaphat", "Diamant", "Colignon", "Cage aux Ours", "Reyers"],
-  Forest: ["Altitude 100", "Wiels", "Saint-Denis", "Forest National", "Bervoets", "Van Volxem"],
-  Uccle: ["Bascule", "Churchill", "Fort Jaco", "Observatoire", "Saint-Job", "Calevoet", "Prince d'Orange", "Globe", "Vivier d'Oie"],
-  "Woluwe-Saint-Lambert": ["Tomberg", "Roodebeek", "Georges Henri", "Gribaumont", "Kapelleveld", "Alma", "Vandervelde"],
-  "Woluwe-Saint-Pierre": ["Stockel", "Montgomery", "Chant d'Oiseau", "Joli-Bois", "Parc de Woluwe"],
-  Auderghem: ["Hankar", "Delta", "Chant d'Oiseau", "Val Duchesse", "Transvaal"],
-  "Watermael-Boitsfort": ["Boitsfort", "Watermael", "Le Logis", "Floréal", "Keym", "Wiener", "Archiducs", "Trois Tilleuls"],
-  Anderlecht: ["Cureghem", "Aumale", "Saint-Guidon", "Veeweyde", "La Roue", "Neerpede"],
-  "Molenbeek-Saint-Jean": ["Comte de Flandre", "Étangs Noirs", "Osseghem", "Karreveld", "Quartier Maritime", "Beekkant"],
-  Jette: ["Dieleghem", "Esseghem", "Place Cardinal Mercier", "Hôpital Brugmann"],
-  Evere: ["Paduwa", "Bordet", "Genève"],
-  "Saint-Josse-ten-Noode": ["Madou", "Place Saint-Josse", "Botanique"],
-  Koekelberg: ["Basilique", "Simonis"],
-  Ganshoren: ["Place du Miroir", "Charles Quint"],
-  "Berchem-Sainte-Agathe": ["Schweitzer", "Hunderenveld"],
-};
 
 function normalizeKey(value: string) {
   return value
@@ -135,15 +36,127 @@ function normalizeKey(value: string) {
     .trim();
 }
 
+const municipalityById = new Map(MUNICIPALITIES.map((municipality) => [municipality.id, municipality] as const));
+const municipalityAliasToId = new Map<string, string>();
+for (const municipality of MUNICIPALITIES) {
+  const aliases = new Set([
+    municipality.labels.fr,
+    municipality.labels.nl,
+    municipality.labels.en,
+    ...(municipality.aliases ?? []),
+  ]);
+  if (municipality.id === "bruxelles-ville") {
+    aliases.add("Bruxelles");
+    aliases.add("Brussels");
+    aliases.add("Brussel");
+  }
+  for (const alias of aliases) {
+    municipalityAliasToId.set(normalizeKey(alias), municipality.id);
+  }
+}
+
+const districtsByMunicipalityId = new Map<string, DistrictLocation[]>();
+const districtAliasToIdByMunicipalityId = new Map<string, Map<string, string>>();
+for (const district of DISTRICTS) {
+  const byMunicipality = districtsByMunicipalityId.get(district.municipalityId) ?? [];
+  byMunicipality.push(district);
+  districtsByMunicipalityId.set(district.municipalityId, byMunicipality);
+
+  const aliasToDistrictId = districtAliasToIdByMunicipalityId.get(district.municipalityId) ?? new Map<string, string>();
+  const aliases = new Set([
+    district.labels.fr,
+    district.labels.nl,
+    district.labels.en,
+    ...(district.aliases ?? []),
+  ]);
+  for (const alias of aliases) {
+    aliasToDistrictId.set(normalizeKey(alias), district.id);
+  }
+  districtAliasToIdByMunicipalityId.set(district.municipalityId, aliasToDistrictId);
+}
+
+function resolveMunicipalityId(commune: string) {
+  return municipalityAliasToId.get(normalizeKey(commune)) ?? null;
+}
+
+function districtLabel(district: DistrictLocation, locale: AppLocale) {
+  return district.labels[locale] ?? district.labels.fr;
+}
+
+function resolveDistrictId(municipalityId: string, neighborhood: string) {
+  const aliasToDistrictId = districtAliasToIdByMunicipalityId.get(municipalityId);
+  if (!aliasToDistrictId) return null;
+  return aliasToDistrictId.get(normalizeKey(neighborhood)) ?? null;
+}
+
+export const BRUSSELS_COMMUNES = MUNICIPALITIES.map((municipality) => municipality.labels.fr);
+
+export const BRUSSELS_NEIGHBORHOODS_BY_COMMUNE: Record<string, readonly string[]> = Object.fromEntries(
+  MUNICIPALITIES.map((municipality) => {
+    const neighborhoods = districtsByMunicipalityId.get(municipality.id) ?? [];
+    return [municipality.labels.fr, neighborhoods.map((district) => district.labels.fr)];
+  }),
+);
+
+export function getLocalizedCommuneLabel(commune: string, locale: AppLocale) {
+  const municipalityId = resolveMunicipalityId(commune);
+  if (!municipalityId) return commune;
+  return municipalityById.get(municipalityId)?.labels[locale] ?? commune;
+}
+
+export function getCanonicalCommuneLabel(commune: string) {
+  const municipalityId = resolveMunicipalityId(commune);
+  if (!municipalityId) return commune;
+  return municipalityById.get(municipalityId)?.labels.fr ?? commune;
+}
+
+export function getLocalizedCommuneOptions(locale: AppLocale) {
+  return MUNICIPALITIES.map((municipality) => ({
+    value: municipality.labels.fr,
+    label: municipality.labels[locale] ?? municipality.labels.fr,
+  }));
+}
+
 export function getNeighborhoodsForCommune(commune: string) {
-  return BRUSSELS_NEIGHBORHOODS_BY_COMMUNE[commune] ?? [];
+  const municipalityId = resolveMunicipalityId(commune);
+  if (!municipalityId) return [];
+  const neighborhoods = districtsByMunicipalityId.get(municipalityId) ?? [];
+  return neighborhoods.map((district) => district.labels.fr);
+}
+
+export function getLocalizedNeighborhoodLabel(commune: string, neighborhood: string, locale: AppLocale) {
+  const municipalityId = resolveMunicipalityId(commune);
+  if (!municipalityId) return neighborhood;
+  const districtId = resolveDistrictId(municipalityId, neighborhood);
+  if (!districtId) return neighborhood;
+  const district = (districtsByMunicipalityId.get(municipalityId) ?? []).find((item) => item.id === districtId);
+  if (!district) return neighborhood;
+  return districtLabel(district, locale);
+}
+
+export function getCanonicalNeighborhoodLabel(commune: string, neighborhood: string) {
+  const municipalityId = resolveMunicipalityId(commune);
+  if (!municipalityId) return neighborhood;
+  const districtId = resolveDistrictId(municipalityId, neighborhood);
+  if (!districtId) return neighborhood;
+  const district = (districtsByMunicipalityId.get(municipalityId) ?? []).find((item) => item.id === districtId);
+  if (!district) return neighborhood;
+  return district.labels.fr;
+}
+
+export function getLocalizedNeighborhoodOptionsForCommune(commune: string, locale: AppLocale) {
+  const municipalityId = resolveMunicipalityId(commune);
+  if (!municipalityId) return [];
+  return (districtsByMunicipalityId.get(municipalityId) ?? []).map((district) => ({
+    value: district.labels.fr,
+    label: districtLabel(district, locale),
+  }));
 }
 
 export function isValidNeighborhoodForCommune(commune: string, neighborhood: string) {
-  const communeNeighborhoods = getNeighborhoodsForCommune(commune);
-  if (!communeNeighborhoods.length) return false;
-  const needle = normalizeKey(neighborhood);
-  return communeNeighborhoods.some((candidate) => normalizeKey(candidate) === needle);
+  const municipalityId = resolveMunicipalityId(commune);
+  if (!municipalityId) return false;
+  return Boolean(resolveDistrictId(municipalityId, neighborhood));
 }
 
 export function isOtherNeighborhoodValue(value: string) {

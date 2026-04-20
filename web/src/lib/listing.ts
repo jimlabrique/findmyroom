@@ -1,11 +1,14 @@
 import type { Database } from "@/lib/database.types";
 import {
   ANIMALS_POLICY_OPTIONS,
+  getLocalizedCommuneLabel,
+  getLocalizedNeighborhoodLabel,
   ROOM_BATHROOM_OPTIONS,
   ROOM_FURNISHING_OPTIONS,
   ROOM_OUTDOOR_OPTIONS,
   ROOM_VIEW_OPTIONS,
 } from "@/lib/listing-form-options";
+import { buildAutoListingTitle } from "@/lib/listing-composer";
 
 export type Listing = Database["public"]["Tables"]["listings"]["Row"];
 export type ListingInsert = Database["public"]["Tables"]["listings"]["Insert"];
@@ -67,6 +70,289 @@ const ROOM_BATHROOM_VALUES = optionValueSet(ROOM_BATHROOM_OPTIONS);
 const ROOM_OUTDOOR_VALUES = optionValueSet(ROOM_OUTDOOR_OPTIONS);
 const ROOM_VIEW_VALUES = optionValueSet(ROOM_VIEW_OPTIONS);
 const ANIMALS_POLICY_VALUES = optionValueSet(ANIMALS_POLICY_OPTIONS);
+
+type I18nLabelMap = Record<string, Record<"fr" | "en" | "nl", string>>;
+
+const LISTING_TYPE_LABELS: I18nLabelMap = {
+  colocation: { fr: "Colocation", en: "Shared flat", nl: "Cohousing" },
+  studio: { fr: "Studio", en: "Studio", nl: "Studio" },
+};
+
+const ROOM_FURNISHING_LABELS: I18nLabelMap = {
+  furnished: { fr: "Meublé", en: "Furnished", nl: "Gemeubileerd" },
+  unfurnished: { fr: "Non meublé", en: "Unfurnished", nl: "Niet gemeubileerd" },
+  partially_furnished: { fr: "Partiellement meublé", en: "Partially furnished", nl: "Deels gemeubileerd" },
+};
+
+const ROOM_BATHROOM_LABELS: I18nLabelMap = {
+  private: { fr: "SDB privative", en: "Private bathroom", nl: "Privébadkamer" },
+  shared: { fr: "SDB partagée", en: "Shared bathroom", nl: "Gedeelde badkamer" },
+};
+
+const ROOM_OUTDOOR_LABELS: I18nLabelMap = {
+  balcony: { fr: "Balcon", en: "Balcony", nl: "Balkon" },
+  terrace: { fr: "Terrasse", en: "Terrace", nl: "Terras" },
+  garden: { fr: "Jardin", en: "Garden", nl: "Tuin" },
+  none: { fr: "Aucun", en: "None", nl: "Geen" },
+};
+
+const ROOM_VIEW_LABELS: I18nLabelMap = {
+  street: { fr: "Vue rue", en: "Street view", nl: "Uitzicht op straat" },
+  garden: { fr: "Vue jardin", en: "Garden view", nl: "Uitzicht op tuin" },
+  courtyard: { fr: "Vue cour", en: "Courtyard view", nl: "Uitzicht op binnenplaats" },
+  other: { fr: "Autre", en: "Other", nl: "Andere" },
+};
+
+const ANIMALS_POLICY_LABELS: I18nLabelMap = {
+  yes: { fr: "Oui", en: "Yes", nl: "Ja" },
+  no: { fr: "Non", en: "No", nl: "Nee" },
+  negotiable: { fr: "À discuter", en: "Negotiable", nl: "Bespreekbaar" },
+};
+
+const TRANSPORT_LABELS: I18nLabelMap = {
+  metro: { fr: "Métro", en: "Metro", nl: "Metro" },
+  tram: { fr: "Tram", en: "Tram", nl: "Tram" },
+  bus: { fr: "Bus", en: "Bus", nl: "Bus" },
+  train: { fr: "Train", en: "Train", nl: "Trein" },
+};
+
+const AREA_CONTEXT_LABELS: I18nLabelMap = {
+  commerces: { fr: "Proche des commerces", en: "Near shops", nl: "Dicht bij winkels" },
+  residentiel: { fr: "Zone résidentielle", en: "Residential area", nl: "Residentiële buurt" },
+  anime: { fr: "Quartier animé", en: "Lively area", nl: "Levendige wijk" },
+  calme: { fr: "Quartier calme", en: "Quiet area", nl: "Rustige wijk" },
+  vert: { fr: "Proche des espaces verts", en: "Near green spaces", nl: "Dicht bij groene zones" },
+};
+
+const VIBE_LABELS: I18nLabelMap = {
+  calme: { fr: "Calme", en: "Calm", nl: "Rustig" },
+  convivial: { fr: "Convivial", en: "Friendly", nl: "Gezellig" },
+  sociable: { fr: "Sociable", en: "Sociable", nl: "Sociaal" },
+  respect_intimite: { fr: "Respect de l'intimité", en: "Respects privacy", nl: "Respect voor privacy" },
+  teletravail: { fr: "Télétravail", en: "Remote work", nl: "Thuiswerk" },
+  etudiants: { fr: "Étudiants", en: "Students", nl: "Studenten" },
+  jeunes_actifs: { fr: "Jeunes actifs", en: "Young professionals", nl: "Jonge werkenden" },
+  no_smoking: { fr: "No smoking", en: "No smoking", nl: "Niet-roken" },
+  soirees_moderees: { fr: "Soirées modérées", en: "Moderate parties", nl: "Gematigde feestjes" },
+};
+
+const COMMON_SPACES_LABELS: I18nLabelMap = {
+  salon: { fr: "Salon", en: "Living room", nl: "Woonkamer" },
+  cuisine: { fr: "Cuisine équipée", en: "Equipped kitchen", nl: "Ingerichte keuken" },
+  salle_a_manger: { fr: "Salle à manger", en: "Dining room", nl: "Eetkamer" },
+  buanderie: { fr: "Buanderie", en: "Laundry room", nl: "Wasruimte" },
+  local_velos: { fr: "Local vélos", en: "Bike storage", nl: "Fietsenberging" },
+  terrasse: { fr: "Terrasse", en: "Terrace", nl: "Terras" },
+  jardin: { fr: "Jardin", en: "Garden", nl: "Tuin" },
+  coin_cuisine: { fr: "Coin cuisine", en: "Kitchenette", nl: "Kitchenette" },
+  salle_de_bain_privee: { fr: "Salle de bain privative", en: "Private bathroom", nl: "Privébadkamer" },
+  balcon: { fr: "Balcon", en: "Balcony", nl: "Balkon" },
+};
+
+const CURRENT_FLATMATES_VALUE_LABELS: I18nLabelMap = {
+  mixte: { fr: "Mixte", en: "Mixed", nl: "Gemengd" },
+  filles_only: { fr: "Filles only", en: "Women only", nl: "Alleen vrouwen" },
+  garcons_only: { fr: "Garçons only", en: "Men only", nl: "Alleen mannen" },
+  lgbt_only: { fr: "LGBT only", en: "LGBT only", nl: "LGBT only" },
+  non_precise: { fr: "Non précisé", en: "Not specified", nl: "Niet gespecificeerd" },
+};
+
+const CANDIDATE_GENDER_LABELS: I18nLabelMap = {
+  non_precise: { fr: "Non précisé", en: "Not specified", nl: "Niet gespecificeerd" },
+  indifferent: { fr: "Indifférent", en: "No preference", nl: "Geen voorkeur" },
+  fille_only: { fr: "Fille", en: "Woman", nl: "Vrouw" },
+  garcon_only: { fr: "Garçon", en: "Man", nl: "Man" },
+};
+
+const HOUSING_PREFIX_LABELS: Record<
+  "type" | "neighborhood" | "availableRooms" | "transportNearby" | "roomDetails" | "lines" | "environment" | "commonSpaces" | "otherCommonSpaces" | "extraInfo",
+  Record<"fr" | "en" | "nl", string>
+> = {
+  type: { fr: "Type", en: "Type", nl: "Type" },
+  neighborhood: { fr: "Quartier", en: "Neighborhood", nl: "Wijk" },
+  availableRooms: { fr: "Chambres disponibles", en: "Available rooms", nl: "Beschikbare kamers" },
+  transportNearby: { fr: "Proche des transports en commun", en: "Close to public transport", nl: "Dicht bij openbaar vervoer" },
+  roomDetails: { fr: "Détails par chambre", en: "Room details", nl: "Details per kamer" },
+  lines: { fr: "Lignes", en: "Lines", nl: "Lijnen" },
+  environment: { fr: "Environnement", en: "Area", nl: "Omgeving" },
+  commonSpaces: { fr: "Parties communes", en: "Shared spaces", nl: "Gedeelde ruimtes" },
+  otherCommonSpaces: {
+    fr: "Autre (parties communes)",
+    en: "Other (shared spaces)",
+    nl: "Andere (gedeelde ruimtes)",
+  },
+  extraInfo: { fr: "Infos complémentaires", en: "Additional information", nl: "Extra info" },
+};
+
+const VIBE_PREFIX_LABELS: Record<
+  "animals" | "flatshareType" | "profile" | "vibe" | "other",
+  Record<"fr" | "en" | "nl", string>
+> = {
+  animals: { fr: "Animaux autorisés", en: "Pets allowed", nl: "Huisdieren toegestaan" },
+  flatshareType: { fr: "Type de coloc", en: "Flatshare type", nl: "Type cohousing" },
+  profile: { fr: "Profil recherché", en: "Preferred profile", nl: "Gezocht profiel" },
+  vibe: { fr: "Ambiance", en: "Vibe", nl: "Sfeer" },
+  other: { fr: "Autre", en: "Other", nl: "Andere" },
+};
+
+function normalizeLabel(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function labelMapFor(optionMap: I18nLabelMap) {
+  const reverse = new Map<string, string>();
+  for (const [value, labels] of Object.entries(optionMap)) {
+    reverse.set(normalizeLabel(value), value);
+    reverse.set(normalizeLabel(labels.fr), value);
+    reverse.set(normalizeLabel(labels.en), value);
+    reverse.set(normalizeLabel(labels.nl), value);
+  }
+  return reverse;
+}
+
+const TRANSPORT_LABEL_TO_VALUE = labelMapFor(TRANSPORT_LABELS);
+const AREA_CONTEXT_LABEL_TO_VALUE = labelMapFor(AREA_CONTEXT_LABELS);
+const COMMON_SPACES_LABEL_TO_VALUE = labelMapFor(COMMON_SPACES_LABELS);
+const VIBE_LABEL_TO_VALUE = labelMapFor(VIBE_LABELS);
+const CURRENT_FLATMATES_LABEL_TO_VALUE = labelMapFor(CURRENT_FLATMATES_VALUE_LABELS);
+const CANDIDATE_GENDER_LABEL_TO_VALUE = labelMapFor(CANDIDATE_GENDER_LABELS);
+const ROOM_FURNISHING_LABEL_TO_VALUE = labelMapFor(ROOM_FURNISHING_LABELS);
+const ROOM_OUTDOOR_LABEL_TO_VALUE = labelMapFor(ROOM_OUTDOOR_LABELS);
+const ANIMALS_POLICY_LABEL_TO_VALUE = labelMapFor(ANIMALS_POLICY_LABELS);
+
+function mapCsvByDictionary(csv: string, reverseMap: Map<string, string>, labels: I18nLabelMap, locale: "fr" | "en" | "nl") {
+  const values = csv
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => reverseMap.get(normalizeLabel(item)))
+    .filter((item): item is string => Boolean(item));
+  if (!values.length) return csv;
+  return values.map((value) => labels[value]?.[locale] ?? value).join(", ");
+}
+
+function localizedLabel(optionMap: I18nLabelMap, value: string, locale: "fr" | "en" | "nl") {
+  const resolvedValue = labelMapFor(optionMap).get(normalizeLabel(value)) ?? value;
+  return optionMap[resolvedValue]?.[locale] ?? value;
+}
+
+export function localizeHousingDescriptionText(
+  source: string,
+  locale: "fr" | "en" | "nl",
+  commune: string,
+) {
+  if (locale === "fr") return source;
+  const lines = source.split(/\r?\n/);
+  const mappedLines = lines.map((line) => {
+    if (/^\s*Type\s*:/i.test(line)) {
+      const value = line.replace(/^\s*Type\s*:\s*/i, "");
+      return `${HOUSING_PREFIX_LABELS.type[locale]}: ${localizedLabel(LISTING_TYPE_LABELS, value, locale)}`;
+    }
+    if (/^\s*Quartier\s*:/i.test(line)) {
+      const value = line.replace(/^\s*Quartier\s*:\s*/i, "");
+      return `${HOUSING_PREFIX_LABELS.neighborhood[locale]}: ${getLocalizedNeighborhoodLabel(commune, value, locale)}`;
+    }
+    if (/^\s*Chambres disponibles\s*:/i.test(line)) {
+      const value = line.replace(/^\s*Chambres disponibles\s*:\s*/i, "");
+      return `${HOUSING_PREFIX_LABELS.availableRooms[locale]}: ${value}`;
+    }
+    if (/^\s*Proche des transports en commun\s*:/i.test(line)) {
+      const value = line.replace(/^\s*Proche des transports en commun\s*:\s*/i, "");
+      return `${HOUSING_PREFIX_LABELS.transportNearby[locale]}: ${mapCsvByDictionary(value, TRANSPORT_LABEL_TO_VALUE, TRANSPORT_LABELS, locale)}`;
+    }
+    if (/^\s*Détails par chambre\s*:/i.test(line)) {
+      return `${HOUSING_PREFIX_LABELS.roomDetails[locale]}:`;
+    }
+    if (/^\s*-\s*Chambre\s+(\d+)\s*:/i.test(line)) {
+      const match = line.match(/^\s*-\s*Chambre\s+(\d+)\s*:\s*(.+)$/i);
+      if (!match) return line;
+      const roomIndex = match[1];
+      const segments = match[2]
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+      const translatedSegments = segments.map((segment) => {
+        if (/^(\d+)\s*EUR\/mois$/i.test(segment)) {
+          const amount = segment.replace(/^(\d+)\s*EUR\/mois$/i, "$1");
+          return locale === "en" ? `${amount} EUR/month` : locale === "nl" ? `${amount} EUR/maand` : `${amount} EUR/mois`;
+        }
+        if (/^Vue\s+/i.test(segment) || segment === "Autre") {
+          return localizedLabel(ROOM_VIEW_LABELS, segment, locale);
+        }
+        if (/^SDB\s+/i.test(segment)) {
+          return localizedLabel(ROOM_BATHROOM_LABELS, segment, locale);
+        }
+        if (ROOM_FURNISHING_LABEL_TO_VALUE.has(normalizeLabel(segment))) {
+          return localizedLabel(ROOM_FURNISHING_LABELS, segment, locale);
+        }
+        if (ROOM_OUTDOOR_LABEL_TO_VALUE.has(normalizeLabel(segment))) {
+          return localizedLabel(ROOM_OUTDOOR_LABELS, segment, locale);
+        }
+        return segment;
+      });
+      const roomPrefix = locale === "en" ? "Room" : locale === "nl" ? "Kamer" : "Chambre";
+      return `- ${roomPrefix} ${roomIndex}: ${translatedSegments.join(", ")}`;
+    }
+    if (/^\s*Lignes\s*:/i.test(line)) {
+      const value = line.replace(/^\s*Lignes\s*:\s*/i, "");
+      return `${HOUSING_PREFIX_LABELS.lines[locale]}: ${value}`;
+    }
+    if (/^\s*Environnement\s*:/i.test(line)) {
+      const value = line.replace(/^\s*Environnement\s*:\s*/i, "");
+      return `${HOUSING_PREFIX_LABELS.environment[locale]}: ${mapCsvByDictionary(value, AREA_CONTEXT_LABEL_TO_VALUE, AREA_CONTEXT_LABELS, locale)}`;
+    }
+    if (/^\s*Parties communes\s*:/i.test(line) || /^\s*[ÉE]quipements\s*\/\s*parties communes\s*:/i.test(line)) {
+      const value = line.replace(/^\s*(Parties communes|[ÉE]quipements\s*\/\s*parties communes)\s*:\s*/i, "");
+      return `${HOUSING_PREFIX_LABELS.commonSpaces[locale]}: ${mapCsvByDictionary(value, COMMON_SPACES_LABEL_TO_VALUE, COMMON_SPACES_LABELS, locale)}`;
+    }
+    if (/^\s*Autre\s*\(parties communes\)\s*:/i.test(line)) {
+      const value = line.replace(/^\s*Autre\s*\(parties communes\)\s*:\s*/i, "");
+      return `${HOUSING_PREFIX_LABELS.otherCommonSpaces[locale]}: ${value}`;
+    }
+    if (/^\s*Infos compl[ée]mentaires\s*:/i.test(line)) {
+      return `${HOUSING_PREFIX_LABELS.extraInfo[locale]}:`;
+    }
+    return line;
+  });
+
+  return mappedLines.join("\n");
+}
+
+export function localizeFlatshareVibeText(source: string, locale: "fr" | "en" | "nl") {
+  if (locale === "fr") return source;
+  const lines = source.split(/\r?\n/);
+  const mappedLines = lines.map((line) => {
+    if (/^\s*Animaux autoris[ée]s\s*:/i.test(line)) {
+      const value = line.replace(/^\s*Animaux autoris[ée]s\s*:\s*/i, "");
+      const mappedValue = ANIMALS_POLICY_LABEL_TO_VALUE.get(normalizeLabel(value)) ?? value;
+      return `${VIBE_PREFIX_LABELS.animals[locale]}: ${ANIMALS_POLICY_LABELS[mappedValue]?.[locale] ?? value}`;
+    }
+    if (/^\s*Type de coloc\s*:/i.test(line)) {
+      const value = line.replace(/^\s*Type de coloc\s*:\s*/i, "");
+      const mappedValue = CURRENT_FLATMATES_LABEL_TO_VALUE.get(normalizeLabel(value)) ?? value;
+      return `${VIBE_PREFIX_LABELS.flatshareType[locale]}: ${CURRENT_FLATMATES_VALUE_LABELS[mappedValue]?.[locale] ?? value}`;
+    }
+    if (/^\s*Profil recherch[ée]\s*:/i.test(line)) {
+      const value = line.replace(/^\s*Profil recherch[ée]\s*:\s*/i, "");
+      const mappedValue = CANDIDATE_GENDER_LABEL_TO_VALUE.get(normalizeLabel(value)) ?? value;
+      return `${VIBE_PREFIX_LABELS.profile[locale]}: ${CANDIDATE_GENDER_LABELS[mappedValue]?.[locale] ?? value}`;
+    }
+    if (/^\s*Ambiance\s*:/i.test(line)) {
+      const value = line.replace(/^\s*Ambiance\s*:\s*/i, "");
+      return `${VIBE_PREFIX_LABELS.vibe[locale]}: ${mapCsvByDictionary(value, VIBE_LABEL_TO_VALUE, VIBE_LABELS, locale)}`;
+    }
+    if (/^\s*Autre\s*:/i.test(line)) {
+      const value = line.replace(/^\s*Autre\s*:\s*/i, "");
+      return `${VIBE_PREFIX_LABELS.other[locale]}: ${value}`;
+    }
+    return line;
+  });
+  return mappedLines.join("\n");
+}
 const CURRENT_FLATMATES_LABELS: Record<"fr" | "en" | "nl", Record<string, string>> = {
   fr: {
     mixte: "Mixte",
@@ -169,16 +455,29 @@ export function listingRoomsSummary(
   return `${listing.available_rooms} chambre(s)`;
 }
 
+export function listingDisplayTitle(
+  listing: Pick<Listing, "title" | "city" | "listing_type" | "available_rooms" | "room_details" | "housing_description">,
+  locale: "fr" | "en" | "nl" = "fr",
+) {
+  const roomDetails = listingRoomDetailsFromRow(listing);
+  const neighborhood = listingNeighborhoodFromHousingDescription(listing.housing_description) ?? "";
+  const generated = buildAutoListingTitle({
+    listingType: listing.listing_type === "studio" ? "studio" : "colocation",
+    commune: getLocalizedCommuneLabel(listing.city, locale),
+    roomCount: listing.listing_type === "studio" ? 1 : listing.available_rooms,
+    roomSizesSqm: roomDetails.map((room) => room.size_sqm),
+    neighborhood: neighborhood ? getLocalizedNeighborhoodLabel(listing.city, neighborhood, locale) : neighborhood,
+    locale,
+  });
+
+  return generated || listing.title;
+}
+
 export function listingAnimalsPolicyLabel(policy: string | null | undefined, locale: "fr" | "en" | "nl" = "fr") {
   if (!policy || !ANIMALS_POLICY_VALUES.has(policy)) {
     return null;
   }
-  const labels: Record<"fr" | "en" | "nl", Record<AnimalsPolicy, string>> = {
-    fr: { yes: "Oui", no: "Non", negotiable: "À discuter" },
-    en: { yes: "Yes", no: "No", negotiable: "Negotiable" },
-    nl: { yes: "Ja", no: "Nee", negotiable: "Bespreekbaar" },
-  };
-  return labels[locale][policy as AnimalsPolicy] ?? null;
+  return ANIMALS_POLICY_LABELS[policy]?.[locale] ?? null;
 }
 
 export function listingCurrentFlatmatesLabel(value: string | null | undefined, locale: "fr" | "en" | "nl" = "fr") {
@@ -313,7 +612,10 @@ export function listingNeighborhoodFromHousingDescription(housingDescription: st
   return rawNeighborhood;
 }
 
-export function listingCandidatePreferenceFromFlatshareVibe(flatshareVibe: string | null | undefined) {
+export function listingCandidatePreferenceFromFlatshareVibe(
+  flatshareVibe: string | null | undefined,
+  locale: "fr" | "en" | "nl" = "fr",
+) {
   const source = `${flatshareVibe ?? ""}`.trim();
   if (!source) return null;
   const lines = source.split(/\r?\n/);
@@ -321,5 +623,6 @@ export function listingCandidatePreferenceFromFlatshareVibe(flatshareVibe: strin
   if (!preferenceLine) return null;
   const rawPreference = preferenceLine.replace(/^\s*profil recherch[ée]\s*:\s*/i, "").trim();
   if (!rawPreference || /^non pr[ée]cis[ée]$/i.test(rawPreference)) return null;
-  return rawPreference;
+  const mappedValue = CANDIDATE_GENDER_LABEL_TO_VALUE.get(normalizeLabel(rawPreference)) ?? rawPreference;
+  return CANDIDATE_GENDER_LABELS[mappedValue]?.[locale] ?? rawPreference;
 }

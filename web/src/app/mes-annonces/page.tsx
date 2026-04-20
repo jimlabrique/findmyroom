@@ -6,7 +6,8 @@ import { getOwnerListingMetrics } from "@/lib/data/listing-events";
 import { deleteAccountAction, deleteListingAction, updateListingStatusAction } from "@/app/mes-annonces/actions";
 import type { AppLocale } from "@/lib/i18n/locales";
 import { withLocalePath } from "@/lib/i18n/pathname";
-import { listingStatusLabel, listingTypeLabel } from "@/lib/listing";
+import { listingDisplayTitle, listingStatusLabel, listingTypeLabel } from "@/lib/listing";
+import { getLocalizedCommuneLabel } from "@/lib/listing-form-options";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 
 type MyListingsPageProps = {
@@ -80,13 +81,15 @@ export default async function MyListingsPage({ searchParams }: MyListingsPagePro
             const metrics = metricsByListingId.get(listing.id) ?? { views: 0, contacts: 0 };
             const statusLabel = listingStatusLabel(listing) as "active" | "paused" | "archived" | "expired";
             const expiresAtLabel = typeof listing.expires_at === "string" ? listing.expires_at : t("undefinedDate");
+            const displayTitle = listingDisplayTitle(listing, locale);
+            const displayCity = getLocalizedCommuneLabel(listing.city, locale);
             return (
               <article key={listing.id} className="panel space-y-4 p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h2 className="text-xl font-semibold text-stone-900">{listing.title}</h2>
+                    <h2 className="text-xl font-semibold text-stone-900">{displayTitle}</h2>
                     <p className="text-sm text-stone-600">
-                      {listing.city} • {listingTypeLabel(listing.listing_type, locale)} • {listing.rent_eur} EUR •{" "}
+                      {displayCity} • {listingTypeLabel(listing.listing_type, locale)} • {listing.rent_eur} EUR •{" "}
                       {t("roomsCount", { count: listing.available_rooms })}
                     </p>
                     <p className="mt-1 text-xs text-stone-500">

@@ -1,11 +1,13 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
-  BRUSSELS_COMMUNES,
+  getLocalizedCommuneOptions,
+  getLocalizedNeighborhoodLabel,
   LISTING_TYPE_OPTIONS,
   OTHER_NEIGHBORHOOD_VALUE,
 } from "@/lib/listing-form-options";
+import type { AppLocale } from "@/lib/i18n/locales";
 
 type CoreFieldsProps = {
   listingType: "colocation" | "studio";
@@ -48,6 +50,8 @@ export function CoreFields({
 }: CoreFieldsProps) {
   const t = useTranslations("createBasics");
   const tSearch = useTranslations("listings.search");
+  const locale = useLocale() as AppLocale;
+  const communeOptions = getLocalizedCommuneOptions(locale);
 
   return (
     <>
@@ -90,9 +94,9 @@ export function CoreFields({
             {t("commune")}
           </label>
           <select id="city" name="city" required className="input" value={commune} onChange={(event) => onCommuneChange(event.currentTarget.value)}>
-            {BRUSSELS_COMMUNES.map((option) => (
-              <option key={option} value={option}>
-                {option}
+            {communeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
@@ -113,7 +117,7 @@ export function CoreFields({
             {!neighborhoodOptions.length ? <option value="">{t("noNeighborhoodConfigured")}</option> : null}
             {neighborhoodOptions.map((option) => (
               <option key={option} value={option}>
-                {option}
+                {getLocalizedNeighborhoodLabel(commune, option, locale)}
               </option>
             ))}
             {neighborhoodOptions.length ? <option value={OTHER_NEIGHBORHOOD_VALUE}>{t("otherNeighborhood")}</option> : null}

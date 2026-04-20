@@ -5,7 +5,7 @@ import { SearchCommuneNeighborhoodFields } from "@/components/search-commune-nei
 import { searchListings } from "@/lib/data/listings";
 import type { AppLocale } from "@/lib/i18n/locales";
 import { withLocalePath } from "@/lib/i18n/pathname";
-import { BRUSSELS_COMMUNES } from "@/lib/listing-form-options";
+import { BRUSSELS_COMMUNES, getCanonicalCommuneLabel, getCanonicalNeighborhoodLabel } from "@/lib/listing-form-options";
 
 type ListingsPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -30,8 +30,10 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const tCommon = await getTranslations("common.actions");
   const query = await searchParams;
   const textQuery = readString(query.q);
-  const city = readString(query.city) || "Bruxelles";
-  const neighborhood = readString(query.neighborhood);
+  const rawCity = readString(query.city) || "Bruxelles";
+  const city = rawCity === "Bruxelles" ? rawCity : getCanonicalCommuneLabel(rawCity);
+  const rawNeighborhood = readString(query.neighborhood);
+  const neighborhood = rawNeighborhood ? getCanonicalNeighborhoodLabel(city, rawNeighborhood) : "";
   const typeRaw = readString(query.type);
   const selectedType = typeRaw === "all" || typeRaw === "studio" || typeRaw === "colocation" ? typeRaw : "all";
   const listingTypeFilter = selectedType === "all" ? undefined : selectedType;
