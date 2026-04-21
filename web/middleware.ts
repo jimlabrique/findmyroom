@@ -5,6 +5,7 @@ import { withLocalePath } from "@/lib/i18n/pathname";
 const PUBLIC_FILE = /\.[^/]+$/;
 const EXCLUDED_PREFIXES = ["/_next", "/api"];
 const EXCLUDED_PATHS = ["/robots.txt", "/sitemap.xml", "/auth/callback"];
+const NONCE_HEADER = "x-nonce";
 
 function isExcluded(pathname: string) {
   if (PUBLIC_FILE.test(pathname)) return true;
@@ -20,11 +21,89 @@ function preferredLocale(request: NextRequest) {
   return DEFAULT_LOCALE;
 }
 
+function supabaseOrigin() {
+  const supabaseUrlRaw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!supabaseUrlRaw) return "";
+  try {
+    return new URL(supabaseUrlRaw).origin;
+  } catch {
+    return "";
+  }
+}
+
+function generateNonce() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  const binary = String.fromCharCode(...bytes);
+  return btoa(binary);
+}
+
+function cspValue(nonce: string) {
+  const shouldUpgradeInsecureRequests = process.env.NODE_ENV === "production" && process.env.VERCEL === "1";
+  const supabase = supabaseOrigin();
+  const connectSrc = [
+    "'self'",
+    supabase,
+    "https://accounts.google.com",
+    "https://oauth2.googleapis.com",
+    "https://www.googleapis.com",
+    "https://api.resend.com",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const scriptSrc = [
+    "'self'",
+    `'nonce-${nonce}'`,
+    process.env.NODE_ENV !== "production" ? "'unsafe-eval'" : "",
+    "https://accounts.google.com",
+    "https://apis.google.com",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const imgSrc = ["'self'", "data:", "blob:", "https:", supabase].filter(Boolean).join(" ");
+
+  const directives = [
+    "default-src 'self'",
+    `script-src ${scriptSrc}`,
+    "style-src 'self' 'unsafe-inline'",
+    `img-src ${imgSrc}`,
+    "font-src 'self' data:",
+    `connect-src ${connectSrc}`,
+    "frame-src https://accounts.google.com",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "object-src 'none'",
+  ];
+
+  if (shouldUpgradeInsecureRequests) {
+    directives.push("upgrade-insecure-requests");
+  }
+
+  return directives.join("; ");
+}
+
+function applySecurityHeaders(response: NextResponse, nonce: string) {
+  response.headers.set("Content-Security-Policy", cspValue(nonce));
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+  response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=(), accelerometer=()");
+  return response;
+}
+
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const nonce = generateNonce();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(NONCE_HEADER, nonce);
 
   if (isExcluded(pathname)) {
-    return NextResponse.next();
+    const response = NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+    return applySecurityHeaders(response, nonce);
   }
 
   const segments = pathname.split("/").filter(Boolean);
@@ -35,7 +114,6 @@ export function middleware(request: NextRequest) {
     const rewriteUrl = request.nextUrl.clone();
     rewriteUrl.pathname = rewrittenPath === "/" ? "/" : rewrittenPath.replace(/\/+$/, "");
 
-    const requestHeaders = new Headers(request.headers);
     requestHeaders.set(LOCALE_HEADER, firstSegment);
 
     const response = NextResponse.rewrite(rewriteUrl, {
@@ -47,13 +125,14 @@ export function middleware(request: NextRequest) {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
     });
-    return response;
+    return applySecurityHeaders(response, nonce);
   }
 
   const locale = preferredLocale(request);
   const redirectUrl = request.nextUrl.clone();
   redirectUrl.pathname = withLocalePath(pathname, locale);
-  return NextResponse.redirect(redirectUrl);
+  const response = NextResponse.redirect(redirectUrl);
+  return applySecurityHeaders(response, nonce);
 }
 
 export const config = {
