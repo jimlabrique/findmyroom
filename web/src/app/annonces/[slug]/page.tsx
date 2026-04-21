@@ -195,8 +195,8 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
                   <img
                     src={photo.url}
                     alt={photo.caption || `${displayTitle} - photo ${index + 1}`}
-                    className={`h-full w-full rounded-lg object-cover ${
-                      index === 0 ? "aspect-[16/10]" : "aspect-[4/3]"
+                    className={`aspect-[16/9] h-full w-full rounded-lg object-cover ${
+                      index === 0 ? "sm:aspect-[16/10]" : "sm:aspect-[4/3]"
                     }`}
                   />
                   {photo.caption ? (
@@ -208,7 +208,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
           </div>
 
           <article className="panel space-y-4 p-5">
-              <h1 className="font-serif text-3xl text-stone-900">{displayTitle}</h1>
+              <h1 className="break-words font-serif text-3xl text-stone-900">{displayTitle}</h1>
               <div className="grid gap-3 text-sm text-stone-700 sm:grid-cols-2">
                 <p>
                   <span className="font-semibold">{t("labels.commune")}:</span> {displayCity}
@@ -256,7 +256,28 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
             {roomDetails.length ? (
               <div className="space-y-2">
                 <h2 className="text-lg font-semibold text-stone-900">{t("roomTableTitle")}</h2>
-                <div className="overflow-x-auto rounded-xl border border-stone-200">
+                <div className="space-y-2 md:hidden">
+                  {roomDetails.map((room) => (
+                    <article key={`room-mobile-${room.index}`} className="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                      <p className="text-sm font-semibold text-stone-900">{t("roomLabel", { index: room.index })}</p>
+                      <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm text-stone-700">
+                        <dt className="font-medium text-stone-500">{t("roomHeaderSize")}</dt>
+                        <dd className="text-right">{room.size_sqm}m2</dd>
+                        <dt className="font-medium text-stone-500">{t("roomHeaderPrice")}</dt>
+                        <dd className="text-right">{t("pricePerMonthSuffix", { value: room.price_eur })}</dd>
+                        <dt className="font-medium text-stone-500">{t("roomHeaderFurnishing")}</dt>
+                        <dd className="text-right">{furnishingLabels.get(room.furnishing) ?? room.furnishing}</dd>
+                        <dt className="font-medium text-stone-500">{t("roomHeaderBathroom")}</dt>
+                        <dd className="text-right">{bathroomLabels.get(room.bathroom) ?? room.bathroom}</dd>
+                        <dt className="font-medium text-stone-500">{t("roomHeaderOutdoor")}</dt>
+                        <dd className="text-right">{outdoorLabels.get(room.outdoor) ?? room.outdoor}</dd>
+                        <dt className="font-medium text-stone-500">{t("roomHeaderView")}</dt>
+                        <dd className="text-right">{viewLabels.get(room.view) ?? room.view}</dd>
+                      </dl>
+                    </article>
+                  ))}
+                </div>
+                <div className="hidden overflow-x-auto rounded-xl border border-stone-200 md:block">
                   <table className="min-w-full text-sm">
                     <thead className="bg-stone-50 text-left text-stone-600">
                       <tr>
