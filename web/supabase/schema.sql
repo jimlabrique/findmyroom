@@ -287,11 +287,12 @@ for insert
 to authenticated
 with check (
   auth.uid() = id
+  and lower(coalesce(email, '')) = lower(coalesce(auth.jwt() ->> 'email', ''))
   and (
     role = 'user'
     or (
       role = 'super_admin'
-      and lower(coalesce(email, '')) = 'jim@la-brique.be'
+      and lower(coalesce(auth.jwt() ->> 'email', '')) = 'jim@la-brique.be'
     )
   )
 );
@@ -342,20 +343,6 @@ using (auth.uid() = user_id);
 alter table public.listing_events enable row level security;
 
 drop policy if exists "Public can insert listing events" on public.listing_events;
-create policy "Public can insert listing events"
-on public.listing_events
-for insert
-to anon, authenticated
-with check (
-  event_type in ('view_listing', 'click_contact')
-  and exists (
-    select 1
-    from public.listings l
-    where l.id = listing_id
-      and l.status = 'active'
-      and l.expires_at >= current_date
-  )
-);
 
 drop policy if exists "Owners can read own listing events" on public.listing_events;
 create policy "Owners can read own listing events"

@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export type ListingEventType = "view_listing" | "click_contact";
 
@@ -16,15 +17,22 @@ export async function trackListingEvent({
   source: string;
 }) {
   try {
+    const adminSupabase = createAdminSupabaseClient();
+    if (!adminSupabase) {
+      return;
+    }
+
     const supabase = await createServerSupabaseClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { error } = await supabase.from("listing_events").insert({
+    const normalizedSource = source.trim().slice(0, 120) || "unknown";
+
+    const { error } = await adminSupabase.from("listing_events").insert({
       listing_id: listingId,
       event_type: eventType,
-      source,
+      source: normalizedSource,
       viewer_user_id: user?.id ?? null,
     });
 
