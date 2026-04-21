@@ -87,6 +87,8 @@
       "sortPriceDesc": "Prix décroissant",
       "maxRent": "Loyer max (EUR)",
       "maxRentPlaceholder": "Max",
+      "filtersTitle": "Filtres de recherche",
+      "filtersActive": "actifs",
       "advancedFilters": "Filtres avancés",
       "minRooms": "Chambres minimum",
       "noMinRooms": "Sans minimum",

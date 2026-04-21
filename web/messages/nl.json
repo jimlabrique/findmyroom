@@ -87,6 +87,8 @@
       "sortPriceDesc": "Prijs hoog naar laag",
       "maxRent": "Max huur (EUR)",
       "maxRentPlaceholder": "Max",
+      "filtersTitle": "Zoekfilters",
+      "filtersActive": "actief",
       "advancedFilters": "Geavanceerde filters",
       "minRooms": "Minimum kamers",
       "noMinRooms": "Geen minimum",

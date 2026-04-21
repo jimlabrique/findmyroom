@@ -32,7 +32,7 @@ export function ListingCardCarousel({ photos, title, href }: ListingCardCarousel
   }
 
   return (
-    <div className="relative aspect-[16/10] h-full w-full overflow-hidden bg-stone-100 sm:aspect-auto sm:min-h-[210px]">
+    <div className="relative aspect-[16/9] w-full overflow-hidden bg-stone-100 sm:aspect-auto sm:min-h-[220px]">
       <Link href={href} className="block h-full">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={activePhoto} alt={title} className="h-full w-full object-cover" />

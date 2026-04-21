@@ -87,6 +87,8 @@
       "sortPriceDesc": "Price high to low",
       "maxRent": "Max rent (EUR)",
       "maxRentPlaceholder": "Max",
+      "filtersTitle": "Search filters",
+      "filtersActive": "active",
       "advancedFilters": "Advanced filters",
       "minRooms": "Minimum rooms",
       "noMinRooms": "No minimum",

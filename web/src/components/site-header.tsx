@@ -34,14 +34,15 @@ export async function SiteHeader({ locale }: SiteHeaderProps) {
 
   return (
     <header className="border-b border-stone-200 bg-white/90">
-      <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <Link href={withLocalePath("/annonces", typedLocale)} className="inline-flex items-center">
+      <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
+        <Link href={withLocalePath("/annonces", typedLocale)} className="inline-flex min-w-0 flex-1 items-center lg:flex-none">
           <Image
-            src="/findmyrooom-logo.svg?v=20260420"
+            src="/findmyrooom-logo.png"
             alt="FindMyRoom"
-            width={220}
-            height={42}
-            className="h-8 w-auto sm:h-10"
+            width={1650}
+            height={318}
+            className="h-auto w-full max-w-[215px] sm:max-w-[220px]"
+            sizes="(max-width: 640px) calc(100vw - 8rem), 220px"
             priority
           />
         </Link>
@@ -94,7 +95,7 @@ export async function SiteHeader({ locale }: SiteHeaderProps) {
           )}
         </nav>
 
-        <details className="lg:hidden">
+        <details className="shrink-0 lg:hidden">
           <summary className="inline-flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-md border border-stone-200 bg-white text-stone-700">
             ☰
           </summary>

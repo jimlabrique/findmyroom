@@ -52,6 +52,8 @@ export function CoreFields({
   const tSearch = useTranslations("listings.search");
   const locale = useLocale() as AppLocale;
   const communeOptions = getLocalizedCommuneOptions(locale);
+  const roomOptions = Array.from({ length: maxRooms - minRooms + 1 }, (_, index) => minRooms + index);
+  const totalRoomOptions = roomOptions.filter((value) => value >= availableRooms);
 
   return (
     <>
@@ -147,34 +149,40 @@ export function CoreFields({
               <label className="label" htmlFor="available_rooms">
                 {t("availableRooms")}
               </label>
-              <input
+              <select
                 id="available_rooms"
                 name="available_rooms"
-                type="number"
-                min={minRooms}
-                max={maxRooms}
                 required
                 className="input"
                 value={availableRooms}
                 onChange={(event) => onAvailableRoomsChange(event.currentTarget.value)}
-              />
+              >
+                {roomOptions.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
               <label className="label" htmlFor="total_rooms">
                 {t("totalRooms")}
               </label>
-              <input
+              <select
                 id="total_rooms"
                 name="total_rooms"
-                type="number"
-                min={minRooms}
-                max={maxRooms}
                 required
                 className="input"
                 value={totalRooms}
                 onChange={(event) => onTotalRoomsChange(event.currentTarget.value)}
-              />
+              >
+                {totalRoomOptions.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
             </div>
           </>
         ) : (

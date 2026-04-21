@@ -51,10 +51,10 @@ export async function ListingCard({ listing }: ListingCardProps) {
         href={detailsHref}
       />
 
-      <div className="flex h-full flex-col justify-between gap-4 p-4 sm:p-5">
+      <div className="flex h-full flex-col gap-3 border-t border-stone-100 p-3 sm:justify-between sm:gap-4 sm:border-t-0 sm:p-5">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="line-clamp-2 text-base font-semibold text-stone-900">{displayTitle}</h3>
-          <div className="flex flex-col items-end gap-1">
+          <h3 className="min-w-0 line-clamp-2 text-base font-semibold text-stone-900">{displayTitle}</h3>
+          <div className="shrink-0 flex flex-col items-end gap-1">
             <span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-medium text-stone-700">{createdAtLabel}</span>
             <span className="rounded-full bg-[#fff1ee] px-2 py-1 text-xs font-medium text-[#ba4d40]">
               {listingTypeLabel(listing.listing_type, locale)}
@@ -62,19 +62,19 @@ export async function ListingCard({ listing }: ListingCardProps) {
           </div>
         </div>
 
-        <div className="grid gap-2 text-sm text-stone-700 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm text-stone-700">
           <p className="font-medium">{displayCity}</p>
-          <p className="sm:text-right">{listingPriceRangeLabel(listing, locale)}</p>
-          <p>
+          <p className="text-right">{listingPriceRangeLabel(listing, locale)}</p>
+          <p className="col-span-2 sm:col-span-1">
             {listingRoomsSummary(listing, locale)}
             {candidatePreferenceLabel ? ` • ${candidatePreferenceLabel}` : ""}
           </p>
-          <p className="sm:text-right">{tCard("available", { date: listing.available_from })}</p>
+          <p className="col-span-2 text-stone-600 sm:col-span-1 sm:text-right">{tCard("available", { date: listing.available_from })}</p>
         </div>
 
         <Link
           href={detailsHref}
-          className="btn btn-primary w-fit text-sm"
+          className="btn btn-primary w-full text-sm sm:w-fit"
         >
           {tCommon("voirAnnonce")}
         </Link>

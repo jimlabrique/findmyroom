@@ -33,7 +33,9 @@ function cspValue() {
 
   const imgSrc = ["'self'", "data:", "blob:", "https:", supabaseOrigin].filter(Boolean).join(" ");
 
-  return [
+  const shouldUpgradeInsecureRequests = process.env.NODE_ENV === "production" && process.env.VERCEL === "1";
+
+  const directives = [
     "default-src 'self'",
     `script-src ${scriptSrc}`,
     `style-src 'self' 'unsafe-inline'`,
@@ -45,8 +47,13 @@ function cspValue() {
     "form-action 'self'",
     "frame-ancestors 'none'",
     "object-src 'none'",
-    "upgrade-insecure-requests",
-  ].join("; ");
+  ];
+
+  if (shouldUpgradeInsecureRequests) {
+    directives.push("upgrade-insecure-requests");
+  }
+
+  return directives.join("; ");
 }
 
 const nextConfig: NextConfig = {
