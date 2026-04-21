@@ -3,6 +3,7 @@ import type { AppLocale } from "@/lib/i18n/locales";
 const ERROR_MESSAGES: Record<AppLocale, Record<string, string>> = {
   fr: {
     listing_type_required: "Choisis un type d'annonce: Colocation ou Studio.",
+    missing_required_fields: "Des champs obligatoires sont manquants. Vérifie la liste ci-dessous.",
     commune_required: "Choisis une commune de Bruxelles dans la liste.",
     neighborhood_required: "Choisis un quartier dans la liste de la commune sélectionnée.",
     neighborhood_custom_required: "Tu as choisi Autre quartier: précise le nom du quartier.",
@@ -28,12 +29,15 @@ const ERROR_MESSAGES: Record<AppLocale, Record<string, string>> = {
     schema_missing_photo_captions:
       "La base n'a pas encore le champ des légendes photo. Lance la requête SQL de migration `photo_captions`.",
     bucket_not_found: "Le stockage photo n'est pas configuré (bucket introuvable). Exécute le schéma SQL dans Supabase.",
+    invalid_file_type: "Format photo non supporté. Utilise JPG, PNG, WEBP ou GIF.",
+    file_too_large: "Une photo dépasse la taille max (8 Mo).",
     listing_not_found: "Annonce introuvable pour ton compte.",
     photo_required: "Ajoute au moins une photo.",
     photo_caption_required: "Chaque photo doit avoir une légende.",
   },
   en: {
     listing_type_required: "Choose a listing type: Shared flat or Studio.",
+    missing_required_fields: "Some required fields are missing. Check the list below.",
     commune_required: "Choose a Brussels commune from the list.",
     neighborhood_required: "Choose a district from the selected commune list.",
     neighborhood_custom_required: "You selected Other district: specify the district name.",
@@ -59,12 +63,15 @@ const ERROR_MESSAGES: Record<AppLocale, Record<string, string>> = {
     contact_required: "Add a contact method: email and/or phone.",
     schema_missing_photo_captions: "Database is missing photo captions field. Run the `photo_captions` SQL migration.",
     bucket_not_found: "Photo storage is not configured (bucket not found). Run the SQL setup in Supabase.",
+    invalid_file_type: "Unsupported photo format. Use JPG, PNG, WEBP, or GIF.",
+    file_too_large: "A photo exceeds the max size (8 MB).",
     listing_not_found: "Listing not found for your account.",
     photo_required: "Add at least one photo.",
     photo_caption_required: "Each photo needs a caption.",
   },
   nl: {
     listing_type_required: "Kies een advertentietype: Cohousing of Studio.",
+    missing_required_fields: "Sommige verplichte velden ontbreken. Controleer de lijst hieronder.",
     commune_required: "Kies een Brusselse gemeente uit de lijst.",
     neighborhood_required: "Kies een wijk uit de lijst van de geselecteerde gemeente.",
     neighborhood_custom_required: "Je koos Andere wijk: vul de wijknaam in.",
@@ -90,6 +97,8 @@ const ERROR_MESSAGES: Record<AppLocale, Record<string, string>> = {
     contact_required: "Voeg een contactmethode toe: e-mail en/of telefoon.",
     schema_missing_photo_captions: "Database mist veld voor fotobijschriften. Voer de `photo_captions` SQL-migratie uit.",
     bucket_not_found: "Foto-opslag is niet geconfigureerd (bucket niet gevonden). Voer de SQL-setup uit in Supabase.",
+    invalid_file_type: "Niet-ondersteund fotoformaat. Gebruik JPG, PNG, WEBP of GIF.",
+    file_too_large: "Een foto is groter dan de limiet (8 MB).",
     listing_not_found: "Advertentie niet gevonden voor je account.",
     photo_required: "Voeg minstens één foto toe.",
     photo_caption_required: "Elke foto moet een bijschrift hebben.",
@@ -98,6 +107,18 @@ const ERROR_MESSAGES: Record<AppLocale, Record<string, string>> = {
 
 export function humanizeAppError(errorCode: string | null, locale: AppLocale = "fr") {
   if (!errorCode) return null;
+
+  const tooManyFilesMatch = errorCode.match(/^too_many_files_max_(\d+)$/i);
+  if (tooManyFilesMatch) {
+    const max = tooManyFilesMatch[1];
+    if (locale === "en") {
+      return `Too many photos. Maximum allowed: ${max}.`;
+    }
+    if (locale === "nl") {
+      return `Te veel foto's. Maximum toegestaan: ${max}.`;
+    }
+    return `Trop de photos. Maximum autorisé: ${max}.`;
+  }
 
   if (/bucket/i.test(errorCode) && /not found/i.test(errorCode)) {
     if (locale === "en") {

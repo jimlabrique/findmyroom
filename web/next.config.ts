@@ -57,6 +57,11 @@ function cspValue() {
 }
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "100mb",
+    },
+  },
   async headers() {
     const securityHeaders = [
       { key: "Content-Security-Policy", value: cspValue() },

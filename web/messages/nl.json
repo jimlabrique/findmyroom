@@ -315,7 +315,12 @@
     "tag": "Advertentie plaatsen",
     "title": "Publiceer een advertentie in enkele minuten",
     "subtitle": "Vul eerst de essentie in en voeg daarna optionele details toe als je wilt.",
-    "publish": "Advertentie publiceren"
+    "publish": "Advertentie publiceren",
+    "publishing": "Publiceren...",
+    "missingFieldsTitle": "Verplichte velden ontbreken",
+    "requiredPhotos": "Minstens 1 foto",
+    "requiredPhotoCaptions": "Bijschrift voor elke foto",
+    "requiredAccountEmail": "Contact-e-mailadres van account"
   },
   "edit": {
     "tag": "Bewerken",

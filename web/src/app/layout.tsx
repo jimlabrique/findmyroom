@@ -29,9 +29,13 @@ export async function generateMetadata(): Promise<Metadata> {
     title: "FindMyRoom",
     description,
     icons: {
-      icon: [{ url: "/favicon.svg?v=20260420", type: "image/svg+xml" }],
-      shortcut: [{ url: "/favicon.svg?v=20260420", type: "image/svg+xml" }],
-      apple: [{ url: "/logo-icon.png?v=20260420" }],
+      icon: [
+        { url: "/favicon.ico?v=20260421", sizes: "any" },
+        { url: "/favicon.png?v=20260421", type: "image/png", sizes: "48x48" },
+        { url: "/favicon.svg?v=20260421", type: "image/svg+xml" },
+      ],
+      shortcut: [{ url: "/favicon.ico?v=20260421" }],
+      apple: [{ url: "/logo-icon.png?v=20260421" }],
     },
     openGraph: {
       title: "FindMyRoom",

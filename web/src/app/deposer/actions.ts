@@ -14,6 +14,7 @@ import {
 import { generateUniqueSlug } from "@/lib/data/listings";
 import {
   extractNewListingPhotoDrafts,
+  type PhotoDraft,
   splitPhotosForStorage,
   uploadListingPhotoFiles,
 } from "@/lib/storage/listing-photos";
@@ -151,11 +152,24 @@ function parseRoomDetails(formData: FormData, availableRooms: number): ListingRo
 }
 
 export async function createListingAction(formData: FormData) {
-  await assertTrustedFormRequest();
   const locale = await getRequestLocale();
   const deposerPath = withLocalePath("/deposer", locale);
   const redirectDeposerError = (errorCode: string): never =>
     redirect(`${deposerPath}?error=${encodeURIComponent(errorCode)}`);
+  const redirectDeposerMissingFields = (fields: string[]): never => {
+    const uniqueFields = Array.from(new Set(fields.filter((field) => field.trim().length > 0)));
+    const params = new URLSearchParams();
+    params.set("error", "missing_required_fields");
+    params.set("missing", uniqueFields.join(","));
+    redirect(`${deposerPath}?${params.toString()}`);
+  };
+
+  try {
+    await assertTrustedFormRequest();
+  } catch {
+    redirectDeposerError("untrusted_origin");
+  }
+
   const { supabase, user } = await requireUser(deposerPath);
 
   const listingTypeRaw = `${formData.get("listing_type") ?? ""}`.trim();
@@ -193,21 +207,51 @@ export async function createListingAction(formData: FormData) {
     animalsPolicyRaw,
     ANIMALS_POLICY_OPTIONS.map((option) => option.value),
   ) ?? "negotiable") as AnimalsPolicy;
+  const missingFields = new Set<string>();
 
-  if (!Number.isFinite(availableRooms) || availableRooms <= 0) {
-    redirectDeposerError("missing_required_fields");
+  if (!listingType) {
+    missingFields.add("listing_type");
   }
-  if (!Number.isFinite(totalRooms) || totalRooms <= 0 || totalRooms < availableRooms) {
-    redirectDeposerError("total_rooms_invalid");
+  if (!BRUSSELS_COMMUNES.includes(city as (typeof BRUSSELS_COMMUNES)[number])) {
+    missingFields.add("city");
+  }
+  if (
+    isOtherNeighborhood &&
+    (!neighborhoodCustom || isOtherNeighborhoodValue(neighborhoodCustom) || neighborhoodCustom === OTHER_NEIGHBORHOOD_VALUE)
+  ) {
+    missingFields.add("neighborhood_custom");
+  }
+  if (!isOtherNeighborhood && !isValidNeighborhoodForCommune(city, neighborhood)) {
+    missingFields.add("neighborhood");
+  }
+  if (!availableFrom) {
+    missingFields.add("available_from");
+  }
+
+  if (listingType === "colocation") {
+    const hasValidAvailableRooms = Number.isFinite(availableRooms) && availableRooms > 0;
+    const hasValidTotalRooms = Number.isFinite(totalRooms) && totalRooms > 0;
+
+    if (!hasValidAvailableRooms) {
+      missingFields.add("available_rooms");
+    }
+    if (!hasValidTotalRooms) {
+      missingFields.add("total_rooms");
+    }
+    if (hasValidAvailableRooms && hasValidTotalRooms && totalRooms < availableRooms) {
+      redirectDeposerError("total_rooms_invalid");
+    }
   }
 
   let roomDetails: ListingRoomDetail[] = [];
-  try {
-    roomDetails = parseRoomDetails(formData, availableRooms);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "room_details_invalid";
-    redirectDeposerError(message);
+  if (listingType && Number.isFinite(availableRooms) && availableRooms > 0) {
+    try {
+      roomDetails = parseRoomDetails(formData, availableRooms);
+    } catch {
+      missingFields.add("room_details");
+    }
   }
+
   const charges = parseOptionalInt(formData.get("charges_eur"));
   const minDurationMonths = parseOptionalInt(formData.get("min_duration_months"));
   const leaseType = cleanOptionalText(formData.get("lease_type"));
@@ -231,6 +275,39 @@ export async function createListingAction(formData: FormData) {
   const commonSpacesOther = cleanOptionalText(formData.get("common_spaces_other"));
   const housingDescriptionExtra = cleanOptionalText(formData.get("housing_description_extra"));
   const flatshareVibeOther = cleanOptionalText(formData.get("flatshare_vibe_other"));
+  const rawWhatsapp = `${formData.get("contact_whatsapp") ?? ""}`.trim();
+  const contactPhone = normalizeWhatsapp(rawWhatsapp);
+  const contactEmail = cleanOptionalText(user.email ?? null);
+  let photoDrafts: PhotoDraft[] = [];
+  let uploadedPhotos: ListingPhoto[] = [];
+
+  if (rawWhatsapp && !contactPhone) {
+    redirectDeposerError("contact_phone_required");
+  }
+
+  if (!contactEmail) {
+    missingFields.add("account_email");
+  }
+
+  try {
+    photoDrafts = extractNewListingPhotoDrafts(formData);
+    if (!photoDrafts.length) {
+      missingFields.add("photos");
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "photo_upload_failed";
+    if (message === "photo_caption_required") {
+      missingFields.add("photo_captions");
+    } else {
+      redirectDeposerError(message);
+    }
+  }
+
+  if (missingFields.size) {
+    redirectDeposerMissingFields(Array.from(missingFields));
+  }
+
+  const resolvedListingType = listingType ?? redirectDeposerMissingFields(["listing_type"]);
   const title = buildAutoListingTitle({
     listingType: isStudio ? "studio" : "colocation",
     commune: city,
@@ -258,49 +335,12 @@ export async function createListingAction(formData: FormData) {
         candidateGenderPreference,
         animalsPolicy,
       });
-  const rawWhatsapp = `${formData.get("contact_whatsapp") ?? ""}`.trim();
-  const contactPhone = normalizeWhatsapp(rawWhatsapp);
-  const contactEmail = cleanOptionalText(user.email ?? null);
-  let uploadedPhotos: ListingPhoto[] = [];
-
-  if (!listingType) {
-    redirectDeposerError("listing_type_required");
-  }
-  const resolvedListingType = listingType ?? redirectDeposerError("listing_type_required");
-  if (!BRUSSELS_COMMUNES.includes(city as (typeof BRUSSELS_COMMUNES)[number])) {
-    redirectDeposerError("commune_required");
-  }
-  if (
-    isOtherNeighborhood &&
-    (!neighborhoodCustom || isOtherNeighborhoodValue(neighborhoodCustom) || neighborhoodCustom === OTHER_NEIGHBORHOOD_VALUE)
-  ) {
-    redirectDeposerError("neighborhood_custom_required");
-  }
-  if (!isOtherNeighborhood && !isValidNeighborhoodForCommune(city, neighborhood)) {
-    redirectDeposerError("neighborhood_required");
-  }
-
-  if (!neighborhood || !availableFrom || !title) {
-    redirectDeposerError("missing_required_fields");
-  }
 
   if (!isStudio && !flatshareVibe) {
     redirectDeposerError("vibe_required");
   }
 
-  if (rawWhatsapp && !contactPhone) {
-    redirectDeposerError("contact_phone_required");
-  }
-
-  if (!contactEmail) {
-    redirectDeposerError("account_email_required");
-  }
-
   try {
-    const photoDrafts = extractNewListingPhotoDrafts(formData);
-    if (!photoDrafts.length) {
-      redirectDeposerError("photo_required");
-    }
     uploadedPhotos = await uploadListingPhotoFiles({
       supabase,
       userId: user.id,
@@ -312,7 +352,7 @@ export async function createListingAction(formData: FormData) {
   }
 
   if (!uploadedPhotos.length) {
-    redirectDeposerError("photo_required");
+    redirectDeposerMissingFields(["photos"]);
   }
 
   const { urls: photoUrls, captions: photoCaptions } = splitPhotosForStorage(uploadedPhotos);

@@ -2,6 +2,7 @@ import { createListingAction } from "@/app/deposer/actions";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth";
 import { PhotoFields } from "@/components/photo-fields";
+import { SubmitListingButton } from "@/components/submit-listing-button";
 import { humanizeAppError } from "@/lib/errors";
 import { CreateListingBasics } from "@/components/create-listing-basics";
 import type { AppLocale } from "@/lib/i18n/locales";
@@ -24,11 +25,37 @@ export const dynamic = "force-dynamic";
 export default async function DeposerPage({ searchParams }: DeposerPageProps) {
   const locale = (await getLocale()) as AppLocale;
   const tCreate = await getTranslations("create");
+  const tCreateBasics = await getTranslations("createBasics");
   const tForm = await getTranslations("listingForm");
   const tMyListings = await getTranslations("myListings");
   const { user } = await requireUser(withLocalePath("/deposer", locale));
   const query = await searchParams;
   const errorCode = typeof query.error === "string" ? query.error : null;
+  const missingFieldsRaw = typeof query.missing === "string" ? query.missing : "";
+  const missingFieldCodes = Array.from(
+    new Set(
+      missingFieldsRaw
+        .split(",")
+        .map((field) => field.trim())
+        .filter((field) => field.length > 0),
+    ),
+  );
+  const missingFieldLabelsByCode: Record<string, string> = {
+    listing_type: tCreateBasics("listingType"),
+    city: tCreateBasics("commune"),
+    neighborhood: tCreateBasics("neighborhood"),
+    neighborhood_custom: tCreateBasics("customNeighborhood"),
+    available_from: tCreateBasics("availability"),
+    available_rooms: tCreateBasics("availableRooms"),
+    total_rooms: tCreateBasics("totalRooms"),
+    room_details: tCreateBasics("roomDetailsByRoom"),
+    photos: tCreate("requiredPhotos"),
+    photo_captions: tCreate("requiredPhotoCaptions"),
+    account_email: tCreate("requiredAccountEmail"),
+  };
+  const missingFieldLabels = missingFieldCodes
+    .map((code) => missingFieldLabelsByCode[code])
+    .filter((value): value is string => Boolean(value));
   const error = humanizeAppError(errorCode, locale);
   const accountEmail = user.email ?? "—";
 
@@ -41,9 +68,21 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
       </header>
 
       {error ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {tMyListings("errorPrefix")}: {error}
-        </p>
+        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p>
+            {tMyListings("errorPrefix")}: {error}
+          </p>
+          {missingFieldLabels.length ? (
+            <>
+              <p className="mt-2 font-semibold">{tCreate("missingFieldsTitle")}</p>
+              <ul className="mt-2 list-disc pl-5">
+                {missingFieldLabels.map((label, index) => (
+                  <li key={`${label}-${index}`}>{label}</li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+        </div>
       ) : null}
 
       <form action={createListingAction} className="panel space-y-6 p-6">
@@ -217,9 +256,7 @@ export default async function DeposerPage({ searchParams }: DeposerPageProps) {
         </section>
 
         <div className="flex items-center justify-end gap-3">
-          <button type="submit" className="btn btn-primary">
-            {tCreate("publish")}
-          </button>
+          <SubmitListingButton label={tCreate("publish")} pendingLabel={tCreate("publishing")} />
         </div>
       </form>
     </div>

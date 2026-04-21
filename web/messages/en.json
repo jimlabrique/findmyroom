@@ -315,7 +315,12 @@
     "tag": "Create listing",
     "title": "Publish a listing in a few minutes",
     "subtitle": "Fill in the essentials first, then add optional details if needed.",
-    "publish": "Publish listing"
+    "publish": "Publish listing",
+    "publishing": "Publishing...",
+    "missingFieldsTitle": "Missing required fields",
+    "requiredPhotos": "At least 1 photo",
+    "requiredPhotoCaptions": "Caption for each photo",
+    "requiredAccountEmail": "Account contact email"
   },
   "edit": {
     "tag": "Edit",

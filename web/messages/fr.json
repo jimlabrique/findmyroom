@@ -315,7 +315,12 @@
     "tag": "Dépôt d'annonce",
     "title": "Publier une annonce en quelques minutes",
     "subtitle": "Renseigne l'essentiel d'abord, puis ajoute les options si tu veux.",
-    "publish": "Publier l'annonce"
+    "publish": "Publier l'annonce",
+    "publishing": "Publication en cours...",
+    "missingFieldsTitle": "Champs obligatoires manquants",
+    "requiredPhotos": "Au moins 1 photo",
+    "requiredPhotoCaptions": "Légende de chaque photo",
+    "requiredAccountEmail": "Email de contact du compte"
   },
   "edit": {
     "tag": "Édition",

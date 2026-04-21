@@ -18,6 +18,21 @@ function currentHost(requestHeaders: Headers) {
   return normalizeHost(requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host"));
 }
 
+function isPrivateIpv4Host(hostname: string) {
+  if (/^10\./.test(hostname)) return true;
+  if (/^192\.168\./.test(hostname)) return true;
+  return /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname);
+}
+
+function isLocalDevelopmentHost(host: string | null) {
+  if (!host) return false;
+  const hostname = host.split(":")[0]?.trim().toLowerCase() ?? "";
+  if (!hostname) return false;
+  if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]") return true;
+  if (hostname.endsWith(".local")) return true;
+  return isPrivateIpv4Host(hostname);
+}
+
 function allowedOriginsSet() {
   const raw = `${process.env.ALLOWED_ORIGINS ?? ""}`.trim();
   if (!raw) return new Set<string>();
@@ -52,6 +67,11 @@ export function isTrustedRequestHeaders(requestHeaders: Headers) {
     return false;
   }
 
+  const fetchSite = `${requestHeaders.get("sec-fetch-site") ?? ""}`.trim().toLowerCase();
+  if (fetchSite === "same-origin" || fetchSite === "same-site") {
+    return true;
+  }
+
   return false;
 }
 
@@ -59,8 +79,7 @@ export async function assertTrustedFormRequest() {
   const requestHeaders = await headers();
   if (process.env.NODE_ENV !== "production") {
     const host = currentHost(requestHeaders);
-    const isLocal = host?.startsWith("localhost:") || host?.startsWith("127.0.0.1:");
-    if (isLocal) return;
+    if (isLocalDevelopmentHost(host)) return;
   }
   if (!isTrustedRequestHeaders(requestHeaders)) {
     throw new Error("untrusted_origin");
