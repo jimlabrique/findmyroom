@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { signInWithGoogle, signInWithPassword, signUpWithEmailPassword } from "@/app/actions/auth";
+import { signInWithApple, signInWithGoogle, signInWithPassword, signUpWithEmailPassword } from "@/app/actions/auth";
 import type { AppLocale } from "@/lib/i18n/locales";
 import { withLocalePath } from "@/lib/i18n/pathname";
 
@@ -17,6 +17,8 @@ async function humanizeAuthError(errorCode: string | null) {
       return t("invalid_next");
     case "google_oauth_failed":
       return t("google_oauth_failed");
+    case "apple_oauth_failed":
+      return t("apple_oauth_failed");
     case "invalid_email":
       return t("invalid_email");
     case "missing_password":
@@ -148,6 +150,12 @@ export default async function ConnexionPage({ searchParams }: ConnexionPageProps
 
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-widest text-stone-500">{t("or")}</p>
+              <form action={signInWithApple}>
+                <input type="hidden" name="next" value={next} />
+                <button type="submit" className="btn btn-ghost w-full">
+                  {t("appleButton")}
+                </button>
+              </form>
               <form action={signInWithGoogle}>
                 <input type="hidden" name="next" value={next} />
                 <button type="submit" className="btn btn-ghost w-full">

@@ -12,6 +12,7 @@ import { assertTrustedFormRequest, getRequestIpFromHeaders } from "@/lib/securit
 const SIGNIN_RATE_LIMIT_MS = 20_000;
 const SIGNUP_RATE_LIMIT_MS = 30_000;
 const GOOGLE_RATE_LIMIT_MS = 20_000;
+const APPLE_RATE_LIMIT_MS = 20_000;
 
 function isLocalHostname(hostname: string) {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname.startsWith("192.168.");
@@ -202,6 +203,40 @@ export async function signInWithGoogle(formData: FormData) {
   const oauthUrl = data?.url ?? null;
   if (error || !oauthUrl) {
     redirectConnexionWithError(locale, "google_oauth_failed");
+    return;
+  }
+
+  redirect(oauthUrl);
+}
+
+export async function signInWithApple(formData: FormData) {
+  await assertTrustedFormRequest();
+  const nextPath = readNextPath(formData);
+  const requestHeaders = await headers();
+  const locale = requestLocale(requestHeaders);
+  await enforceRateLimit({
+    prefix: "auth_apple",
+    requestHeaders,
+    windowMs: APPLE_RATE_LIMIT_MS,
+    locale,
+  });
+
+  const origin = resolveRequestOrigin(requestHeaders);
+  const localizedNextPath = localizePath(nextPath, locale);
+  const callbackUrl = new URL("/auth/callback", origin);
+  callbackUrl.searchParams.set("next", localizedNextPath);
+
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "apple",
+    options: {
+      redirectTo: callbackUrl.toString(),
+    },
+  });
+
+  const oauthUrl = data?.url ?? null;
+  if (error || !oauthUrl) {
+    redirectConnexionWithError(locale, "apple_oauth_failed");
     return;
   }
 
