@@ -55,8 +55,8 @@ export function MobileNavMenu({ children }: MobileNavMenuProps) {
             className="fixed left-0 right-0 top-[70px] z-30 border-y border-stone-200 bg-white px-4 py-3 shadow-sm"
             onClickCapture={(event) => {
               const target = event.target as HTMLElement;
-              const actionElement = target.closest("a,button");
-              if (actionElement) {
+              const linkElement = target.closest("a[href]");
+              if (linkElement) {
                 setIsOpen(false);
               }
             }}
