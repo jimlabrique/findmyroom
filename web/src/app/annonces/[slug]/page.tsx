@@ -28,12 +28,14 @@ type ListingDetailPageProps = {
 };
 
 export const dynamic = "force-dynamic";
+export const preferredRegion = "cdg1";
 
 export default async function ListingDetailPage({ params, searchParams }: ListingDetailPageProps) {
   const locale = (await getLocale()) as AppLocale;
   const t = await getTranslations("detail");
   const tErrors = await getTranslations("errors");
   const tCommon = await getTranslations("common.actions");
+  const tListingsCard = await getTranslations("listings.card");
   const tAuth = await getTranslations("auth");
   const { slug } = await params;
   const query = await searchParams;
@@ -420,7 +422,13 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
           <h2 className="font-serif text-2xl text-stone-900">{t("similarListingsIn", { city: displayCity })}</h2>
           <div className="grid-listings">
             {similarListings.map((item) => (
-              <ListingCard key={item.id} listing={item} />
+              <ListingCard
+                key={item.id}
+                listing={item}
+                locale={locale}
+                viewListingLabel={tCommon("voirAnnonce")}
+                availableLabel={tListingsCard("available", { date: item.available_from })}
+              />
             ))}
           </div>
         </section>

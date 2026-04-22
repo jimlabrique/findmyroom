@@ -52,6 +52,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const dynamic = "force-dynamic";
+export const preferredRegion = "cdg1";
 
 export default async function RootLayout({
   children,
@@ -61,7 +62,10 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = await getMessages();
   const tLayout = await getTranslations("layout");
-  const readiness = await getSystemReadiness();
+  const readiness =
+    process.env.NODE_ENV === "production"
+      ? { ok: true, issues: [] as string[] }
+      : await getSystemReadiness();
 
   return (
     <html lang={locale} className={`${lato.variable} h-full antialiased`}>

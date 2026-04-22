@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { getLocale, getTranslations } from "next-intl/server";
 import type { AppLocale } from "@/lib/i18n/locales";
 import { withLocalePath } from "@/lib/i18n/pathname";
 import {
@@ -14,6 +13,9 @@ import { getLocalizedCommuneLabel } from "@/lib/listing-form-options";
 import { ListingCardCarousel } from "@/components/listing-card-carousel";
 
 type ListingCardProps = {
+  locale: AppLocale;
+  viewListingLabel: string;
+  availableLabel: string;
   listing: Pick<
     Listing,
     | "slug"
@@ -32,10 +34,7 @@ type ListingCardProps = {
   >;
 };
 
-export async function ListingCard({ listing }: ListingCardProps) {
-  const locale = (await getLocale()) as AppLocale;
-  const tCommon = await getTranslations("common.actions");
-  const tCard = await getTranslations("listings.card");
+export async function ListingCard({ listing, locale, viewListingLabel, availableLabel }: ListingCardProps) {
   const dateLocale = locale === "en" ? "en-GB" : locale === "nl" ? "nl-BE" : "fr-BE";
   const createdAtLabel = new Intl.DateTimeFormat(dateLocale, { dateStyle: "short" }).format(new Date(listing.created_at));
   const detailsHref = withLocalePath(`/annonces/${listing.slug}`, locale);
@@ -45,11 +44,7 @@ export async function ListingCard({ listing }: ListingCardProps) {
 
   return (
     <article className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:shadow-md sm:grid sm:grid-cols-[340px_1fr]">
-      <ListingCardCarousel
-        photos={listing.photo_urls}
-        title={displayTitle}
-        href={detailsHref}
-      />
+      <ListingCardCarousel photos={listing.photo_urls} title={displayTitle} href={detailsHref} />
 
       <div className="flex h-full flex-col gap-3 border-t border-stone-100 p-3 sm:justify-between sm:gap-4 sm:border-t-0 sm:p-5">
         <div className="flex items-start justify-between gap-3">
@@ -69,14 +64,11 @@ export async function ListingCard({ listing }: ListingCardProps) {
             {listingRoomsSummary(listing, locale)}
             {candidatePreferenceLabel ? ` • ${candidatePreferenceLabel}` : ""}
           </p>
-          <p className="col-span-2 text-stone-600 sm:col-span-1 sm:text-right">{tCard("available", { date: listing.available_from })}</p>
+          <p className="col-span-2 text-stone-600 sm:col-span-1 sm:text-right">{availableLabel}</p>
         </div>
 
-        <Link
-          href={detailsHref}
-          className="btn btn-primary w-full text-sm sm:w-fit"
-        >
-          {tCommon("voirAnnonce")}
+        <Link href={detailsHref} className="btn btn-primary w-full text-sm sm:w-fit">
+          {viewListingLabel}
         </Link>
       </div>
     </article>

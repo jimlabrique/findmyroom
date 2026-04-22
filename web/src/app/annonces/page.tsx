@@ -23,6 +23,7 @@ function readPositiveNumber(input: string | string[] | undefined) {
 }
 
 export const dynamic = "force-dynamic";
+export const preferredRegion = "cdg1";
 
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
   const locale = (await getLocale()) as AppLocale;
@@ -295,7 +296,13 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
         {listings.length ? (
           <div className="grid-listings">
             {listings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                locale={locale}
+                viewListingLabel={tCommon("voirAnnonce")}
+                availableLabel={t("card.available", { date: listing.available_from })}
+              />
             ))}
           </div>
         ) : (

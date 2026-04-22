@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
 import type { Database } from "@/lib/database.types";
 import { createServerSupabaseClient, createServerSupabasePublicClient } from "@/lib/supabase/server";
 import { listingNeighborhoodFromHousingDescription, listingRoomDetailsFromRow, type Listing } from "@/lib/listing";
@@ -38,10 +39,6 @@ function isMissingExpiresAtColumn(message: string) {
 
 function isMissingListingTypeColumn(message: string) {
   return /listing_type/i.test(message) && /column/i.test(message);
-}
-
-function isJwtExpired(message: string) {
-  return /jwt expired/i.test(message);
 }
 
 function normalizeText(value: string) {
@@ -127,7 +124,7 @@ function buildSearchListingsQuery(
     query = query.order("created_at", { ascending: false });
   }
 
-  return query;
+  return query.limit(200);
 }
 
 function applyPostFilters(rows: Listing[], filters: ListingFilters) {
@@ -210,19 +207,6 @@ export async function getLatestListings(limit = 8) {
     error = retry.error;
   }
 
-  if (error && isJwtExpired(error.message)) {
-    const publicSupabase = createServerSupabasePublicClient();
-    const retryPublic = await buildLatestListingsQuery(publicSupabase, limit, true);
-    data = retryPublic.data;
-    error = retryPublic.error;
-
-    if (error && isMissingExpiresAtColumn(error.message)) {
-      const retryLegacyPublic = await buildLatestListingsQuery(publicSupabase, limit, false);
-      data = retryLegacyPublic.data;
-      error = retryLegacyPublic.error;
-    }
-  }
-
   if (error) {
     throw new Error(error.message);
   }
@@ -230,62 +214,102 @@ export async function getLatestListings(limit = 8) {
   return (data ?? []) as Listing[];
 }
 
-export async function searchListings(filters: ListingFilters) {
-  const supabase = await createServerSupabaseClient();
-  let { data, error } = await buildSearchListingsQuery(supabase, filters, true);
+type SearchListingsCacheInput = {
+  query: string | null;
+  city: string | null;
+  neighborhood: string | null;
+  listingType: "colocation" | "studio" | null;
+  minRent: number | null;
+  maxRent: number | null;
+  availableFrom: string | null;
+  minRooms: number | null;
+  leaseType: string | null;
+  maxMinDuration: number | null;
+  contactMethod: "phone" | "email" | null;
+  animalsPolicy: "yes" | "no" | "negotiable" | null;
+  roomFurnishing: "furnished" | "unfurnished" | "partially_furnished" | null;
+  roomBathroom: "private" | "shared" | null;
+  sort: "latest" | "price_asc" | "price_desc" | "available_asc" | null;
+};
 
-  if (error && isMissingExpiresAtColumn(error.message)) {
-    const retry = await buildSearchListingsQuery(supabase, filters, false);
-    data = retry.data;
-    error = retry.error;
-  }
+function buildSearchListingsCacheInput(filters: ListingFilters): SearchListingsCacheInput {
+  return {
+    query: filters.query ?? null,
+    city: filters.city ?? null,
+    neighborhood: filters.neighborhood ?? null,
+    listingType: filters.listingType ?? null,
+    minRent: filters.minRent ?? null,
+    maxRent: filters.maxRent ?? null,
+    availableFrom: filters.availableFrom ?? null,
+    minRooms: filters.minRooms ?? null,
+    leaseType: filters.leaseType ?? null,
+    maxMinDuration: filters.maxMinDuration ?? null,
+    contactMethod: filters.contactMethod ?? null,
+    animalsPolicy: filters.animalsPolicy ?? null,
+    roomFurnishing: filters.roomFurnishing ?? null,
+    roomBathroom: filters.roomBathroom ?? null,
+    sort: filters.sort ?? null,
+  };
+}
 
-  if (error && isMissingListingTypeColumn(error.message)) {
-    const retry = await buildSearchListingsQuery(supabase, { ...filters, listingType: undefined }, true);
-    data = retry.data;
-    error = retry.error;
+function searchListingsFromCacheInput(input: SearchListingsCacheInput): ListingFilters {
+  return {
+    query: input.query ?? undefined,
+    city: input.city ?? undefined,
+    neighborhood: input.neighborhood ?? undefined,
+    listingType: input.listingType ?? undefined,
+    minRent: input.minRent ?? undefined,
+    maxRent: input.maxRent ?? undefined,
+    availableFrom: input.availableFrom ?? undefined,
+    minRooms: input.minRooms ?? undefined,
+    leaseType: input.leaseType ?? undefined,
+    maxMinDuration: input.maxMinDuration ?? undefined,
+    contactMethod: input.contactMethod ?? undefined,
+    animalsPolicy: input.animalsPolicy ?? undefined,
+    roomFurnishing: input.roomFurnishing ?? undefined,
+    roomBathroom: input.roomBathroom ?? undefined,
+    sort: input.sort ?? undefined,
+  };
+}
+
+const searchListingsCached = unstable_cache(
+  async (serializedFilters: string) => {
+    const cacheInput = JSON.parse(serializedFilters) as SearchListingsCacheInput;
+    const filters = searchListingsFromCacheInput(cacheInput);
+    const supabase = createServerSupabasePublicClient();
+    let { data, error } = await buildSearchListingsQuery(supabase, filters, true);
 
     if (error && isMissingExpiresAtColumn(error.message)) {
-      const legacyRetry = await buildSearchListingsQuery(supabase, { ...filters, listingType: undefined }, false);
-      data = legacyRetry.data;
-      error = legacyRetry.error;
-    }
-  }
-
-  if (error && isJwtExpired(error.message)) {
-    const publicSupabase = createServerSupabasePublicClient();
-    const retryPublic = await buildSearchListingsQuery(publicSupabase, filters, true);
-    data = retryPublic.data;
-    error = retryPublic.error;
-
-    if (error && isMissingExpiresAtColumn(error.message)) {
-      const retryLegacyPublic = await buildSearchListingsQuery(publicSupabase, filters, false);
-      data = retryLegacyPublic.data;
-      error = retryLegacyPublic.error;
+      const retry = await buildSearchListingsQuery(supabase, filters, false);
+      data = retry.data;
+      error = retry.error;
     }
 
     if (error && isMissingListingTypeColumn(error.message)) {
-      const retryLegacyTypePublic = await buildSearchListingsQuery(publicSupabase, { ...filters, listingType: undefined }, true);
-      data = retryLegacyTypePublic.data;
-      error = retryLegacyTypePublic.error;
+      const retry = await buildSearchListingsQuery(supabase, { ...filters, listingType: undefined }, true);
+      data = retry.data;
+      error = retry.error;
 
       if (error && isMissingExpiresAtColumn(error.message)) {
-        const retryLegacyTypeAndDatePublic = await buildSearchListingsQuery(
-          publicSupabase,
-          { ...filters, listingType: undefined },
-          false,
-        );
-        data = retryLegacyTypeAndDatePublic.data;
-        error = retryLegacyTypeAndDatePublic.error;
+        const legacyRetry = await buildSearchListingsQuery(supabase, { ...filters, listingType: undefined }, false);
+        data = legacyRetry.data;
+        error = legacyRetry.error;
       }
     }
-  }
 
-  if (error) {
-    throw new Error(error.message);
-  }
+    if (error) {
+      throw new Error(error.message);
+    }
 
-  return applyPostFilters((data ?? []) as Listing[], filters);
+    return applyPostFilters((data ?? []) as Listing[], filters);
+  },
+  ["search_listings_v2"],
+  { revalidate: 20 },
+);
+
+export async function searchListings(filters: ListingFilters) {
+  const cacheInput = buildSearchListingsCacheInput(filters);
+  return searchListingsCached(JSON.stringify(cacheInput));
 }
 
 export async function getListingBySlug(slug: string) {
